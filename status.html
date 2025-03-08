@@ -67,12 +67,13 @@
                     <div class="imgContent">
                         <div>
                             <p style="font-size: 25px;font-weight: bold">Estamos pendiente a su pago</p>
-                            <img src="./img/status/pagopendiente1.gif" alt="pago pendiente" style="height: 56%;filter: contrast(1.5);">
+                            <img src="./img/status/pagopendiente1.gif" alt="pago pendiente"
+                                style="height: 56%;filter: contrast(1.5);">
 
                             <p>Cuando se confirme su pago podra ver el estado de su ropa en esta misma pantalla</p>
                         </div>
                     </div>
-                    
+
                 </div>
                 <!-- Contenido para "Pago Pendiente" FIN -->
 
@@ -100,16 +101,31 @@
                         </div>
                     </div>
 
-
                 </div>
                 <!-- Contenido para "Pagado" FIN -->
 
                 <!-- Contenido para "Pagado Listo" -->
                 <div id="readyInvoiceDetails" class="invoice-status" style="display: none;">
-                    <strong>ID:</strong> <span id="readyID"></span><br>
-                    <strong>Fecha de la Factura:</strong> <span id="readyDate"></span><br>
-                    <img src="./img/icon/listo.png" alt="Listo" style="width: 100px;" />
-                    <p>Su ropa está lista para ser recogida.</p>
+
+                    <div class="fechaYid">
+                        <div>
+                            <span>Fecha de la Factura:</span> <strong style="font-size: 19px;" id="readyDate"></strong>
+                        </div>
+
+                        <div>
+                            <span>ID de la Factura:</span> <strong style="font-size: 37px;" id="readyID"></strong>
+                        </div>
+                    </div>
+
+                    <div class="imgContent">
+                        <div>
+                            <p style="font-size: 25px;font-weight: bold;">Su ropa está lista para ser recogida
+                            </p>
+                            <img src="./img/status/check1.png" style="height: 24%; margin: 50px 0px;" alt="Lavando" />
+                            <p>¡Gracias por preferirnos!</p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -149,7 +165,7 @@
 
         searchInput.addEventListener("keypress", async (event) => {
             if (event.key === "Enter") {
-                const searchTerm = searchInput.value.trim();
+                const searchTerm = searchInput.value.trim().toLowerCase(); // Convertir a minúsculas
                 messageDiv.style.display = "none"; // Limpiar mensaje previo
 
                 if (searchTerm) {
