@@ -229,7 +229,7 @@ h2 {
     height: 100%;
 }
 
-#fechaYid div {
+.fechaYid div {
     display: inline-flex;
     width: 100%;
     flex-direction: column;
@@ -237,13 +237,14 @@ h2 {
     margin-bottom: 10px;
 }
 
+
 .imgContent {
     background: #ff000000;
     height: calc(100% - 120px);
     min-height: 300px;
 }
 
-.imgContect div {
+.imgContent div {
     display: inline-flex;
     flex-direction: column;
     position: relative;
@@ -251,6 +252,13 @@ h2 {
     height: 100%;
     align-items: center;
     justify-content: center;
+}
+
+.imgContent p {
+    font-size: 20px;
+    text-align: center;
+    margin-block-start: 0px;
+    margin-block-end: 0px;
 }
 
 .modal_preview_factura_down {
