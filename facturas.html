@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./css/styles_facturas.css">
+  <title>Lista de Facturas - Paris Laundry</title>
+  <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+
+  <div class="MasterBox0">
+
+    <!-- Menu -->
+    <div class="BarraMenu">
+
+      <div class="BarraMenu_Left">
+
+        <div class="menu_tittle">
+          <img src="./img/Paris Laundry 1.png">
+          <h1>Paris Laundry</h1>
+        </div>
+
+        <div class="linediv"></div>
+
+        <div class="box_btns">
+          <button><a href="index - admin.html">Facturación</a></button>
+          <button><a style="color: #0078df;" href="facturas.html">Facturas Generadas</a></button>
+          <button><a href="inventario.html">Inventario</a></button>
+          <button><a href="contabilidad.html">Contabilidad</a></button>
+          <button><a href="admin.html">Admin</a></button>
+        </div>
+      </div>
+
+
+
+      <div class="BarraMenu_Right">
+
+        <div class="linediv" style="margin: 0px 15px 0px 12px;"></div>
+
+        <div id="dateTime">
+          <h1 id="time">--:--:--</h1>
+          <p id="date">Cargando fecha...</p>
+        </div>
+
+        <div class="linediv" style="margin: 0px 5px 0px 12px; display: none;"></div>
+
+        <button id="logout1" style=" display: none;"><img src="./img/icon/logout.png"><a href="index.html"></a></button>
+      </div>
+
+    </div>
+    <!-- Menu FIN -->
+
+
+
+    <div class="container_facturas">
+
+      <div class="panelFacturas_tittle">
+        <h2>Lista de Facturas</h2>
+      </div>
+
+      <div class="panelFacturas_body">
+
+        <div class="box_btns_facturas">
+          <button class="button" id="pendingInvoicesButton"><img src="./img/icon/atencion1.png">Facturas con Pago -
+            Pendiente</button>
+          <button class="button" id="paidInvoicesButton"><img src="./img/icon/lavando1.png">Facturas Pagadas - En
+            Proceso
+            de
+            Lavado</button>
+          <button class="button" id="readyInvoicesButton"><img src="./img/icon/check1.png">Facturas Pagadas -
+            Listo</button>
+        </div>
+
+        <div class="box_search-container">
+          <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Buscar por ID, Nombre, Teléfono o monto..." />
+            <div class="cantidad-img"><img src="./img/icon/buscar3.png"></div>
+          </div>
+        </div>
+
+        <h2 id="invoiceTitle" class="title pending">Facturas con Pago - Pendiente</h2>
+
+        <div class="transaction-table-container">
+          <table id="invoicesTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre del Cliente</th>
+                <th>Número de Teléfono</th>
+                <th>Monto</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="invoicesBody">
+              <!-- Las facturas se cargarán aquí -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panelFacturas_down">
+        <p>© Paris Laundry RD - 2025</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal para mostrar detalles de la factura -->
+  <div id="invoiceModal" class="modal">
+    <div class="modal-content">
+
+      <!-- Modal_preview_factura_tittle -->
+      <div class="modal_preview_factura_tittle">
+        <span class="close" id="closeModal">&times;</span>
+        <h2>Detalles de la Factura</h2>
+      </div>
+      <!-- Modal_preview_factura_tittle FIN -->
+
+      <!-- Modal_preview_factura_body -->
+      <div class="modal_preview_factura_body">
+        <div id="modalInvoiceDetails"></div>
+        <div id="paymentDetails" style="display: none;">
+          <strong>Monto Recibido:</strong> <span id="amountReceivedDisplay"></span><br>
+          <strong>Cambio:</strong> <span id="changeDisplay"></span><br>
+        </div>
+      </div>
+      <!-- Modal_preview_factura_body FIN -->
+
+            <!-- Modal_preview_factura_Down -->
+      <div class="modal_preview_factura_down">
+        <button class="button" id="markAsPaidButton" style="display: none;">Marcar como Pagado</button>
+        <button class="button" id="markAsReadyButton" style="display: none;">Marcar como Listo</button>
+      </div>
+      <!-- Modal_preview_factura_Down FIN -->
+
+    </div>
+  </div>
+
+  <script>
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
+      authDomain: "paris-laundry.firebaseapp.com",
+      projectId: "paris-laundry",
+      storageBucket: "paris-laundry.appspot.com",
+      messagingSenderId: "1022712814457",
+      appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const invoicesBody = document.getElementById("invoicesBody");
+    const invoiceModal = document.getElementById("invoiceModal");
+    const modalInvoiceDetails = document.getElementById("modalInvoiceDetails");
+    const closeModal = document.getElementById("closeModal");
+    const markAsPaidButton = document.getElementById("markAsPaidButton");
+    const markAsReadyButton = document.getElementById("markAsReadyButton");
+    const paymentDetails = document.getElementById("paymentDetails");
+    const amountReceivedDisplay = document.getElementById("amountReceivedDisplay");
+    const changeDisplay = document.getElementById("changeDisplay");
+    const searchInput = document.getElementById("searchInput");
+    const invoiceTitle = document.getElementById("invoiceTitle");
+
+    let currentInvoiceId = null;
+    let invoices = []; // Almacenar todas las facturas
+
+    const loadInvoices = (status) => {
+      invoicesBody.innerHTML = ""; // Limpiar la tabla antes de cargar nuevas facturas
+      db.collection("facturas")
+        .where("status", "==", status)
+        .get().then((snapshot) => {
+          invoices = []; // Reiniciar el array de facturas
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            invoices.push({ id: doc.id, ...data });
+          });
+
+          // Ordenar las facturas por la fecha que se muestra en la tabla
+          invoices.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+          invoices.forEach((invoice) => {
+            addInvoiceRow(invoice);
+          });
+
+          // Actualizar el título y el fondo según el estado
+          updateTitleAndBackground(status);
+        });
+    };
+
+    const addInvoiceRow = (invoice) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${invoice.id}</td>
+        <td>${invoice.clientName}</td>
+        <td>${invoice.clientPhone}</td>
+        <td>RD$${invoice.total.toFixed(2)}</td>
+        <td>${new Date(invoice.timestamp).toLocaleDateString()}</td>
+      `;
+      row.addEventListener("click", () => {
+        currentInvoiceId = invoice.id;
+        showInvoiceDetails(invoice);
+      });
+      invoicesBody.appendChild(row);
+    };
+
+    const updateTitleAndBackground = (status) => {
+      switch (status) {
+        case "pago pendiente":
+          invoiceTitle.textContent = "Facturas con Pago - Pendiente";
+          invoiceTitle.className = "title pending";
+          break;
+        case "pagado":
+          invoiceTitle.textContent = "Facturas Pagadas - En Proceso de Lavado";
+          invoiceTitle.className = "title paid";
+          break;
+        case "pagado listo":
+          invoiceTitle.textContent = "Facturas Pagadas - Listo";
+          invoiceTitle.className = "title ready";
+          break;
+      }
+    };
+
+    const showInvoiceDetails = (data) => {
+      const services = data.selectedServices.map(service => `<div>${service.name} (Peso: ${service.weight} lbs) - RD$${service.price}</div>`).join("");
+      const otherServices = data.otrosServicios.map(service => `<div>${service.name}: ${service.count} - RD$${(service.count * service.price).toFixed(2)}</div>`).join("");
+      const products = data.selectedProducts.map(product => `<div>${product.name} (Cantidad: ${product.quantity}) - RD$${(product.quantity * product.price).toFixed(2)}</div>`).join("");
+      const delivery = data.deliveryOption[0].name + " - RD$" + data.deliveryOption[0].price;
+
+      modalInvoiceDetails.innerHTML = `
+        <strong>Cliente:</strong> ${data.clientName}<br>
+        <strong>Número:</strong> ${data.clientPhone}<br>
+        <strong>ID:</strong> ${data.id}<br>
+        <strong>Monto:</strong> RD$${data.total.toFixed(2)}<br>
+        <strong>Fecha:</strong> ${new Date(data.timestamp).toLocaleString()}<br>
+        <strong>Estado:</strong> ${data.status}<br>
+        <strong>Método de Pago:</strong> ${data.paymentMethod}<br>
+        <strong>Servicios de Hamper:</strong><br>${services || "Ninguno"}<br>
+        <strong>Otros Servicios:</strong><br>${otherServices || "Ninguno"}<br>
+        <strong>Productos Adicionales:</strong><br>${products || "Ninguno"}<br>
+        <strong>Opción de Delivery:</strong> ${delivery}<br>
+      `;
+
+      // Mostrar monto recibido y cambio si el método de pago es efectivo
+      if (data.paymentMethod === "efectivo") {
+        amountReceivedDisplay.textContent = `RD$${data.amountReceived.toFixed(2)}`;
+        const change = data.amountReceived - data.total;
+        changeDisplay.textContent = `RD$${change.toFixed(2)}`;
+        paymentDetails.style.display = "block";
+      } else {
+        paymentDetails.style.display = "none"; // Ocultar si no es efectivo
+      }
+
+      // Mostrar u ocultar botones según el estado de la factura
+      if (data.status === "pago pendiente") {
+        markAsPaidButton.style.display = "block";
+        markAsReadyButton.style.display = "none";
+      } else if (data.status === "pagado") {
+        markAsPaidButton.style.display = "none";
+        markAsReadyButton.style.display = "block";
+      } else if (data.status === "pagado listo") {
+        markAsPaidButton.style.display = "none";
+        markAsReadyButton.style.display = "none";
+      }
+
+      invoiceModal.style.display = "block";
+    };
+
+    closeModal.onclick = () => {
+      invoiceModal.style.display = "none";
+    };
+
+    markAsPaidButton.onclick = async () => {
+      if (currentInvoiceId) {
+        try {
+          const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
+          if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            await doc.ref.update({ status: "pagado" });
+            loadInvoices("pago pendiente");
+            invoiceModal.style.display = "none";
+          } else {
+            console.error("No existe el documento con el campo 'id':", currentInvoiceId);
+            alert("No se pudo encontrar la factura para actualizar.");
+          }
+        } catch (error) {
+          console.error("Error al actualizar el estado:", error);
+          alert("No se pudo marcar la factura como pagada. Intenta nuevamente.");
+        }
+      }
+    };
+
+    markAsReadyButton.onclick = async () => {
+      if (currentInvoiceId) {
+        try {
+          const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
+          if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            await doc.ref.update({ status: "pagado listo" });
+            loadInvoices("pagado");
+            invoiceModal.style.display = "none";
+          } else {
+            console.error("No existe el documento con el campo 'id':", currentInvoiceId);
+            alert("No se pudo encontrar la factura para actualizar.");
+          }
+        } catch (error) {
+          console.error("Error al actualizar el estado:", error);
+          alert("No se pudo marcar la factura como lista. Intenta nuevamente.");
+        }
+      }
+    };
+
+    document.getElementById("pendingInvoicesButton").onclick = () => loadInvoices("pago pendiente");
+    document.getElementById("paidInvoicesButton").onclick = () => loadInvoices("pagado");
+    document.getElementById("readyInvoicesButton").onclick = () => loadInvoices("pagado listo");
+
+    // Cargar las facturas con pago pendiente al inicio
+    loadInvoices("pago pendiente");
+
+    // Función de búsqueda
+    searchInput.addEventListener("input", () => {
+      const searchTerm = searchInput.value.toLowerCase();
+      invoicesBody.innerHTML = ""; // Limpiar la tabla antes de mostrar los resultados
+
+      invoices.forEach((invoice) => {
+        const { clientName, clientPhone, id, total } = invoice;
+        const totalFormatted = `RD$${total.toFixed(2)}`;
+        const dateFormatted = new Date(invoice.timestamp).toLocaleDateString();
+
+        // Verificar si el término de búsqueda coincide con alguno de los campos
+        if (
+          clientName.toLowerCase().includes(searchTerm) ||
+          clientPhone.toLowerCase().includes(searchTerm) ||
+          id.toLowerCase().includes(searchTerm) ||
+          totalFormatted.includes(searchTerm)
+        ) {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${highlightText(clientName, searchTerm)}</td>
+            <td>${highlightText(clientPhone, searchTerm)}</td>
+            <td>${highlightText(id, searchTerm)}</td>
+            <td>${highlightText(totalFormatted, searchTerm)}</td>
+            <td>${dateFormatted}</td>
+          `;
+          row.addEventListener("click", () => {
+            currentInvoiceId = invoice.id;
+            showInvoiceDetails(invoice);
+          });
+          invoicesBody.appendChild(row);
+        }
+      });
+    });
+
+    // Función para resaltar texto
+    const highlightText = (text, searchTerm) => {
+      if (!searchTerm) return text; // Si no hay término de búsqueda, devolver el texto original
+      const regex = new RegExp(`(${searchTerm})`, 'gi'); // Crear una expresión regular para resaltar
+      return text.replace(regex, '<span class="highlight">$1</span>'); // Resaltar coincidencias
+    };
+  </script>
+
+  <script src="./js/fecha-hora.js"></script>
+</body>
+
+</html>

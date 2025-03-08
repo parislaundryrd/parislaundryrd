@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paris Laundry - Inventario</title>
+  <link rel="stylesheet" href="./css/styles_inventario.css">
+  <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+
+  <div class="MasterBox0">
+
+
+    <!-- Menu -->
+    <div class="BarraMenu">
+
+      <div class="BarraMenu_Left">
+
+        <div class="menu_tittle">
+          <img src="./img/Paris Laundry 1.png">
+          <h1>Paris Laundry</h1>
+        </div>
+
+        <div class="linediv"></div>
+
+        <div class="box_btns">
+          <button><a href="index - admin.html">Facturación</a></button>
+          <button><a href="facturas.html">Facturas Generadas</a></button>
+          <button><a style="color: #0078df;" href="inventario.html">Inventario</a></button>
+          <button><a href="contabilidad.html">Contabilidad</a></button>
+          <button><a href="admin.html">Admin</a></button>
+        </div>
+      </div>
+
+
+
+      <div class="BarraMenu_Right">
+
+        <div class="linediv" style="margin: 0px 15px 0px 12px;"></div>
+
+        <div id="dateTime">
+          <h1 id="time">--:--:--</h1>
+          <p id="date">Cargando fecha...</p>
+        </div>
+
+        <div class="linediv" style="margin: 0px 5px 0px 12px; display: none;"></div>
+
+        <button id="logout1" style=" display: none;"><img src="./img/icon/logout.png"><a href="index.html"></a></button>
+      </div>
+
+    </div>
+    <!-- Menu FIN -->
+
+    <!-- Contenedor de inventario -->
+    <div class="container_inventario ">
+
+      <!-- Titulo -->
+      <div class="panelInventario_tittle">
+        <h2>Inventario</h2>
+      </div>
+      <!-- Titulo FIN -->
+
+      <!-- body -->
+      <div class="panelInventario_body">
+
+        <div class="button-list">
+          <button id="addProductButton" style="background: #a2f3b0;"><img src="./img/icon/mas.png">Añadir Producto</button>
+          <button id="viewHistoryButton"><img src="./img/icon/historial-de-pedidos.png">Ver Historial de
+            Inventario</button>
+        </div>
+        <div class="product-list" id="productList"></div>
+
+      </div>
+      <!-- body FIN -->
+
+      <!-- Down -->
+      <div class="panelInventario_down">
+        <p>© Paris Laundry RD - 2025</p>
+      </div>
+      <!-- Down FIN -->
+
+    </div>
+    <!-- Contenedor de inventario FIN -->
+
+
+
+    <!-- Modal para agregar producto -->
+    <div id="addProductModal" class="modal">
+      <div class="modal-content">
+
+        <!-- modal-Inventario-tiitle -->
+        <div class="modalInvetario_tittle">
+          <span class="close" id="closeModal">&times;</span>
+          <h2>Agregar Nuevo Producto</h2>
+        </div>
+        <!-- modal-Inventario-tiitle FIN -->
+
+        <!-- modal-Inventario-body -->
+        <div class="modalInvetario_body">
+
+          <label for="newProductName">Nombre del Producto:</label><br>
+          <input type="text" id="newProductName" placeholder="Nombre del producto">
+          <p>
+            <label for="newProductDetails">Detalles del Producto:</label><br>
+            <input type="text" id="newProductDetails" placeholder="Detalles del producto">
+          <p>
+            <label for="newProductPrice">Precio del Producto:</label><br>
+            <input type="number" id="newProductPrice" placeholder="Precio (RD$)" step="0.01">
+          <p>
+            <label for="newProductQuantity">Cantidad del Producto:</label><br>
+            <input type="number" id="newProductQuantity" placeholder="Cantidad" min="0">
+        </div>
+        <!-- modal-Inventario-body FIN -->
+
+        <!-- modal-Inventario-down -->
+        <div class="modalInvetario_down">
+          <button id="submitProductButton" style="background: #a2f3b0;border: 1px solid #00ff2c;">Agregar
+            Producto</button>
+        </div>
+        <!-- modal-Inventario-down FIN -->
+      </div>
+    </div>
+    <!-- Modal para agregar producto FIN -->
+
+
+    <!-- Modal para editar producto -->
+    <div id="editProductModal" class="modal">
+      <div class="modal-content">
+
+        <!-- modal-Inventario-tiitle -->
+        <div class="modalInvetario_tittle">
+          <span class="close" id="closeEditModal">&times;</span>
+          <h2>Editar Producto</h2>
+        </div>
+        <!-- modal-Inventario-tiitle FIN -->
+
+        <!-- modal-Inventario-body -->
+        <div class="modalInvetario_body">
+
+          <div id="editProductId"></div> <!-- Mostrar el ID aquí -->
+          <p>
+            <label for="editProductName">Nombre del Producto:</label><br>
+            <input type="text" id="editProductName" placeholder="Nombre del producto">
+          <p>
+            <label for="editProductDetails">Detalles del Producto:</label><br>
+            <input type="text" id="editProductDetails" placeholder="Detalles del producto">
+          <p>
+            <label for="editProductPrice">Precio del Producto:</label><br>
+            <input type="number" id="editProductPrice" placeholder="Precio (RD$)" step="0.01">
+          <p>
+            <label for="editProductQuantity">Cantidad del Producto:</label><br>
+            <input type="number" id="editProductQuantity" placeholder="Cantidad" min="0">
+        </div>
+        <!-- modal-Inventario-body FIN -->
+
+        <!-- modal-Inventario-down -->
+        <div class="modalInvetario_down">
+          <button id="updateProductButton">Actualizar</button>
+        </div>
+        <!-- modal-Inventario-down FIN -->
+      </div>
+    </div>
+    <!-- Modal para editar producto FIN -->
+
+    <!-- Modal para ver historial de inventario -->
+    <div id="historyModal" class="modal-historialInvetario ">
+      <div class="modal-content-historialInvetario">
+
+        <div class="modalInvetario_tittle">
+          <h2>Historial de Inventario</h2>
+          <span class="close" id="closeHistoryModal">&times;</span>
+        </div>
+
+        <div class="modalInvetario_body">
+          <div class="history-list" id="historyList"></div>
+        </div>
+
+        <div class="modalInvetario_down">
+          <p>© Paris Laundry RD</p>
+        </div>
+
+      </div>
+    </div>
+    <!-- Modal para ver historial de inventario FIN -->
+
+  </div>
+
+  <script>
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
+      authDomain: "paris-laundry.firebaseapp.com",
+      projectId: "paris-laundry",
+      storageBucket: "paris-laundry.appspot.com",
+      messagingSenderId: "1022712814457",
+      appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const productList = document.getElementById("productList");
+    const addProductModal = document.getElementById("addProductModal");
+    const closeModal = document.getElementById("closeModal");
+    const submitProductButton = document.getElementById("submitProductButton");
+    const editProductModal = document.getElementById("editProductModal");
+    const closeEditModal = document.getElementById("closeEditModal");
+    const updateProductButton = document.getElementById("updateProductButton");
+    const historyModal = document.getElementById("historyModal");
+    const closeHistoryModal = document.getElementById("closeHistoryModal");
+    const historyList = document.getElementById("historyList");
+
+    let currentEditingProductId = null;
+    let draggingElement = null; // Elemento que se está arrastrando
+
+    // Cargar productos desde Firestore
+    const loadProducts = () => {
+      db.collection("productos").orderBy("ordenNum", "asc").onSnapshot((snapshot) => {
+        productList.innerHTML = ""; // Limpiar la lista antes de cargar
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const productItem = document.createElement("div");
+          productItem.classList.add("product-item");
+          productItem.setAttribute("draggable", true); // Hacer el elemento arrastrable
+          productItem.setAttribute("data-id", doc.id); // Guardar el ID del producto
+          productItem.innerHTML = `
+  
+          <div style="background: #b3c5ef;height: 100%;">${data.ordenNum}</div>
+          <div><strong>${data.id}</strong></div>
+          <div><strong>${data.nombre}</strong></div> 
+          <div>${data.detalles}</div> 
+          <div style="flex-direction: column;">Precio:<br><strong>RD$${data.precio}</strong></div>
+          <div style="flex-direction: column;">Stock:<br><strong style="color: ${data.cantidad < 20 ? 'red' : 'black'};">${data.cantidad}</strong></div> 
+
+
+        <div><button onclick="openEditModal('${doc.id}', '${data.id}', '${data.nombre}', '${data.detalles}', ${data.precio}, ${data.cantidad})">Editar</button></div>
+        <div><button id="btnEliminarProduct" onclick="deleteProduct('${doc.id}')">X</button></div>
+        
+      `;
+          productList.appendChild(productItem);
+        });
+
+        // Agregar eventos de drag and drop a los productos
+        addDragAndDropEvents();
+      });
+    };
+
+    // Agregar eventos de drag and drop
+    const addDragAndDropEvents = () => {
+      const items = document.querySelectorAll(".product-item");
+
+      items.forEach((item) => {
+        item.addEventListener("dragstart", handleDragStart);
+        item.addEventListener("dragover", handleDragOver);
+        item.addEventListener("drop", handleDrop);
+        item.addEventListener("dragend", handleDragEnd);
+      });
+    };
+
+    // Manejar el inicio del arrastre
+    const handleDragStart = (e) => {
+      draggingElement = e.target;
+      e.target.classList.add("dragging"); // Aplicar estilo al arrastrar
+      e.dataTransfer.setData("text/plain", e.target.getAttribute("data-id")); // Guardar el ID del producto
+    };
+
+    // Manejar el arrastre sobre otro elemento
+    const handleDragOver = (e) => {
+      e.preventDefault();
+      const target = e.target.closest(".product-item");
+      if (target && target !== draggingElement) {
+        const rect = target.getBoundingClientRect();
+        const nextPosition = (e.clientY - rect.top) / rect.height > 0.5 ? "after" : "before";
+
+        if (nextPosition === "before") {
+          productList.insertBefore(draggingElement, target);
+        } else {
+          productList.insertBefore(draggingElement, target.nextSibling);
+        }
+      }
+    };
+
+    // Manejar el soltar el elemento
+    const handleDrop = async (e) => {
+      e.preventDefault();
+      const droppedId = e.dataTransfer.getData("text/plain");
+
+      // Obtener la nueva posición del producto arrastrado
+      const newIndex = Array.from(productList.children).indexOf(draggingElement);
+
+      // Obtener todos los productos de la lista
+      const products = Array.from(productList.children);
+
+      // Reasignar los números de orden
+      products.forEach((product, index) => {
+        const productId = product.getAttribute("data-id");
+        const newOrdenNum = index + 1; // Nuevo número de orden
+
+        // Actualizar el número de orden en Firestore
+        db.collection("productos").doc(productId).update({ ordenNum: newOrdenNum });
+      });
+
+      // Recargar la lista para reflejar los cambios
+      loadProducts();
+    };
+
+    // Manejar el final del arrastre
+    const handleDragEnd = (e) => {
+      e.target.classList.remove("dragging"); // Quitar el estilo de arrastre
+      draggingElement = null;
+    };
+
+    // Agregar un nuevo producto
+    const addProduct = async () => {
+      const nombre = document.getElementById("newProductName").value;
+      const detalles = document.getElementById("newProductDetails").value;
+      const precio = parseFloat(document.getElementById("newProductPrice").value);
+      const cantidad = parseInt(document.getElementById("newProductQuantity").value);
+
+      if (nombre && detalles && !isNaN(precio) && !isNaN(cantidad)) {
+        // Obtener el último id
+        const lastProduct = await db.collection("productos").orderBy("id", "desc").limit(1).get();
+        let newId = 1;
+
+        if (!lastProduct.empty) {
+          newId = parseInt(lastProduct.docs[0].data().id) + 1; // Incrementar el último id
+        }
+
+        // Formatear el nuevo ID con ceros a la izquierda
+        const formattedId = newId.toString().padStart(4, '0'); // Asegurarse de que tenga 4 dígitos
+
+        db.collection("productos").add({
+          id: formattedId, // Usar el ID formateado
+          nombre,
+          detalles,
+          precio,
+          cantidad,
+          ordenNum: newId // Puedes usar el mismo id como ordenNum si lo deseas
+        }).then((docRef) => {
+          // Registrar en el historial de inventario
+          db.collection("historialInventario").add({
+            id: formattedId, // Guardar el ID del producto
+            action: "entrada",
+            nombre: nombre,
+            detalles: detalles,
+            precio: precio,
+            cantidad: cantidad,
+            date: new Date()
+          });
+          alert("Producto agregado correctamente.");
+          closeModal.click(); // Cerrar el modal
+          clearModalFields(); // Limpiar campos del modal
+        }).catch((error) => {
+          console.error("Error al agregar el producto: ", error);
+          alert("Hubo un problema al agregar el producto.");
+        });
+      } else {
+        alert("Por favor, completa todos los campos correctamente.");
+      }
+    };
+
+    // Limpiar campos del modal
+    const clearModalFields = () => {
+      document.getElementById("newProductName").value = "";
+      document.getElementById("newProductDetails").value = "";
+      document.getElementById("newProductPrice").value = "";
+      document.getElementById("newProductQuantity").value = "";
+    };
+
+    // Abrir el modal de edición
+    const openEditModal = (id, productId, nombre, detalles, precio, cantidad) => {
+      currentEditingProductId = id;
+      document.getElementById("editProductName").value = nombre;
+      document.getElementById("editProductDetails").value = detalles;
+      document.getElementById("editProductPrice").value = precio;
+      document.getElementById("editProductQuantity").value = cantidad;
+      // Puedes mostrar el ID en el modal si lo deseas
+      document.getElementById("editProductId").innerText = `ID: ${productId}`;
+      editProductModal.style.display = "block";
+    };
+
+    // Actualizar un producto
+    const updateProduct = async () => {
+      const nombre = document.getElementById("editProductName").value;
+      const detalles = document.getElementById("editProductDetails").value;
+      const precio = parseFloat(document.getElementById("editProductPrice").value);
+      const cantidad = parseInt(document.getElementById("editProductQuantity").value);
+
+      if (nombre && detalles && !isNaN(precio) && !isNaN(cantidad)) {
+        // Obtener el documento del producto actual
+        const productDoc = await db.collection("productos").doc(currentEditingProductId).get();
+        const previousData = productDoc.data();
+
+        // Crear un objeto para almacenar los cambios
+        const changes = {
+          id: previousData.id, // Guardar el ID del producto
+          action: "actualización",
+          date: new Date()
+        };
+
+        // Verificar qué campos han cambiado y almacenar los cambios
+        if (nombre !== previousData.nombre) {
+          changes.nombreAnterior = previousData.nombre;
+          changes.nombreNuevo = nombre;
+        }
+        if (detalles !== previousData.detalles) {
+          changes.detallesAnterior = previousData.detalles;
+          changes.detallesNuevo = detalles;
+        }
+        if (precio !== previousData.precio) {
+          changes.precioAnterior = previousData.precio;
+          changes.precioNuevo = precio;
+        }
+        if (cantidad !== previousData.cantidad) {
+          changes.cantidadAnterior = previousData.cantidad;
+          changes.cantidadNuevo = cantidad;
+        }
+
+        // Actualizar el producto en Firestore
+        await db.collection("productos").doc(currentEditingProductId).update({
+          nombre,
+          detalles,
+          precio,
+          cantidad
+        });
+
+        // Registrar en el historial de inventario solo si hay cambios
+        if (Object.keys(changes).length > 3) { // Asegurarse de que haya cambios
+          await db.collection("historialInventario").add(changes);
+        }
+
+        alert("Producto actualizado correctamente.");
+        closeEditModal.click(); // Cerrar el modal
+      } else {
+        alert("Por favor, completa todos los campos correctamente.");
+      }
+    };
+
+    // Eliminar un producto
+    const deleteProduct = async (id) => {
+      if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+        const productDoc = await db.collection("productos").doc(id).get();
+        const productData = productDoc.data();
+
+        db.collection("productos").doc(id).delete()
+          .then(() => {
+            // Registrar en el historial de inventario
+            db.collection("historialInventario").add({
+              id: productData.id, // Guardar el ID del producto
+              action: "eliminación",
+              nombre: productData.nombre,
+              detalles: productData.detalles,
+              precio: productData.precio,
+              cantidad: productData.cantidad,
+              date: new Date()
+            });
+            alert("Producto eliminado correctamente.");
+          }).catch((error) => {
+            console.error("Error al eliminar el producto: ", error);
+            alert("Hubo un problema al eliminar el producto.");
+          });
+      }
+    };
+
+    // Ver historial de inventario
+    const viewHistory = () => {
+      historyList.innerHTML = ""; // Limpiar la lista antes de cargar
+      db.collection("historialInventario").orderBy("date", "desc").onSnapshot((snapshot) => {
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const historyItem = document.createElement("div");
+          historyItem.classList.add("history-item");
+
+          // Cambiar el color de fondo y agregar sombra según la acción
+          switch (data.action) {
+            case "actualización":
+              historyItem.style.backgroundColor = "#e6f3ff"; // Azul para actualizaciones
+              historyItem.style.boxShadow = "0px 0px 0px 1px #bad8f3"; // Sombra azul
+              break;
+            case "entrada":
+              historyItem.style.backgroundColor = "#05e10530"; // Verde para entradas
+              historyItem.style.boxShadow = "0px 0px 0px 1px rgb(0 255 0 / 71%)"; // Sombra verde
+              break;
+            case "eliminación":
+              historyItem.style.backgroundColor = "#ff000017"; // Rojo para eliminaciones
+              historyItem.style.boxShadow = "0px 0px 0px 1px rgba(255, 0, 0, 0.5)"; // Sombra roja
+              break;
+            default:
+              historyItem.style.backgroundColor = "#fff"; // Blanco por defecto
+              historyItem.style.boxShadow = "none"; // Sin sombra por defecto
+          }
+
+          let changesDescription = `<strong>ID:</strong> ${data.id}<br><strong>Acción:</strong> ${data.action}<br><strong>Fecha:</strong> ${data.date.toDate().toLocaleString()}`;
+
+          // Mostrar información completa si la acción es "entrada" o "eliminación"
+          if (data.action === "entrada" || data.action === "eliminación") {
+            changesDescription += `<br><strong>Nombre:</strong> ${data.nombre}<br><strong>Detalles:</strong> ${data.detalles}<br><strong>Precio:</strong> RD$${data.precio}<br><strong>Cantidad:</strong> ${data.cantidad}`;
+          } else if (data.action === "actualización") {
+            // Mostrar solo los cambios relevantes para actualizaciones
+            if (data.nombreAnterior) {
+              changesDescription += `<br><strong>Cambio de nombre:</strong> "${data.nombreAnterior}" a "${data.nombreNuevo}"`;
+            }
+            if (data.detallesAnterior) {
+              changesDescription += `<br><strong>Cambio de detalles:</strong> "${data.detallesAnterior}" a "${data.detallesNuevo}"`;
+            }
+            if (data.precioAnterior) {
+              changesDescription += `<br><strong>Cambio de precio:</strong> RD$${data.precioAnterior} a RD$${data.precioNuevo}`;
+            }
+            if (data.cantidadAnterior) {
+              changesDescription += `<br><strong>Cambio de cantidad:</strong> ${data.cantidadAnterior} a ${data.cantidadNuevo}`;
+            }
+          }
+
+          historyItem.innerHTML = `<div>${changesDescription}</div>`;
+          historyList.appendChild(historyItem);
+        });
+      });
+      historyModal.style.display = "block"; // Mostrar el modal del historial
+    };
+
+    // Evento para abrir el modal de agregar producto
+    document.getElementById("addProductButton").addEventListener("click", () => {
+      addProductModal.style.display = "block";
+    });
+
+    // Evento para ver el historial de inventario
+    document.getElementById("viewHistoryButton").addEventListener("click", viewHistory);
+
+    // Evento para cerrar el modal de agregar producto
+    closeModal.addEventListener("click", () => {
+      addProductModal.style.display = "none";
+      clearModalFields(); // Limpiar campos al cerrar
+    });
+
+    // Evento para agregar el producto desde el modal
+    submitProductButton.addEventListener("click", addProduct);
+
+    // Evento para cerrar el modal de editar producto
+    closeEditModal.addEventListener("click", () => {
+      editProductModal.style.display = "none";
+    });
+
+    // Evento para actualizar el producto desde el modal
+    updateProductButton.addEventListener("click", updateProduct);
+
+    // Evento para cerrar el modal de historial
+    closeHistoryModal.addEventListener("click", () => {
+      historyModal.style.display = "none";
+    });
+
+    // Cargar productos al iniciar
+    loadProducts();
+
+    // Cerrar el modal si se hace clic fuera de él
+    // window.onclick = function (event) {
+    //    if (event.target === addProductModal) {
+    //     addProductModal.style.display = "none";
+    //     clearModalFields(); // Limpiar campos al cerrar
+    //    } else if (event.target === editProductModal) {
+    //      editProductModal.style.display = "none";
+    //  } else if (event.target === historyModal) {
+    //    historyModal.style.display = "none";
+    //   }
+    //  };
+  </script>
+
+  <script src="./js/fecha-hora.js"></script>
+</body>
+
+</html>
