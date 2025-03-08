@@ -29,7 +29,7 @@
                     <div id="message" style="color: red; display: none;"></div>
                 </div>
 
-                
+
             </div>
 
             <div class="panelFacturas_down">
@@ -50,42 +50,57 @@
 
                 <!-- Contenido para "Pago Pendiente" -->
                 <div id="pendingInvoiceDetails" class="invoice-status" style="display: none;">
-                    <strong>ID:</strong> <span id="pendingID"></span><br>
-                    <strong>Fecha de la Factura:</strong> <span id="pendingDate"></span><br>
-                    <img src="./img/icon/pago_pendiente.png" alt="Pago Pendiente" style="width: 100px;" />
-                    <p>Estamos pendientes a su pago.</p>
+
+
+                    <div class="fechaYid">
+                        <div>
+                            <span>Fecha de la Factura:</span> <strong style="font-size: 19px;"
+                                id="pendingDate"></strong>
+                        </div>
+
+                        <div>
+                            <span>ID de la factura:</span><strong style="font-size: 37px;" id="pendingID"></strong>
+
+                        </div>
+                    </div>
+
+                    <div class="imgContent">
+                        <div>
+                            <p style="font-size: 25px;font-weight: bold">Estamos pendiente a su pago</p>
+                            <img src="./img/status/pagopendiente1.gif" alt="pago pendiente" style="height: 356px;filter: contrast(1.5);">
+
+                            <p>Cuando se confirme su pago podra ver el estado de su ropa en esta misma pantalla</p>
+                        </div>
+                    </div>
+                    
                 </div>
+                <!-- Contenido para "Pago Pendiente" FIN -->
+
 
                 <!-- Contenido para "Pagado" -->
                 <div id="paidInvoiceDetails" class="invoice-status" style="display: none; height: 100%;">
 
 
                     <div class="fechaYid">
-
-                        <div
-                            style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-bottom: 10px;">
+                        <div>
                             <span>Fecha y hora de la Factura:</span> <strong style="font-size: 19px;"
                                 id="paidDate"></strong>
                         </div>
 
-                        <div
-                            style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-bottom: 10px;">
+                        <div>
                             <span>ID de la Factura:</span> <strong style="font-size: 37px;" id="paidID"></strong>
                         </div>
                     </div>
 
                     <div class="imgContent">
-                        <div style="display: inline-flex;flex-direction: column;position: relative;width: 100%;height: 100%;align-items: center;justify-content: center;">
+                        <div
+                            style="display: inline-flex;flex-direction: column;position: relative;width: 100%;height: 100%;align-items: center;justify-content: center;">
                             <img src="./img/status/lavadora0.gif" alt="Lavando" />
-                            <p
-                                style="font-size: 25px;font-weight: bold;margin-block-start: 0px;margin-block-end: 0px;text-align: center;">
-                                Su ropa está en proceso de lavado</p>
-                            <p style="text-align: center;margin-block-start: 0px;margin-block-end: 0px;">Cuando su ropa
-                                esté
-                                lista le notificaremos por esta misma vía</p>
+                            <p style="font-size: 25px;font-weight: bold;">Su ropa está en proceso de lavado</p>
+                            <p>Cuando su ropa esté lista le notificaremos en esta misma pantalla</p>
                         </div>
                     </div>
-                    
+
 
                 </div>
                 <!-- Contenido para "Pagado" FIN -->
@@ -172,17 +187,17 @@
         });
 
         // Función para actualizar el modal según el estado
-// Función para actualizar el modal según el estado
-const updateModal = (data) => {
-    const options = { 
-        year: 'numeric', 
-        month: 'numeric', 
-        day: 'numeric', 
-        hour: 'numeric', 
-        minute: 'numeric', 
-        hour12: true // Formato de 12 horas
-    };
-    const fecha = new Date(data.timestamp).toLocaleString('es-ES', options); // Formatear la fecha
+        // Función para actualizar el modal según el estado
+        const updateModal = (data) => {
+            const options = {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true // Formato de 12 horas
+            };
+            const fecha = new Date(data.timestamp).toLocaleString('es-ES', options); // Formatear la fecha
 
 
             // Ocultar todos los detalles de la factura
