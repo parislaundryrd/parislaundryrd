@@ -328,6 +328,7 @@
         <div class="box_btns">
           <button><a style="color: #0078df;" href="index - admin.html">Facturación</a></button>
           <button><a href="facturas.html">Facturas Generadas</a></button>
+          <button><a href="caja.html">Caja/Cuadre</a></button>
           <button><a href="inventario.html">Inventario</a></button>
           <button><a href="contabilidad.html">Contabilidad</a></button>
           <button><a href="admin.html">Admin</a></button>
@@ -1111,37 +1112,37 @@
       }
 
       const invoiceData = {
-        id: generateNewInvoiceId(await getLastInvoiceId()),
-        clientName: document.getElementById("clientName").value.trim(),
-        clientPhone: document.getElementById("clientPhone").value.trim(),
-        clientAddress: document.getElementById("clientAddress").value.trim(),
-        NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
-        selectedServices: hampers.map(hamper => ({
-          name: hamper.data.nombre,
-          weight: parseInt(hamper.weightInput.value),
-          price: hamper.priceDisplay.textContent.replace('Precio: RD$', '')
-        })),
-        otrosServicios: otrosServicios.map(item => ({
-          name: item.name,
-          count: parseInt(item.input.value) || 0,
-          price: item.price
-        })).filter(item => item.count > 0), // Filtrar solo los servicios con cantidad > 0
-        deliveryOption: deliverySelection.querySelector("button.active") ? [{
-          name: deliverySelection.querySelector("button.active").dataset.name,
-          price: deliverySelection.querySelector("button.active").dataset.value
-        }] : [{ name: "Sin Delivery", price: "0" }],
-        selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
-          name: product.closest('.product-item').querySelector('div').textContent,
-          quantity: parseInt(product.value) || 0,
-          price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
-        })).filter(product => product.quantity > 0), // Filtrar solo los productos con cantidad > 0
-        total: total,
-        paymentMethod: paymentMethod,
-        status: status,
-        amountReceived: amountReceived, // Agregar monto recibido
-        changeAmount: changeAmount, // Agregar cambio
-        timestamp: new Date().toISOString()
-      };
+    id: generateNewInvoiceId(await getLastInvoiceId()),
+    clientName: document.getElementById("clientName").value.trim(),
+    clientPhone: document.getElementById("clientPhone").value.trim(),
+    clientAddress: document.getElementById("clientAddress").value.trim(),
+    NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
+    selectedServices: hampers.map(hamper => ({
+        name: hamper.data.nombre,
+        weight: parseInt(hamper.weightInput.value),
+        price: hamper.priceDisplay.textContent.replace('Precio: RD$', '')
+    })),
+    otrosServicios: otrosServicios.map(item => ({
+        name: item.name,
+        count: parseInt(item.input.value) || 0,
+        price: item.price
+    })).filter(item => item.count > 0), // Filtrar solo los servicios con cantidad > 0
+    deliveryOption: deliverySelection.querySelector("button.active") ? [{
+        name: deliverySelection.querySelector("button.active").dataset.name,
+        price: deliverySelection.querySelector("button.active").dataset.value
+    }] : [{ name: "Sin Delivery", price: "0" }],
+    selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
+        name: product.closest('.product-item').querySelector('div').textContent,
+        quantity: parseInt(product.value) || 0,
+        price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
+    })).filter(product => product.quantity > 0), // Filtrar solo los productos con cantidad > 0
+    total: total,
+    paymentMethod: paymentMethod,
+    status: status,
+    amountReceived: amountReceived, // Agregar monto recibido
+    changeAmount: changeAmount, // Agregar cambio
+    timestamp: firebase.firestore.FieldValue.serverTimestamp() // Cambiar aquí
+};
 
       try {
         const invoiceRef = await db.collection("facturas").add(invoiceData);

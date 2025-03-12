@@ -2,1513 +2,279 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./css/styles.css">
-  <title>Sistema de Facturación - Paris Laundry</title>
-  <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
-  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f0c8e8;
-    }
-
-    h1,
-    h2,
-    h3 {
-      color: #333;
-    }
-
-    .container_formfactura {
-      width: 65%;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-      background: #ffffff;
-      height: calc(100vh - 74px);
-      display: flex;
-      flex-direction: column;
-      border-radius: 14px;
-      min-height: 130px;
-      min-width: 580px;
-    }
-
-    .container_previewfactura {
-      width: 35%;
-      overflow-y: auto;
-      background: #ffffff00;
-      min-width: 255px;
-    }
-
-    #invoiceResult {
-      background: white;
-      border-radius: 14px;
-      display: flex;
-      flex-direction: column;
-      max-height: calc(100vh - 104px);
-      min-height: 133px;
-    }
-
-    .previewfactura_tittle {
-      height: 40px;
-      min-height: 40px;
-      background: #ffffff00;
-      border-bottom: 1px solid rgb(221 221 221);
-    }
-
-    .previewfactura_tittle h2 {
-      margin-block-start: 0px;
-      margin-block-end: 0px;
-      text-align: center;
-      color: #000000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-    }
-
-    .previewfactura_body {
-      overflow: auto;
-      flex: 1;
-      padding: 0px 20px;
-    }
-
-    .previewfactura_down {
-      display: inline-flex;
-      width: 100%;
-      background: #ffffff00;
-      border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
-      justify-content: space-between;
-    }
-
-
-    .button-list {
-      display: flex;
-      gap: 10px;
-    }
-
-    .button-list button {
-      flex: 1 1 calc(50% - 10px);
-      padding: 4px;
-      background: #ddd;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 76px;
-      border-radius: 21px;
-      box-shadow: 0px 0px 0px 2px rgba(231, 151, 215, 0) inset;
-    }
-
-    .button-list button:hover {
-      cursor: pointer;
-      background: #ebd8e3;
-      box-shadow: 0px 0px 0px 2px rgb(231 151 215) inset;
-      transition: 0.3s;
-    }
-
-    .button-list button:active {
-      cursor: pointer;
-      background: #ebd8e3;
-      box-shadow: 0px 0px 0px 2px rgb(231 151 215) inset;
-      transition: 0.3s;
-      transform: scale(0.95);
-    }
-
-    .button-list button img {
-      width: 56px;
-      height: 56px;
-    }
-
-    .button-list button.active {
-      background: #f1d6ef;
-      border-color: #edbbea;
-      color: black;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .invoice-list {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    .invoice-list li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      padding: 10px;
-      background: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-
-    .hamper,
-    .otro-servicio {
-      padding: 10px;
-      border: 1px solid #8abadb;
-      border-radius: 12px;
-      background: #a9b6fb8a;
-      width: 32%;
-      position: relative;
-      display: inline-flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-direction: column;
-      width: 30%;
-      min-width: 230px;
-    }
-
-    #hamperWeight,
-    #itemWeight {
-      display: flex;
-      align-items: center;
-      margin: 5px 0;
-    }
-
-    #hamperWeight input,
-    #itemWeight input {
-      width: 51px;
-      text-align: center;
-      margin: 0 7px;
-      padding: 4px 2px;
-      border-color: #969fb9;
-      border-radius: 5px;
-      border-style: solid;
-      border-width: 1px;
-      background: white;
-    }
-
-    .hamper,
-    .otro-servicio {
-      flex: 1 1 calc(33.33% - 4px);
-      /* Toma 1/3 del ancho menos el espacio */
-      box-sizing: border-box;
-      /* Incluye padding y border en el ancho total */
-    }
-
-    /* Media query para ajustar a 2 elementos en pantallas más pequeñas */
-    @media (max-width: 800px) {
-
-      .hamper,
-      .otro-servicio {
-        flex: 1 1 calc(50% - 4px);
-        /* Toma 1/2 del ancho menos el espacio */
-      }
-    }
-
-    /* Media query para ajustar a 1 elemento en pantallas muy pequeñas */
-    @media (max-width: 500px) {
-
-      .hamper,
-      .otro-servicio {
-        flex: 1 1 100%;
-        /* Toma el 100% del ancho */
-      }
-    }
-
-    .product-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0px;
-    }
-
-    .product-item {
-      display: grid;
-      grid-template-columns: 1.2fr 3fr 0.8fr;
-      padding: 5px;
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      background: #f9f9f9;
-      align-items: center;
-    }
-
-    .product-item div {
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-    }
-
-    .product-item>div {
-      padding: 10px;
-      /* Espaciado interno para los elementos hijos */
-    }
-
-    .product-item>div:not(:last-child) {
-      border-right: 1px solid #ddd;
-      /* Línea divisora a la derecha de cada columna, excepto la última */
-    }
-
-    .productInput {
-      width: 50px;
-      text-align: center;
-      margin: 0 5px;
-    }
-
-    .product-header {
-      display: grid;
-      grid-template-columns: 1.2fr 3fr 0.8fr;
-      font-weight: bold;
-      margin-bottom: 0px;
-      text-align: center;
-    }
-
-    #DeliveryButton {
-      flex: 1 1 calc(25% - 10px);
-      padding: 4px;
-      background: #ddd;
-      border-radius: 18px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: auto;
-      flex-direction: column;
-      transition: 0.3s;
-      box-shadow: 0px 0px 0px 2px #a1b3be inset;
-      border: none;
-      font-size: 16px;
-      font-weight: bold;
-      color: #292929;
-    }
-
-    #DeliveryButton:hover {
-      box-shadow: 0px 0px 0px 2px #8abadb inset;
-    }
-
-    #DeliveryButton.active {
-      box-shadow: 0px 0px 0px 2px #57b1ec inset;
-      background: #a9b6fb8a;
-      transition: 0.3s;
-      color: black;
-    }
-
-    #DeliveryButton img {
-      width: 100%;
-      /* La imagen ocupa el 100% del ancho del botón */
-      height: auto;
-      /* La altura se ajusta automáticamente */
-    }
-  </style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/styles_1.css">
+    <title>Buscar Facturas - Paris Laundry</title>
+    <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
+    <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
 </head>
 
-
-
 <body>
-  <div class="MasterBox0">
 
-    <!-- Menu -->
-    <div class="BarraMenu">
+    <div class="MasterBox0">
 
-      <div class="BarraMenu_Left">
-
-        <div class="menu_tittle">
-          <img src="./img/Paris Laundry 1.png">
-          <h1>Paris Laundry</h1>
-        </div>
-
-        <div class="linediv"></div>
-
-        <div class="box_btns">
-          <button><a style="color: #0078df;" href="index - admin.html">Facturación</a></button>
-          <button><a href="facturas.html">Facturas Generadas</a></button>
-          <button><a href="inventario.html">Inventario</a></button>
-          <button><a href="contabilidad.html">Contabilidad</a></button>
-          <button><a href="admin.html">Admin</a></button>
-        </div>
-      </div>
-
-
-
-      <div class="BarraMenu_Right">
-
-        <div class="linediv" style="margin: 0px 15px 0px 12px;"></div>
-
-        <div id="dateTime">
-          <h1 id="time">--:--:--</h1>
-          <p id="date">Cargando fecha...</p>
-        </div>
-
-        <div class="linediv" style="margin: 0px 5px 0px 12px; display: none;"></div>
-
-        <button id="logout1" style=" display: none;"><img src="./img/icon/logout.png"><a href="index.html"></a></button>
-      </div>
-
-    </div>
-    <!-- Menu FIN -->
-
-    <div class="MasterBox">
-
-
-      <!-- Panel Preview de Factura -->
-      <div class="container_previewfactura">
-        <div id="invoiceResult">
-          <div class="previewfactura_tittle">
-            <h2>Factura Generada</h2>
-          </div>
-
-          <div class="previewfactura_body">
-            <p id="invoiceDetails">
-              <strong>Cliente:</strong> <br>
-              <strong>Teléfono:</strong> <br>
-              <strong>Dirección:</strong> <br>
-
-              <strong><br>Delivery:</strong>
-              <br><span style="display: flex; justify-content: space-between;"><span>Sin
-                  delivery:</span><span>RD$0</span></span><br>
-              <br><span
-                style="display: flex; justify-content: space-between;"><strong>Total:</strong><strong>RD$0.00</strong></span>
-            </p>
-          </div>
-
-          <div class="previewfactura_down">
-            <div class="seleccionempeados">
-              <label for="categoria">Empleado que Atiende:</label>
-              <select id="empleado" required>
-                <option value="" disabled selected>Selecciona</option>
-              </select>
+        <div class="container_facturas">
+            <div class="panelFacturas_tittle">
+                <h2>Verificar Estado de Lavado por ID</h2>
             </div>
 
-            <button id="processInvoice">Procesar Factura</button>
-            <ul id="invoiceList" class="invoice-list hidden"></ul>
-          </div>
-        </div>
-
-        <!-- Panel Preview de Factura FIN -->
-
-        <!-- Panel Logo -->
-        <!-- <div class="cube-logo">
-          <div class="Logo-Paris-Laundry"></div>
-        </div> -->
-
-      </div>
-
-      <!-- Panel Logo FIN -->
-
-      <!-- Panel Facturacion -->
-      <div class="container_formfactura">
-        <div class="panelfacturacion_tittle">
-          <h2>Panel de Facturación</h2>
-        </div>
-
-        <div class="panelfacturacion_body">
-          <form id="billingForm">
-
-            <div class="nombre_div_telefono">
-              <div>
-                <label for="nombreCliente">Nombre del Cliente:</label>
-                <div class="input-numeroContacto">
-                  <input type="text" id="clientName" placeholder="Nombre y Apellido" required maxlength="40">
-                  <div class="cantidad-img"><img src="./img/icon/nombre_1.png"></div>
-                </div>
-              </div>
-              <div>
-                <label for="numeroCliente">Teléfono del Cliente:</label>
-                <div class="input-numeroContacto">
-                  <input type="tel" id="clientPhone" placeholder="Teléfono" required maxlength="20">
-                  <div class="cantidad-img"><img src="./img/icon/phone_1.png"></div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <label for="direccionCliente">Dirección del Cliente:</label>
-              <div class="input-numeroContacto">
-                <input type="text" id="clientAddress" placeholder="Dirección" required maxlength="100">
-                <div class="cantidad-img"><img src="./img/icon/direccion_1.png"></div>
-              </div>
-            </div>
-
-            <div class="hamper-master">
-              <h2>Añadir Hamper:</h2>
-              <div id="serviceSelection" class="button-list"></div>
-              <div id="hamperContainer"></div>
-            </div>
-
-            <div class="hamper-master">
-              <h2>Añadir Otros Servicios:</h2>
-              <div id="otrosServiciosContainer" class="button-list"></div>
-              <div id="otrosServiciosDisplay"></div>
-            </div>
-
-            <h2>Añadir Productos Adicionales:</h2>
-            <div class="product-list">
-              <div class="product-header">
-                <div>Producto</div>
-                <div>Detalles</div>
-                <div>Precio (RD$)</div>
-              </div>
-              <div id="productSelection"></div>
-            </div>
-
-            <h2>Opciones de Delivery:</h2>
-            <div id="deliverySelection" class="button-list"></div>
-          </form>
-        </div>
-
-        <div class="panelfacturacion_down">
-          <p>© Paris Laundry RD - 2025</p>
-        </div>
-      </div>
-
-      <!-- Panel Facturacion FIN -->
-    </div>
-
-    <!-- Modal Preview Factura -->
-    <div id="confirmationModal" class="modal hidden">
-      <div class="modal-content">
-
-        <!-- Modal_preview_factura_tittle -->
-        <div class="modal_preview_factura_tittle">
-          <span class="close-button">&times;</span>
-          <h2 style="text-align: center;">Confirmación de Factura</h2>
-        </div>
-        <!-- Modal_preview_factura_tittle FIN -->
-
-        <!-- Modal_preview_factura_body -->
-        <div class="modal_preview_factura_body">
-          <div id="modalInvoiceDetails"></div>
-        </div>
-        <!-- Modal_preview_factura_body FIN -->
-
-        <!-- Modal_preview_factura_Down -->
-        <div class="modal_preview_factura_down">
-          <h2 style="text-align: center;margin-block-start: 5px;margin-block-end: 5px;">Método de Pago:</h2>
-
-          <div class="button-metodo-pago">
-            <button id="cashPayment" class="payment-button" value="Efectivo">Efectivo 💵</button>
-            <button id="transferPayment" class="payment-button" value="Transferencia">Transferencia 📲</button>
-            <button id="cardPayment" class="payment-button" value="Tarjeta de Crédito">Tarjeta de Crédito 💳</button>
-          </div>
-
-
-          <div class="cashPaymentOptions_master">
-
-            <div class="cube-montos">
-              <div class="cube-form-flex">
-                <div>
-                  <label>Total a Pagar:</label>
-                </div>
-                <div>
-                  <span id="totalToPay" style="color: #189dff;font-weight: bold;">RD$0.00</span>
-                </div>
-              </div>
-
-              <div id="cashPaymentOptions" class="hidden">
-
-                <div class="cube-form-flex">
-                  <div>
-                    <label>Monto Recibido:</label>
-                  </div>
-                  <div>
-                    <div class="input-container">
-                      <span class="prefix">RD$</span>
-                      <input type="text" id="amountReceived" placeholder="0" maxlength="6"
-                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);">
+            <div class="panelFacturas_body">
+                <div class="box_search-container">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Buscar ID..." />
+                        <div class="cantidad-img"><img src="./img/icon/buscar3.png"></div>
                     </div>
-                  </div>
+                    <div id="message" style="color: red; display: none;"></div>
                 </div>
 
-                <div class="cube-form-flex">
-                  <div>
-                    <label>Cambio:</label>
-                  </div>
-                  <div>
-                    <span id="changeAmount" style="font-weight: bold;color: #f96dd3;">RD$0.00</span>
-                  </div>
+
+            </div>
+
+            <div class="panelFacturas_down">
+                <p>© Paris Laundry RD - 2025</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal único para mostrar el estado -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <div class="modal_preview_factura_tittle">
+                <span class="close" id="closeStatusModal">&times;</span>
+                <h2 id="modalTitle">Estado del Lavado</h2>
+            </div>
+            <div class="modal_preview_factura_body">
+
+                <!-- Contenido para "Pago Pendiente" -->
+                <div id="pendingInvoiceDetails" class="invoice-status" style="display: none;">
+
+
+                    <div class="fechaYid">
+                        <div>
+                            <span>Fecha de la Factura:</span> <strong style="font-size: 19px;"
+                                id="pendingDate"></strong>
+                        </div>
+
+                        <div>
+                            <span>ID de la factura:</span><strong style="font-size: 37px;" id="pendingID"></strong>
+
+                        </div>
+                    </div>
+
+                    <div class="imgContent">
+                        <div>
+                            <p style="font-size: 25px;font-weight: bold">Estamos pendiente a su pago</p>
+                            <img src="./img/status/pagopendiente1.gif" alt="pago pendiente"
+                                style="height: 56%;filter: contrast(1.5);">
+
+                            <p>Cuando se confirme su pago podra ver el estado de su ropa en esta misma pantalla</p>
+                        </div>
+                    </div>
+
                 </div>
-              </div>
+                <!-- Contenido para "Pago Pendiente" FIN -->
+
+
+                <!-- Contenido para "Pagado" -->
+                <div id="paidInvoiceDetails" class="invoice-status" style="display: none; height: 100%;">
+
+
+                    <div class="fechaYid">
+                        <div>
+                            <span>Fecha y hora de la Factura:</span> <strong style="font-size: 19px;"
+                                id="paidDate"></strong>
+                        </div>
+
+                        <div>
+                            <span>ID de la Factura:</span> <strong style="font-size: 37px;" id="paidID"></strong>
+                        </div>
+                    </div>
+
+                    <div class="imgContent">
+                        <div>
+                            <p style="font-size: 25px;font-weight: bold;">Su ropa está en proceso de lavado</p>
+                            <img src="./img/status/lavadora0.gif" alt="Lavando" />
+                            <p>Cuando su ropa esté lista le notificaremos en esta misma pantalla</p>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- Contenido para "Pagado" FIN -->
+
+                <!-- Contenido para "Pagado Listo" -->
+                <div id="readyInvoiceDetails" class="invoice-status" style="display: none;">
+
+                    <div class="fechaYid">
+                        <div>
+                            <span>Fecha de la Factura:</span> <strong style="font-size: 19px;" id="readyDate"></strong>
+                        </div>
+
+                        <div>
+                            <span>ID de la Factura:</span> <strong style="font-size: 37px;" id="readyID"></strong>
+                        </div>
+                    </div>
+
+                    <div class="imgContent">
+                        <div>
+                            <p style="font-size: 25px;font-weight: bold;">Su ropa está lista para ser recogida
+                            </p>
+                            <img src="./img/status/check1.png" style="height: 24%; margin: 50px 0px;" alt="Lavando" />
+                            <p>¡Gracias por preferirnos!</p>
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
-            <div class="Cube_button_pagado">
-              <!-- <button id="printInvoice">Imprimir Factura</button> -->
-              <button id="pendingPayment" class="disabled"><img src="./img/icon/atencion1.png">Pago Pendiente</button>
-              <button id="paid" class="disabled"><img src="./img/icon/check1.png">Pago Recibido</button>
+            <div class="modal_preview_factura_down">
+                <p>© Paris Laundry RD - 2025</p>
             </div>
-          </div>
-          <!-- Modal_preview_factura_Down FIN -->
+
 
         </div>
-      </div>
-    </div>
-    <!-- Modal Preview Factura FIN -->
-
-
-
-    <!-- Modal para Factura Procesada -->
-    <div id="processedInvoiceModal" class="modal hidden">
-
-      <div class="modal-content">
-
-        <!-- Modal_factura_processed_tittle -->
-        <div class="factura_processed_tittle">
-          <span class="close-button" onclick="closeProcessedInvoiceModal()">&times;</span>
-          <h2>Factura Procesada Correctamente</h2>
-        </div>
-        <!-- Modal_factura_processed_tittle FIN -->
-
-        <!-- Modal_factura_processed_body -->
-        <div id="processedInvoiceDetails"></div>
-        <!-- Modal_factura_processed_body FIN -->
-
-        <!-- Modal_factura_processed_down -->
-        <div class="factura_processed_down">
-          <div class="container_factura_processed_down">
-            <div class="container_flex_factura_processed_down">
-              <p>¡Factura procesada y guardada con éxito!</p>
-              <img src="./img/Paris Laundry 1.png">
-
-              <div style="display: inline-flex;width: 100%;flex-direction: row;justify-content: space-between;">
-                <button id="printInvoiceButton"><img src="./img/icon/imprimir1.png">Imprimir</button>
-                <span id="invoiceIdDisplay"></span>
-                <button id="readyButton" onclick="closeProcessedInvoiceModal()"><img
-                    src="./img/icon/check2.png">Listo</button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-        <!-- Modal_factura_processed_down FIN -->
-
-      </div>
-    </div>
-    <!-- Modal para Factura Procesada FIN -->
-
-
-  </div>
-
-
-  <script>
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
-      authDomain: "paris-laundry.firebaseapp.com",
-      projectId: "paris-laundry",
-      storageBucket: "paris-laundry.appspot.com",
-      messagingSenderId: "1022712814457",
-      appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
-    };
-
-    // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    const serviceSelection = document.getElementById("serviceSelection");
-    const deliverySelection = document.getElementById("deliverySelection");
-    const productSelection = document.getElementById("productSelection");
-    const hamperContainer = document.getElementById("hamperContainer");
-    const otrosServiciosContainer = document.getElementById("otrosServiciosContainer");
-    const otrosServiciosDisplay = document.getElementById("otrosServiciosDisplay");
-
-    let hampers = [];
-    let otrosServicios = [];
-
-    // Cargar servicios, productos y empleados
-    const loadServices = () => {
-  db.collection("servicio").onSnapshot((snapshot) => {
-    serviceSelection.innerHTML = "";
-    otrosServiciosContainer.innerHTML = "";
-    hamperContainer.innerHTML = "";
-    otrosServiciosDisplay.innerHTML = "";
-
-    const hampersArray = [];
-    const otrosServiciosArray = [];
-
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-
-      if (data.tipo === "hamper") {
-        hampersArray.push({ id: doc.id, ...data });
-      }
-
-      if (data.tipo === "otroservicio") {
-        otrosServiciosArray.push({ id: doc.id, ...data });
-      }
-    });
-
-    // Ordenar hampers por OrdenNumHamper
-    hampersArray.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
-
-    // Ordenar otros servicios por OrdenNumServicio
-    otrosServiciosArray.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
-
-    // Mostrar hampers ordenados
-    hampersArray.forEach((data) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre} - RD$${data.precio}`;
-      button.dataset.value = data.precio;
-      button.dataset.name = data.nombre;
-      button.dataset.librasmin = data.librasmin;
-      button.dataset.librasmax = data.librasmax;
-      button.dataset.preciolibras = data.preciolibras;
-      button.addEventListener("click", () => {
-        addHamper(data);
-      });
-      serviceSelection.appendChild(button);
-    });
-
-    // Mostrar otros servicios ordenados
-    otrosServiciosArray.forEach((data) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre} - RD$${data.precio}`;
-      button.dataset.value = data.precio;
-      button.dataset.name = data.nombre;
-      button.dataset.icon = data.icon;
-      button.addEventListener("click", () => {
-        addOtherService(data, button);
-      });
-      otrosServiciosContainer.appendChild(button);
-    });
-  });
-};
-
-    const addOtherService = (data, button) => {
-      const existingService = otrosServiciosDisplay.querySelector(`div[data-name="${data.nombre}"]`);
-
-      if (existingService) {
-        otrosServiciosDisplay.removeChild(existingService);
-        button.classList.remove("active");
-        otrosServicios = otrosServicios.filter(service => service.name !== data.nombre);
-      } else {
-        const serviceDiv = document.createElement("div");
-        serviceDiv.classList.add("otro-servicio");
-        serviceDiv.dataset.name = data.nombre;
-        serviceDiv.innerHTML = `
-      <h3>${data.nombre} RD$${data.precio}</h3>
-      <img src="./img/icon/${data.icon}" alt="${data.nombre}">
-      <h5>Cantidad</h5>
-      <div id="itemWeight">
-          <button id="btnmenosmas" type="button" class="decreaseItem">-</button>
-          <input type="number" class="itemInput" value="1" min="1" max="100">
-          <button id="btnmenosmas" type="button" class="increaseItem">+</button>
-      </div>
-      <p class="itemTotalDisplay">Total: RD$${data.precio}</p>
-      <button type="button" class="removeOtherService">X</button>
-    `;
-
-        otrosServiciosDisplay.appendChild(serviceDiv);
-        button.classList.add("active");
-
-        otrosServicios.push({
-          name: data.nombre,
-          price: parseFloat(data.precio),
-          input: serviceDiv.querySelector(".itemInput"),
-          consumo: data.consumo || [] // Almacenar el array "consumo"
-        });
-
-        serviceDiv.querySelector(".increaseItem").addEventListener("click", () => {
-          const inputField = serviceDiv.querySelector(".itemInput");
-          inputField.value = Math.min(100, parseInt(inputField.value) + 1);
-          updateItemPrice(serviceDiv, data.precio);
-        });
-
-        serviceDiv.querySelector(".decreaseItem").addEventListener("click", () => {
-          const inputField = serviceDiv.querySelector(".itemInput");
-          inputField.value = Math.max(1, parseInt(inputField.value) - 1);
-          updateItemPrice(serviceDiv, data.precio);
-        });
-
-        const removeButton = serviceDiv.querySelector(".removeOtherService");
-        removeButton.addEventListener("click", () => {
-          otrosServiciosDisplay.removeChild(serviceDiv);
-          button.classList.remove("active");
-          otrosServicios = otrosServicios.filter(service => service.name !== data.nombre);
-          updateInvoicePreview();
-        });
-      }
-
-      updateInvoicePreview();
-    };
-
-    const updateItemPrice = (itemDiv, price) => {
-      const count = parseInt(itemDiv.querySelector(".itemInput").value) || 0;
-      const totalItem = count * price;
-      itemDiv.querySelector(".itemTotalDisplay").textContent = `Total: RD$${totalItem}`;
-      updateInvoicePreview();
-    };
-
-    const addHamper = (data) => {
-      // Verifica si ya hay 30 hampers
-      if (hampers.length >= 30) {
-        alert("No puedes agregar más de 30 hampers por factura.");
-        return; // Salir de la función si ya hay 30 hampers
-      }
-
-      const hamperDiv = document.createElement("div");
-      hamperDiv.classList.add("hamper");
-      hamperDiv.innerHTML = `
-    <h3>${data.nombre}</h3>
-    <img src="./img/icon/${data.icon}" alt="${data.nombre}">
-    <h5>Cantidad de Libras</h5>
-    <div id="hamperWeight">
-      <button id="btnmenosmas" type="button" class="decreaseWeight">-</button>
-      <input type="number" class="weightInput" value="1" min="1" max="100">
-      <button id="btnmenosmas" type="button" class="increaseWeight">+</button>
-    </div>
-    <p class="priceDisplay">Precio: RD$0</p>
-    <button id="cerrarhamper" type="button" class="removeHamper">X</button>
-  `;
-
-      hamperContainer.appendChild(hamperDiv);
-      hampers.push({
-        data: data,
-        weightInput: hamperDiv.querySelector(".weightInput"),
-        priceDisplay: hamperDiv.querySelector(".priceDisplay"),
-        consumo: data.consumo || [] // Almacenar el array "consumo"
-      });
-
-      hamperDiv.querySelector(".increaseWeight").addEventListener("click", () => {
-        hamperDiv.querySelector(".weightInput").value = Math.min(100, parseInt(hamperDiv.querySelector(".weightInput").value) + 1);
-        calculatePrice(hamperDiv);
-        updateInvoicePreview();
-      });
-
-      hamperDiv.querySelector(".decreaseWeight").addEventListener("click", () => {
-        hamperDiv.querySelector(".weightInput").value = Math.max(1, parseInt(hamperDiv.querySelector(".weightInput").value) - 1);
-        calculatePrice(hamperDiv);
-        updateInvoicePreview();
-      });
-
-      hamperDiv.querySelector(".removeHamper").addEventListener("click", () => {
-        hamperContainer.removeChild(hamperDiv);
-        hampers = hampers.filter(h => h.weightInput !== hamperDiv.querySelector(".weightInput"));
-        updateInvoicePreview();
-      });
-
-      calculatePrice(hamperDiv);
-      updateInvoicePreview();
-
-      hamperDiv.querySelector(".weightInput").addEventListener("input", () => {
-        const weightInput = hamperDiv.querySelector(".weightInput");
-        if (weightInput.value === "") {
-          weightInput.value = 0;
-        }
-        calculatePrice(hamperDiv);
-        updateInvoicePreview();
-      });
-    };
-
-    const calculatePrice = (hamperDiv) => {
-      const weight = parseInt(hamperDiv.querySelector(".weightInput").value) || 0;
-      const data = hampers.find(h => h.weightInput === hamperDiv.querySelector(".weightInput")).data;
-
-      const librasMin = parseInt(data.librasmin) || 0;
-      const librasMax = parseInt(data.librasmax) || 0;
-      const precioBase = parseFloat(data.precio) || 0;
-      const precioPorLibraAdicional = parseFloat(data.preciolibras) || 0;
-
-      let totalPrice = 0;
-
-      if (weight < librasMin) {
-        totalPrice = weight * precioPorLibraAdicional;
-      } else if (weight >= librasMin && weight <= librasMax) {
-        totalPrice = precioBase;
-      } else {
-        const additionalWeight = weight - librasMax;
-        totalPrice = precioBase + (additionalWeight * precioPorLibraAdicional);
-      }
-
-      hamperDiv.querySelector(".priceDisplay").textContent = `Precio: RD$${totalPrice.toFixed(2)}`;
-    };
-
-    const updateInvoicePreview = () => {
-      const clientName = document.getElementById("clientName").value || "Sin nombre";
-      const clientPhone = document.getElementById("clientPhone").value || "Sin teléfono";
-      const clientAddress = document.getElementById("clientAddress").value || "Sin dirección";
-
-      const selectedDelivery = deliverySelection.querySelector("button.active");
-      const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
-
-      let total = 0;
-
-      hampers.forEach(hamper => {
-        const weight = parseInt(hamper.weightInput.value);
-        const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', ''));
-        total += price;
-      });
-
-      otrosServicios.forEach(item => {
-        const count = parseInt(item.input.value) || 0;
-        total += count * item.price;
-      });
-
-      const deliveryPrice = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
-      total += deliveryPrice;
-
-      const productsDetails = selectedProducts.map(product => {
-        const quantity = parseInt(product.value) || 0;
-        const productName = product.closest('.product-item').querySelector('div').textContent;
-        const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
-        const productTotal = quantity * productPrice;
-
-        if (quantity > 0) {
-          total += productTotal;
-          return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${productName} - Cant. ${quantity} X RD$${productPrice}</span><span>RD$${productTotal.toFixed(2)}</span></div>`;
-        }
-        return null;
-      }).filter(Boolean).join("");
-
-      document.getElementById("invoiceDetails").innerHTML = `
-    <div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;">
-      <strong>Cliente:</strong> ${clientName} </div>
-
-    <div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;">
-      <strong>Teléfono:</strong> ${clientPhone} </div>
-
-    <div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;">
-      <strong>Dirección:</strong> ${clientAddress} </div>
-
-    ${hampers.length > 0 || otrosServicios.length > 0 ? `
-      <br><strong>Servicios:</strong>
-      ${hampers.length > 0 ? hampers.map(hamper => {
-        const weight = parseInt(hamper.weightInput.value);
-        const data = hamper.data;
-        const librasMin = parseInt(data.librasmin);
-        const librasMax = parseInt(data.librasmax);
-        const displayWeight = (weight >= librasMin && weight <= librasMax) ? "1 hamper" : `${weight} lbs`;
-        return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${data.nombre} (${displayWeight})</span><span>RD$${hamper.priceDisplay.textContent.replace('Precio: RD$', '')}</span></div>`;
-      }).join("") : ""}
-      ${otrosServicios.length > 0 ? otrosServicios.map(service => `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${service.name}: ${service.input.value}</span><span>RD$${(parseFloat(service.price) * parseInt(service.input.value)).toFixed(2)}</span></div>`).join("") : ""}
-    ` : ""}
-
-    ${productsDetails.length > 0 ? `
-        <strong><br>Productos Adicionales:<br></strong>
-        ${productsDetails}
-    ` : ""}
-
-    <strong><br>Delivery:<br></strong>
-    <div style="display: flex; justify-content: space-between;"><span>${selectedDelivery ? selectedDelivery.dataset.name : "Sin delivery"}:</span><span>RD$${selectedDelivery ? selectedDelivery.dataset.value : "0"}</span></div><br>
-
-    <br><div style="display: flex; justify-content: space-between;">
-    <strong>Total:</strong>
-    <strong>RD$${total.toFixed(2)}</strong>
-  </div>
-  `;
-
-      document.getElementById("invoiceResult").classList.remove("hidden");
-    };
-
-    const loadDeliveryOptions = () => {
-      db.collection("delivery").orderBy("orden").onSnapshot((snapshot) => {
-        deliverySelection.innerHTML = "";
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const button = document.createElement("button");
-          button.type = "button";
-          button.id = "DeliveryButton";
-          button.innerHTML = `${data.nombre} <img src="./img/icon/${data.icon}" alt="${data.nombre}"> RD$${data.precio}`;
-          button.dataset.value = data.precio;
-          button.dataset.name = data.nombre;
-          button.addEventListener("click", (e) => {
-            handleActiveState(e, deliverySelection);
-            updateInvoicePreview();
-          });
-          deliverySelection.appendChild(button);
-        });
-      });
-    };
-
-    const handleActiveState = (event, container) => {
-      const buttons = container.querySelectorAll("button");
-      buttons.forEach(button => button.classList.remove("active"));
-      event.currentTarget.classList.add("active");
-    };
-
-    const loadProducts = () => {
-      db.collection("productos").orderBy("ordenNum").onSnapshot((snapshot) => {
-        productSelection.innerHTML = "";
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const productItem = document.createElement("div");
-          productItem.classList.add("product-item");
-          productItem.innerHTML = `
-        <div>${data.nombre}</div>
-        <div style="align-items: flex-start;">${data.detalles}</div>
-        <div>
-          <div class="productPrice">$${data.precio}</div>
-          <div class="productQuantity" style="font-size: 14px;font-weight: bold; color: ${data.cantidad < 20 ? 'red' : '#3fbfe7'};">Disponible: ${data.cantidad}</div>
-          <div style="display: flex;flex-direction: row;">
-              <button id="btnmenosmas" type="button" class="decreaseProduct">-</button>
-              <input id="InputCantidades" type="number" class="productInput" value="0" min="0" max="${data.cantidad}">
-              <button id="btnmenosmas" type="button" class="increaseProduct">+</button>
-          </div>
-          <div class="productTotal">Total: $0.00</div>
-        </div>
-      `;
-          productSelection.appendChild(productItem);
-
-          const increaseButton = productItem.querySelector(".increaseProduct");
-          const decreaseButton = productItem.querySelector(".decreaseProduct");
-          const inputField = productItem.querySelector(".productInput");
-          const totalDisplay = productItem.querySelector(".productTotal");
-
-          increaseButton.addEventListener("click", () => {
-            if (parseInt(inputField.value) < data.cantidad) {
-              inputField.value = parseInt(inputField.value) + 1;
-              updateProductTotal(inputField, totalDisplay, data.precio);
-            }
-          });
-
-          decreaseButton.addEventListener("click", () => {
-            if (inputField.value > 0) {
-              inputField.value = parseInt(inputField.value) - 1;
-              updateProductTotal(inputField, totalDisplay, data.precio);
-            }
-          });
-        });
-      });
-    };
-
-    const loadEmployees = () => {
-      const empleadoSelect = document.getElementById("empleado");
-      db.collection("empleados").onSnapshot((snapshot) => {
-        empleadoSelect.innerHTML = "";
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.textContent = "Selecciona";
-        empleadoSelect.appendChild(defaultOption);
-
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const option = document.createElement("option");
-          option.value = doc.id;
-          option.textContent = data.nombre;
-          empleadoSelect.appendChild(option);
-        });
-      });
-    };
-
-    loadEmployees();
-
-    const updateProductTotal = (inputField, totalDisplay, price) => {
-      const quantity = parseInt(inputField.value) || 0;
-      const total = quantity * price;
-      totalDisplay.textContent = `Total: $${total.toFixed(2)}`;
-
-      const productItem = inputField.closest('.product-item');
-      if (quantity > 0) {
-        productItem.style.backgroundColor = "#f1d6ef";
-      } else {
-        productItem.style.backgroundColor = "#f9f9f9";
-      }
-
-      updateInvoicePreview();
-    };
-
-    document.getElementById("processInvoice").addEventListener("click", () => {
-      const clientName = document.getElementById("clientName").value.trim();
-      const clientPhone = document.getElementById("clientPhone").value.trim();
-      const empleadoSelect = document.getElementById("empleado");
-
-      if (!empleadoSelect.value) {
-        alert("Por favor, selecciona un empleado.");
-        return;
-      }
-
-      if (!clientName || !clientPhone) {
-        alert("Por favor, completa el nombre y Teléfono del cliente.");
-        return;
-      }
-
-      const invoiceDetails = document.getElementById("invoiceDetails").innerHTML;
-      document.getElementById("modalInvoiceDetails").innerHTML = invoiceDetails;
-
-      const total = calculateTotal();
-      document.getElementById("totalToPay").textContent = `RD$${total.toFixed(2)}`;
-
-      document.getElementById("confirmationModal").classList.remove("hidden");
-    });
-
-    document.querySelector(".close-button").addEventListener("click", () => {
-      document.getElementById("confirmationModal").classList.add("hidden");
-    });
-
-
-    // desahbilitar los botones de pagos
-    const paymentButtons = document.querySelectorAll(".payment-button");
-    const pendingPaymentButton = document.getElementById("pendingPayment");
-    const paidButton = document.getElementById("paid");
-
-    // Función para habilitar los botones de estado
-    const enablePaymentButtons = () => {
-      pendingPaymentButton.classList.remove("disabled");
-      paidButton.classList.remove("disabled");
-    };
-
-    // Agregar evento a los botones de método de pago
-    paymentButtons.forEach(button => {
-      button.addEventListener("click", () => {
-        // Habilitar botones de pago al seleccionar un método
-        enablePaymentButtons();
-      });
-    });
-
-
-
-    paymentButtons.forEach(button => {
-      button.addEventListener("click", (event) => {
-        // Ocultar las opciones de pago en Efectivo si no es el botón de Efectivo
-        const cashPaymentOptions = document.getElementById("cashPaymentOptions");
-        if (event.target.value === "Efectivo") {
-          cashPaymentOptions.classList.remove("hidden");
-        } else {
-          cashPaymentOptions.classList.add("hidden");
-        }
-
-        // Remover la clase active de todos los botones
-        paymentButtons.forEach(btn => btn.classList.remove("active"));
-
-        // Añadir la clase active al botón clicado
-        event.target.classList.add("active");
-      });
-    });
-
-    document.getElementById("amountReceived").addEventListener("input", () => {
-      const total = calculateTotal();
-      const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
-      const changeAmount = amountReceived - total;
-      document.getElementById("changeAmount").textContent = `RD$${changeAmount}`;
-    });
-
-    document.getElementById("pendingPayment").addEventListener("click", async () => {
-      await processInvoice("pago pendiente");
-    });
-
-    document.getElementById("paid").addEventListener("click", async () => {
-      await processInvoice("pagado");
-    });
-
-    const processInvoice = async (status) => {
-      const paymentMethod = document.querySelector(".payment-button.active").value;
-
-      // Obtener el total
-      const total = calculateTotal();
-
-      // Si el método de pago es Efectivo, obtener el monto recibido y calcular el cambio
-      let amountReceived = 0;
-      let changeAmount = 0;
-
-      if (paymentMethod === "Efectivo") {
-        amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
-        changeAmount = amountReceived - total;
-      }
-
-      const invoiceData = {
-        id: generateNewInvoiceId(await getLastInvoiceId()),
-        clientName: document.getElementById("clientName").value.trim(),
-        clientPhone: document.getElementById("clientPhone").value.trim(),
-        clientAddress: document.getElementById("clientAddress").value.trim(),
-        NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
-        selectedServices: hampers.map(hamper => ({
-          name: hamper.data.nombre,
-          weight: parseInt(hamper.weightInput.value),
-          price: hamper.priceDisplay.textContent.replace('Precio: RD$', '')
-        })),
-        otrosServicios: otrosServicios.map(item => ({
-          name: item.name,
-          count: parseInt(item.input.value) || 0,
-          price: item.price
-        })).filter(item => item.count > 0), // Filtrar solo los servicios con cantidad > 0
-        deliveryOption: deliverySelection.querySelector("button.active") ? [{
-          name: deliverySelection.querySelector("button.active").dataset.name,
-          price: deliverySelection.querySelector("button.active").dataset.value
-        }] : [{ name: "Sin Delivery", price: "0" }],
-        selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
-          name: product.closest('.product-item').querySelector('div').textContent,
-          quantity: parseInt(product.value) || 0,
-          price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
-        })).filter(product => product.quantity > 0), // Filtrar solo los productos con cantidad > 0
-        total: total,
-        paymentMethod: paymentMethod,
-        status: status,
-        amountReceived: amountReceived, // Agregar monto recibido
-        changeAmount: changeAmount, // Agregar cambio
-        timestamp: new Date().toISOString()
-      };
-
-      try {
-        const invoiceRef = await db.collection("facturas").add(invoiceData);
-
-        // Obtener el documento recién creado
-        const invoiceDoc = await invoiceRef.get();
-
-        // Mostrar el valor del campo "id" del documento en el modal
-        const invoiceId = invoiceDoc.data().id; // Accediendo al campo "id"
-        document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
-
-        // Actualizar inventario de productos adicionales basado en el array "consumo" de los hampers
-        for (const hamper of hampers) {
-          for (const item of hamper.consumo) {
-            const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-            if (!productDoc.empty) {
-              const productRef = productDoc.docs[0].ref;
-              const productData = productDoc.docs[0].data();
-              const newQuantity = productData.cantidad - item.cantidad;
-              await productRef.update({ cantidad: newQuantity });
-            }
-          }
-        }
-
-        // Actualizar inventario de productos adicionales basado en el array "consumo" de los "otroservicio"
-        for (const servicio of otrosServicios) {
-          const cantidadServicio = parseInt(servicio.input.value) || 0;
-          if (cantidadServicio > 0) {
-            for (const item of servicio.consumo) {
-              const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-              if (!productDoc.empty) {
-                const productRef = productDoc.docs[0].ref;
-                const productData = productDoc.docs[0].data();
-                const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
-                await productRef.update({ cantidad: newQuantity });
-              }
-            }
-          }
-        }
-
-        // Actualizar inventario de productos seleccionados manualmente
-        const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
-        for (const product of selectedProducts) {
-          const quantity = parseInt(product.value) || 0;
-          if (quantity > 0) {
-            const productName = product.closest('.product-item').querySelector('div').textContent;
-            const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
-            if (!productDoc.empty) {
-              const productRef = productDoc.docs[0].ref;
-              const productData = productDoc.docs[0].data();
-              const newQuantity = productData.cantidad - quantity;
-              await productRef.update({ cantidad: newQuantity });
-            }
-          }
-        }
-
-        // Deshabilitar los botones de pago después de procesar la factura
-        disablePaymentButtons();
-
-        // Ocultar las opciones de pago en Efectivo
-        document.getElementById("cashPaymentOptions").classList.add("hidden");
-
-        clearSelections();
-        document.getElementById("billingForm").reset();
-        document.getElementById("amountReceived").value = "";
-        document.getElementById("changeAmount").textContent = "";
-        document.getElementById("empleado").selectedIndex = 0;
-        updateInvoicePreview();
-
-      } catch (error) {
-        console.error("Error al guardar la factura: ", error);
-        alert("Hubo un problema al procesar la factura. Inténtalo de nuevo.");
-      }
-
-      document.getElementById("confirmationModal").classList.add("hidden");
-    };
-
-    // Función para deshabilitar los botones de pago
-    const disablePaymentButtons = () => {
-      const pendingPaymentButton = document.getElementById("pendingPayment");
-      const paidButton = document.getElementById("paid");
-      pendingPaymentButton.classList.add("disabled");
-      paidButton.classList.add("disabled");
-    };
-
-    const getLastInvoiceId = async () => {
-      const invoicesSnapshot = await db.collection("facturas").orderBy("id", "desc").limit(1).get();
-      if (!invoicesSnapshot.empty) {
-        const lastInvoice = invoicesSnapshot.docs[0].data();
-        return lastInvoice.id;
-      }
-      return "a00000";
-    };
-
-    const generateNewInvoiceId = (lastId) => {
-      const lastNumber = parseInt(lastId.substring(1));
-      const newNumber = lastNumber + 1;
-      return `a${String(newNumber).padStart(5, '0')}`;
-    };
-
-    const calculateTotal = () => {
-      let total = 0;
-
-      hampers.forEach(hamper => {
-        const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
-        total += price;
-      });
-
-      otrosServicios.forEach(item => {
-        const count = parseInt(item.input.value) || 0;
-        total += count * item.price;
-      });
-
-      const selectedDelivery = deliverySelection.querySelector("button.active");
-      if (selectedDelivery) {
-        total += parseFloat(selectedDelivery.dataset.value) || 0;
-      }
-
-      const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
-      selectedProducts.forEach(product => {
-        const quantity = parseInt(product.value) || 0;
-        const price = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
-        total += quantity * price;
-      });
-
-      return total;
-    };
-
-    const clearSelections = () => {
-      const deliveryButtons = deliverySelection.querySelectorAll("button");
-      deliveryButtons.forEach(button => button.classList.remove("active"));
-
-      const activeButtons = document.querySelectorAll(".button-list button.active");
-      activeButtons.forEach(button => button.classList.remove("active"));
-
-      const productInputs = productSelection.querySelectorAll(".productInput");
-      productInputs.forEach(input => {
-        input.value = 0;
-        const productItem = input.closest('.product-item');
-        productItem.style.backgroundColor = "#f9f9f9";
-      });
-
-      hamperContainer.innerHTML = "";
-      hampers = [];
-
-      otrosServiciosDisplay.innerHTML = "";
-      otrosServicios = [];
-
-      const otrosInputs = otrosServiciosDisplay.querySelectorAll(".itemInput");
-      otrosInputs.forEach(input => {
-        input.value = 0;
-      });
-
-      updateInvoicePreview();
-    };
-
-    document.getElementById("clientName").addEventListener("input", updateInvoicePreview);
-    document.getElementById("clientPhone").addEventListener("input", updateInvoicePreview);
-    document.getElementById("clientAddress").addEventListener("input", updateInvoicePreview);
-
-    loadServices();
-    loadDeliveryOptions();
-    loadProducts();
-
-
-    //Modal Factura procesada
-    const showProcessedInvoiceModal = (invoiceDetails, paymentMethod, amountReceived, changeAmount, status) => {
-      // Obtener la fecha y hora actual en formato AM/PM
-      const now = new Date();
-      const hours = now.getHours() % 12 || 12;
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-      const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
-
-      // Formatear fecha
-      const day = now.getDate().toString().padStart(2, "0");
-      const month = (now.getMonth() + 1).toString().padStart(2, "0");
-      const year = now.getFullYear();
-      const dateString = `${day}/${month}/${year}`;
-
-      const details = `
-    <div style="display: inline-flex;width: 100%;flex-direction: row-reverse;">
-      <div style="display: inline-flex;flex-direction: column;text-align: end;">
-        <strong>Fecha y Hora:</strong>
-        <span>${dateString} ${timeString}</span>
-      </div>
     </div>
 
-    <div style="background: black; height: 1px; width: 99%"></div>
-    
-    ${invoiceDetails}<br>
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
+            authDomain: "paris-laundry.firebaseapp.com",
+            projectId: "paris-laundry",
+            storageBucket: "paris-laundry.appspot.com",
+            messagingSenderId: "1022712814457",
+            appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
+        };
 
-    <div style="display: flex; justify-content: space-between;">
-      <strong>Método de Pago:</strong>
-      <span>${paymentMethod}</span>
-    </div>
-    
-    ${paymentMethod === "Efectivo" ? `
-      <div style="display: flex; justify-content: space-between;">
-        <strong>Monto Recibido:</strong> 
-        <span>RD$${amountReceived}<span><br>
-      </div>
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-      <div style="display: flex; justify-content: space-between;">
-        <strong>Cambio:</strong>
-        <span>RD$${changeAmount}</span>
-      </div>` : ""}
+        const statusModal = document.getElementById("statusModal");
+        const closeStatusModal = document.getElementById("closeStatusModal");
+        const searchInput = document.getElementById("searchInput");
+        const messageDiv = document.getElementById("message");
 
-    ${status === "pago pendiente" ? `
-      <div style="text-align: center; margin-top: 10px; margin-bottom: 4px;font-weight: bold; color: red;">
-        Pago Pendiente
-      </div>` : ""}
-  `;
+        let unsubscribe = null; // Para almacenar la función de desuscripción del listener
 
-      document.getElementById("processedInvoiceDetails").innerHTML = details;
-      document.getElementById("processedInvoiceModal").classList.remove("hidden");
-    };
+        closeStatusModal.onclick = () => {
+            statusModal.style.display = "none";
+        };
 
+        searchInput.addEventListener("keypress", async (event) => {
+            if (event.key === "Enter") {
+                const searchTerm = searchInput.value.trim().toLowerCase(); // Convertir a minúsculas
+                messageDiv.style.display = "none"; // Limpiar mensaje previo
 
+                if (searchTerm) {
+                    // Si ya hay un listener activo, desuscribirse
+                    if (unsubscribe) {
+                        unsubscribe();
+                    }
 
+                    const querySnapshot = await db.collection("facturas").where("id", "==", searchTerm).get();
+                    if (!querySnapshot.empty) {
+                        const doc = querySnapshot.docs[0];
+                        const data = { id: doc.id, ...doc.data() };
 
-    const closeProcessedInvoiceModal = () => {
-      // Cerrar el modal
-      document.getElementById("processedInvoiceModal").classList.add("hidden");
+                        // Actualizar la URL con el ID
+                        window.location.hash = `id-${data.id}`;
 
+                        // Mostrar el modal correspondiente según el estado
+                        updateModal(data);
 
-      // Reiniciar la opción de método de pago
-      const paymentButtons = document.querySelectorAll(".payment-button");
-      paymentButtons.forEach(button => button.classList.remove("active"));
-    };
+                        // Escuchar cambios en tiempo real
+                        unsubscribe = db.collection("facturas").doc(doc.id).onSnapshot((docSnapshot) => {
+                            const updatedData = { id: docSnapshot.id, ...docSnapshot.data() };
+                            updateModal(updatedData);
+                        });
+                    } else {
+                        messageDiv.textContent = "Factura no encontrada";
+                        messageDiv.style.display = "block";
+                    }
+                } else {
+                    messageDiv.textContent = "Por favor, ingrese un ID.";
+                    messageDiv.style.display = "block";
+                }
+            }
+        });
 
-
-    // Modificar el evento de los botones de pago
-    document.getElementById("pendingPayment").addEventListener("click", async () => {
-      const paymentMethod = document.querySelector(".payment-button.active").value;
-      const amountReceived = paymentMethod === "Efectivo" ? parseFloat(document.getElementById("amountReceived").value) || 0 : 0;
-      const changeAmount = paymentMethod === "Efectivo" ? amountReceived - calculateTotal() : 0;
-
-      // Mostrar el modal con el estado "pago pendiente"
-      showProcessedInvoiceModal(document.getElementById("modalInvoiceDetails").innerHTML, paymentMethod, amountReceived, changeAmount, "pago pendiente");
-    });
-
-    document.getElementById("paid").addEventListener("click", () => {
-      const paymentMethod = document.querySelector(".payment-button.active").value;
-      const amountReceived = paymentMethod === "Efectivo" ? parseFloat(document.getElementById("amountReceived").value) || 0 : 0;
-      const changeAmount = paymentMethod === "Efectivo" ? amountReceived - calculateTotal() : 0;
-
-      // Solo mostrar el modal sin procesar la factura
-      showProcessedInvoiceModal(document.getElementById("modalInvoiceDetails").innerHTML, paymentMethod, amountReceived, changeAmount);
-    });
-    //Modal Factura procesada FIN
-
-
-
-
-    document.getElementById("printInvoiceButton").addEventListener("click", () => {
-      printInvoice();
-    });
-
-    const printInvoice = () => {
-      const invoiceDetails = document.getElementById("processedInvoiceDetails").innerHTML;
-      const invoiceId = document.getElementById("invoiceIdDisplay").textContent; // Obtener el ID de la factura
-      const printWindow = window.open('', '', 'height=600,width=800');
-
-      // Obtener la fecha y hora actual en formato AM/PM
-      const now = new Date();
-      const hours = now.getHours() % 12 || 12;
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-      const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
-
-      // Reemplazar "Peso: X lbs" por "1 hamper" si está dentro del rango
-      const modifiedDetails = invoiceDetails.replace(/Peso: (\d+) lbs/g, (match, weight) => {
-        const weightNum = parseInt(weight);
-        const hamperData = hampers.find(hamper => parseInt(hamper.weightInput.value) === weightNum);
-        if (hamperData) {
-          const librasMin = parseInt(hamperData.data.librasmin);
-          const librasMax = parseInt(hamperData.data.librasmax);
-          return (weightNum >= librasMin && weightNum <= librasMax) ? "1 hamper" : match;
-        }
-        return match;
-      });
-
-      printWindow.document.write(`
-<html>
-  <head>
-      <title>Factura</title>
-      <style>
-          body {
-              font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 20px;
-          }
-          h1 {
-              text-align: center;
-              font-size: 14px;
-                  margin-block-start: 0px;
-    margin-block-end: 0px;
-          }
-
-    h2 {
-      margin-block-start: 0px;
-      margin-block-end: 5px;
-      margin-top: 10px;
-      text-align: center;
-      font-size: 1.1em;
-    }
-      
-          .invoice-details {
-              margin: 0px 0px;
-          }
-          .invoice-details strong {
-              display: block;
-              margin: 5px 0;
-          }
-      </style>
-  </head>
-  <body>
-
-    <h2 style="margin-block-end: 7px;">Factura</h2>
-
-    <h1 style="font-size: 24px;">Paris Laundry RD</h1>
-
-      <h2>¡Gracias por elegirnos!</h2>
-
-      <div style="background: black; height: 1px; width: 99%"></div>
-
-      <div class="invoice-details">
-
-          ${modifiedDetails}
-
-          <div style="background: black; height: 1px; width: 99%"></div>
+        // Función para actualizar el modal según el estado
+        // Función para actualizar el modal según el estado
+        const updateModal = (data) => {
+            const options = {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true // Formato de 12 horas
+            };
+            const fecha = new Date(data.timestamp).toLocaleString('es-ES', options); // Formatear la fecha
 
 
-          <div style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-top: 10px; margin-bottom: 10px;">
-          <span>ID de Factura:</span> <strong style="font-size: 37px;">${invoiceId}</strong>
-            </div>
+            // Ocultar todos los detalles de la factura
+            document.querySelectorAll('.invoice-status').forEach(div => {
+                div.style.display = 'none';
+            });
 
+            switch (data.status) {
+                case "pago pendiente":
+                    document.getElementById("pendingID").textContent = data.id;
+                    document.getElementById("pendingDate").textContent = fecha;
+                    document.getElementById("pendingInvoiceDetails").style.display = "block";
+                    break;
+                case "pagado":
+                    document.getElementById("paidID").textContent = data.id;
+                    document.getElementById("paidDate").textContent = fecha;
+                    document.getElementById("paidInvoiceDetails").style.display = "block";
+                    break;
+                case "pagado listo":
+                    document.getElementById("readyID").textContent = data.id;
+                    document.getElementById("readyDate").textContent = fecha;
+                    document.getElementById("readyInvoiceDetails").style.display = "block";
+                    break;
+                default:
+                    messageDiv.textContent = "Estado desconocido";
+                    messageDiv.style.display = "block";
+                    return; // Salir de la función si el estado es desconocido
+            }
 
-          <div style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-bottom: 10px;">
-              <span>Consulta el estado de tu ropa en el enlace:</span> <strong>www.parislaundryrd.com#id-${invoiceId}</strong>
-          </div>
+            statusModal.style.display = "block"; // Mostrar el modal
+            messageDiv.style.display = "none"; // Ocultar mensaje de error
+        };
 
+        // Función para abrir el modal si hay un ID en la URL
+        const openModalFromHash = async () => {
+            const hash = window.location.hash;
+            if (hash.startsWith("#id-")) {
+                const id = hash.substring(4); // Obtener el ID del hash
+                const querySnapshot = await db.collection("facturas").where("id", "==", id).get();
+                if (!querySnapshot.empty) {
+                    const doc = querySnapshot.docs[0];
+                    const data = { id: doc.id, ...doc.data() };
 
-          <div style="width: 100%;margin-bottom: 30px;text-align: justify;">
-          <p>Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.</p>
-            </div>
+                    // Mostrar el modal correspondiente según el estado
+                    updateModal(data);
 
-            <div style="width: 100%;margin-bottom: 30px;text-align: center;"><p>.</p></div>
+                    // Escuchar cambios en tiempo real
+                    unsubscribe = db.collection("facturas").doc(doc.id).onSnapshot((docSnapshot) => {
+                        const updatedData = { id: docSnapshot.id, ...docSnapshot.data() };
+                        updateModal(updatedData);
+                    });
+                } else {
+                    messageDiv.textContent = "Factura no encontrada";
+                    messageDiv.style.display = "block";
+                }
+            }
+        };
 
-      </div>
-  </body>
-</html>
-  `);
+        // Llamar a la función al cargar la página
+        window.onload = openModalFromHash;
+    </script>
 
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    };
-
-  </script>
-
-
-  <script src="./js/fecha-hora.js"></script>
 </body>
 
 </html>

@@ -327,14 +327,15 @@
 
         <div class="box_btns">
           <button><a style="color: #0078df;" href="index - empleado.html">Facturación</a></button>
-          <button><a href="facturas-empleado.html">Facturas Generadas</a></button>
+          <button><a href="facturas - empleado.html">Facturas Generadas</a></button>
+          <button><a href="caja - empleado.html">Caja/Cuadre</a></button>
         </div>
       </div>
 
 
 
       <div class="BarraMenu_Right">
-        
+
         <div class="linediv" style="margin: 0px 15px 0px 12px;"></div>
 
         <div id="dateTime">
@@ -571,9 +572,10 @@
               <img src="./img/Paris Laundry 1.png">
 
               <div style="display: inline-flex;width: 100%;flex-direction: row;justify-content: space-between;">
-                <button id="printInvoiceButton">Imprimir</button>
+                <button id="printInvoiceButton"><img src="./img/icon/imprimir1.png">Imprimir</button>
                 <span id="invoiceIdDisplay"></span>
-                <button id="readyButton" onclick="closeProcessedInvoiceModal()">Listo</button>
+                <button id="readyButton" onclick="closeProcessedInvoiceModal()"><img
+                    src="./img/icon/check2.png">Listo</button>
               </div>
 
             </div>
@@ -616,45 +618,64 @@
 
     // Cargar servicios, productos y empleados
     const loadServices = () => {
-      db.collection("servicio").onSnapshot((snapshot) => {
-        serviceSelection.innerHTML = "";
-        otrosServiciosContainer.innerHTML = "";
-        hamperContainer.innerHTML = "";
-        otrosServiciosDisplay.innerHTML = "";
+  db.collection("servicio").onSnapshot((snapshot) => {
+    serviceSelection.innerHTML = "";
+    otrosServiciosContainer.innerHTML = "";
+    hamperContainer.innerHTML = "";
+    otrosServiciosDisplay.innerHTML = "";
 
-        snapshot.forEach((doc) => {
-          const data = doc.data();
+    const hampersArray = [];
+    const otrosServiciosArray = [];
 
-          if (data.tipo === "hamper") {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data["nombre"]} - RD$${data.precio}`;
-            button.dataset.value = data.precio;
-            button.dataset.name = data["nombre"];
-            button.dataset.librasmin = data.librasmin;
-            button.dataset.librasmax = data.librasmax;
-            button.dataset.preciolibras = data.preciolibras;
-            button.addEventListener("click", () => {
-              addHamper(data);
-            });
-            serviceSelection.appendChild(button);
-          }
+    snapshot.forEach((doc) => {
+      const data = doc.data();
 
-          if (data.tipo === "otroservicio") {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data["nombre"]} - RD$${data.precio}`;
-            button.dataset.value = data.precio;
-            button.dataset.name = data["nombre"];
-            button.dataset.icon = data.icon;
-            button.addEventListener("click", () => {
-              addOtherService(data, button);
-            });
-            otrosServiciosContainer.appendChild(button);
-          }
-        });
+      if (data.tipo === "hamper") {
+        hampersArray.push({ id: doc.id, ...data });
+      }
+
+      if (data.tipo === "otroservicio") {
+        otrosServiciosArray.push({ id: doc.id, ...data });
+      }
+    });
+
+    // Ordenar hampers por OrdenNumHamper
+    hampersArray.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
+
+    // Ordenar otros servicios por OrdenNumServicio
+    otrosServiciosArray.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
+
+    // Mostrar hampers ordenados
+    hampersArray.forEach((data) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre} - RD$${data.precio}`;
+      button.dataset.value = data.precio;
+      button.dataset.name = data.nombre;
+      button.dataset.librasmin = data.librasmin;
+      button.dataset.librasmax = data.librasmax;
+      button.dataset.preciolibras = data.preciolibras;
+      button.addEventListener("click", () => {
+        addHamper(data);
       });
-    };
+      serviceSelection.appendChild(button);
+    });
+
+    // Mostrar otros servicios ordenados
+    otrosServiciosArray.forEach((data) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre} - RD$${data.precio}`;
+      button.dataset.value = data.precio;
+      button.dataset.name = data.nombre;
+      button.dataset.icon = data.icon;
+      button.addEventListener("click", () => {
+        addOtherService(data, button);
+      });
+      otrosServiciosContainer.appendChild(button);
+    });
+  });
+};
 
     const addOtherService = (data, button) => {
       const existingService = otrosServiciosDisplay.querySelector(`div[data-name="${data.nombre}"]`);
@@ -722,11 +743,11 @@
     };
 
     const addHamper = (data) => {
-  // Verifica si ya hay 30 hampers
-  if (hampers.length >= 30) {
-    alert("No puedes agregar más de 30 hampers por factura.");
-    return; // Salir de la función si ya hay 30 hampers
-  }
+      // Verifica si ya hay 30 hampers
+      if (hampers.length >= 30) {
+        alert("No puedes agregar más de 30 hampers por factura.");
+        return; // Salir de la función si ya hay 30 hampers
+      }
 
       const hamperDiv = document.createElement("div");
       hamperDiv.classList.add("hamper");
@@ -1088,37 +1109,37 @@
       }
 
       const invoiceData = {
-        id: generateNewInvoiceId(await getLastInvoiceId()),
-        clientName: document.getElementById("clientName").value.trim(),
-        clientPhone: document.getElementById("clientPhone").value.trim(),
-        clientAddress: document.getElementById("clientAddress").value.trim(),
-        NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
-        selectedServices: hampers.map(hamper => ({
-          name: hamper.data.nombre,
-          weight: parseInt(hamper.weightInput.value),
-          price: hamper.priceDisplay.textContent.replace('Precio: RD$', '')
-        })),
-        otrosServicios: otrosServicios.map(item => ({
-          name: item.name,
-          count: parseInt(item.input.value) || 0,
-          price: item.price
-        })).filter(item => item.count > 0), // Filtrar solo los servicios con cantidad > 0
-        deliveryOption: deliverySelection.querySelector("button.active") ? [{
-          name: deliverySelection.querySelector("button.active").dataset.name,
-          price: deliverySelection.querySelector("button.active").dataset.value
-        }] : [{ name: "Sin Delivery", price: "0" }],
-        selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
-          name: product.closest('.product-item').querySelector('div').textContent,
-          quantity: parseInt(product.value) || 0,
-          price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
-        })).filter(product => product.quantity > 0), // Filtrar solo los productos con cantidad > 0
-        total: total,
-        paymentMethod: paymentMethod,
-        status: status,
-        amountReceived: amountReceived, // Agregar monto recibido
-        changeAmount: changeAmount, // Agregar cambio
-        timestamp: new Date().toISOString()
-      };
+    id: generateNewInvoiceId(await getLastInvoiceId()),
+    clientName: document.getElementById("clientName").value.trim(),
+    clientPhone: document.getElementById("clientPhone").value.trim(),
+    clientAddress: document.getElementById("clientAddress").value.trim(),
+    NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
+    selectedServices: hampers.map(hamper => ({
+        name: hamper.data.nombre,
+        weight: parseInt(hamper.weightInput.value),
+        price: hamper.priceDisplay.textContent.replace('Precio: RD$', '')
+    })),
+    otrosServicios: otrosServicios.map(item => ({
+        name: item.name,
+        count: parseInt(item.input.value) || 0,
+        price: item.price
+    })).filter(item => item.count > 0), // Filtrar solo los servicios con cantidad > 0
+    deliveryOption: deliverySelection.querySelector("button.active") ? [{
+        name: deliverySelection.querySelector("button.active").dataset.name,
+        price: deliverySelection.querySelector("button.active").dataset.value
+    }] : [{ name: "Sin Delivery", price: "0" }],
+    selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
+        name: product.closest('.product-item').querySelector('div').textContent,
+        quantity: parseInt(product.value) || 0,
+        price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
+    })).filter(product => product.quantity > 0), // Filtrar solo los productos con cantidad > 0
+    total: total,
+    paymentMethod: paymentMethod,
+    status: status,
+    amountReceived: amountReceived, // Agregar monto recibido
+    changeAmount: changeAmount, // Agregar cambio
+    timestamp: firebase.firestore.FieldValue.serverTimestamp() // Cambiar aquí
+};
 
       try {
         const invoiceRef = await db.collection("facturas").add(invoiceData);
@@ -1285,7 +1306,7 @@
 
 
     //Modal Factura procesada
-    const showProcessedInvoiceModal = (invoiceDetails, paymentMethod, amountReceived, changeAmount) => {
+    const showProcessedInvoiceModal = (invoiceDetails, paymentMethod, amountReceived, changeAmount, status) => {
       // Obtener la fecha y hora actual en formato AM/PM
       const now = new Date();
       const hours = now.getHours() % 12 || 12;
@@ -1301,14 +1322,14 @@
       const dateString = `${day}/${month}/${year}`;
 
       const details = `
-  <div style="display: inline-flex;width: 100%;flex-direction: row-reverse;">
-    <div style="display: inline-flex;flex-direction: column;text-align: end;">
-    <strong>Fecha y Hora:</strong>
-    <span>${dateString} ${timeString}</span>
+    <div style="display: inline-flex;width: 100%;flex-direction: row-reverse;">
+      <div style="display: inline-flex;flex-direction: column;text-align: end;">
+        <strong>Fecha y Hora:</strong>
+        <span>${dateString} ${timeString}</span>
+      </div>
     </div>
-  </div>
 
-  <div style="background: black; height: 1px; width: 99%"></div>
+    <div style="background: black; height: 1px; width: 99%"></div>
     
     ${invoiceDetails}<br>
 
@@ -1326,6 +1347,11 @@
       <div style="display: flex; justify-content: space-between;">
         <strong>Cambio:</strong>
         <span>RD$${changeAmount}</span>
+      </div>` : ""}
+
+    ${status === "pago pendiente" ? `
+      <div style="text-align: center; margin-top: 10px; margin-bottom: 4px;font-weight: bold; color: red;">
+        Pago Pendiente
       </div>` : ""}
   `;
 
@@ -1348,13 +1374,13 @@
 
 
     // Modificar el evento de los botones de pago
-    document.getElementById("pendingPayment").addEventListener("click", () => {
+    document.getElementById("pendingPayment").addEventListener("click", async () => {
       const paymentMethod = document.querySelector(".payment-button.active").value;
       const amountReceived = paymentMethod === "Efectivo" ? parseFloat(document.getElementById("amountReceived").value) || 0 : 0;
       const changeAmount = paymentMethod === "Efectivo" ? amountReceived - calculateTotal() : 0;
 
-      // Solo mostrar el modal sin procesar la factura
-      showProcessedInvoiceModal(document.getElementById("modalInvoiceDetails").innerHTML, paymentMethod, amountReceived, changeAmount);
+      // Mostrar el modal con el estado "pago pendiente"
+      showProcessedInvoiceModal(document.getElementById("modalInvoiceDetails").innerHTML, paymentMethod, amountReceived, changeAmount, "pago pendiente");
     });
 
     document.getElementById("paid").addEventListener("click", () => {
@@ -1376,6 +1402,7 @@
 
     const printInvoice = () => {
       const invoiceDetails = document.getElementById("processedInvoiceDetails").innerHTML;
+      const invoiceId = document.getElementById("invoiceIdDisplay").textContent; // Obtener el ID de la factura
       const printWindow = window.open('', '', 'height=600,width=800');
 
       // Obtener la fecha y hora actual en formato AM/PM
@@ -1424,7 +1451,7 @@
     }
       
           .invoice-details {
-              margin: 20px 0;
+              margin: 0px 0px;
           }
           .invoice-details strong {
               display: block;
@@ -1434,21 +1461,36 @@
   </head>
   <body>
 
-    <h1 style="font-size: 18px;">Paris Laundry RD</h1>
+    <h2 style="margin-block-end: 7px;">Factura</h2>
 
-      <h2>¡Su ropa está en buenas manos!</h2>
-      <h1>¡Gracias por elegirnos!</h1>
+    <h1 style="font-size: 24px;">Paris Laundry RD</h1>
+
+      <h2>¡Gracias por elegirnos!</h2>
 
       <div style="background: black; height: 1px; width: 99%"></div>
 
-
       <div class="invoice-details">
-        
-         
-  
+
           ${modifiedDetails}
 
           <div style="background: black; height: 1px; width: 99%"></div>
+
+
+          <div style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-top: 10px; margin-bottom: 10px;">
+          <span>ID de Factura:</span> <strong style="font-size: 37px;">${invoiceId}</strong>
+            </div>
+
+
+          <div style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-bottom: 10px;">
+              <span>Consulta el estado de tu ropa en el enlace:</span> <strong>www.parislaundryrd.com#id-${invoiceId}</strong>
+          </div>
+
+
+          <div style="width: 100%;margin-bottom: 30px;text-align: justify;">
+          <p>Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.</p>
+            </div>
+
+            <div style="width: 100%;margin-bottom: 30px;text-align: center;"><p>.</p></div>
 
       </div>
   </body>
