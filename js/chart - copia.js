@@ -8,10 +8,8 @@ const loadYears = () => {
         const years = new Set(); // Usar un Set para evitar duplicados
         snapshot.forEach((doc) => {
             const data = doc.data();
-            if (data.timestamp) { // Verificar que 'timestamp' esté definido
-                const year = data.timestamp.toDate().getFullYear();
-                years.add(year); // Agregar el año al Set
-            }
+            const year = data.date.toDate().getFullYear();
+            years.add(year); // Agregar el año al Set
         });
 
         // Convertir el Set a un array y ordenarlo
@@ -47,7 +45,7 @@ const loadMonthlyData = (year) => {
     db.collection("transacciones").get().then((snapshot) => {
         snapshot.forEach((doc) => {
             const data = doc.data();
-            const transactionDate = data.timestamp.toDate(); // Asegúrate de usar 'timestamp'
+            const transactionDate = data.date.toDate();
             if (transactionDate.getFullYear() === year) {
                 const month = transactionDate.getMonth(); // Obtener el mes (0-11)
                 if (data.type === "income") {
@@ -58,15 +56,12 @@ const loadMonthlyData = (year) => {
             }
         });
 
-        console.log("Income Data:", incomeData); // Verificar datos de ingresos
-        console.log("Expense Data:", expenseData); // Verificar datos de gastos
-
         // Cargar pagos de empleados para el año seleccionado
         return db.collection("PagoEmpleado").get();
     }).then((snapshot) => {
         snapshot.forEach((doc) => {
             const data = doc.data();
-            const paymentDate = data.timestamp.toDate(); // Asegúrate de usar 'timestamp'
+            const paymentDate = data.date.toDate();
             if (paymentDate.getFullYear() === year) {
                 const month = paymentDate.getMonth(); // Obtener el mes (0-11)
                 expenseData[month] += data.total; // Sumar gastos de pagos de empleados
@@ -78,7 +73,7 @@ const loadMonthlyData = (year) => {
     }).then((snapshot) => {
         snapshot.forEach((doc) => {
             const data = doc.data();
-            const invoiceDate = data.timestamp.toDate(); // Asegúrate de usar 'timestamp'
+            const invoiceDate = new Date(data.timestamp);
             if (invoiceDate.getFullYear() === year) {
                 const month = invoiceDate.getMonth(); // Obtener el mes (0-11)
                 incomeData[month] += data.total; // Sumar ingresos de facturas
