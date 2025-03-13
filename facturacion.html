@@ -827,43 +827,43 @@
     };
 
     const updateInvoicePreview = () => {
-      const clientName = document.getElementById("clientName").value || "Sin nombre";
-      const clientPhone = document.getElementById("clientPhone").value || "Sin teléfono";
-      const clientAddress = document.getElementById("clientAddress").value || "Sin dirección";
+  const clientName = document.getElementById("clientName").value || "Sin nombre";
+  const clientPhone = document.getElementById("clientPhone").value || "Sin teléfono";
+  const clientAddress = document.getElementById("clientAddress").value || "Sin dirección";
 
-      const selectedDelivery = deliverySelection.querySelector("button.active");
-      const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+  const selectedDelivery = deliverySelection.querySelector("button.active");
+  const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
 
-      let total = 0;
+  let total = 0;
 
-      hampers.forEach(hamper => {
-        const weight = parseInt(hamper.weightInput.value);
-        const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', ''));
-        total += price;
-      });
+  hampers.forEach(hamper => {
+    const weight = parseInt(hamper.weightInput.value);
+    const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', ''));
+    total += price;
+  });
 
-      otrosServicios.forEach(item => {
-        const count = parseInt(item.input.value) || 0;
-        total += count * item.price;
-      });
+  otrosServicios.forEach(item => {
+    const count = parseInt(item.input.value) || 0;
+    total += count * item.price;
+  });
 
-      const deliveryPrice = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
-      total += deliveryPrice;
+  const deliveryPrice = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
+  total += deliveryPrice;
 
-      const productsDetails = selectedProducts.map(product => {
-        const quantity = parseInt(product.value) || 0;
-        const productName = product.closest('.product-item').querySelector('div').textContent;
-        const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
-        const productTotal = quantity * productPrice;
+  const productsDetails = selectedProducts.map(product => {
+    const quantity = parseInt(product.value) || 0;
+    const productName = product.closest('.product-item').querySelector('div').textContent;
+    const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+    const productTotal = quantity * productPrice;
 
-        if (quantity > 0) {
-          total += productTotal;
-          return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${productName} - Cant. ${quantity} X RD$${productPrice}</span><span>RD$${productTotal.toFixed(2)}</span></div>`;
-        }
-        return null;
-      }).filter(Boolean).join("");
+    if (quantity > 0) {
+      total += productTotal;
+      return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${productName} - Cant. ${quantity} X RD$${productPrice}</span><span>RD$${productTotal.toFixed(2)}</span></div>`;
+    }
+    return null;
+  }).filter(Boolean).join("");
 
-      document.getElementById("invoiceDetails").innerHTML = `
+  document.getElementById("invoiceDetails").innerHTML = `
     <div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;">
       <strong>Cliente:</strong> ${clientName} </div>
 
@@ -880,7 +880,8 @@
         const data = hamper.data;
         const librasMin = parseInt(data.librasmin);
         const librasMax = parseInt(data.librasmax);
-        const displayWeight = (weight >= librasMin && weight <= librasMax) ? "1 hamper" : `${weight} lbs`;
+        const precioPorLibra = parseFloat(data.preciolibras);
+        const displayWeight = (weight >= librasMin && weight <= librasMax) ? "1 hamper" : `${weight}lbs X RD$${precioPorLibra}`;
         return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${data.nombre} (${displayWeight})</span><span>RD$${hamper.priceDisplay.textContent.replace('Precio: RD$', '')}</span></div>`;
       }).join("") : ""}
       ${otrosServicios.length > 0 ? otrosServicios.map(service => `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${service.name}: ${service.input.value}</span><span>RD$${(parseFloat(service.price) * parseInt(service.input.value)).toFixed(2)}</span></div>`).join("") : ""}
@@ -900,8 +901,8 @@
   </div>
   `;
 
-      document.getElementById("invoiceResult").classList.remove("hidden");
-    };
+  document.getElementById("invoiceResult").classList.remove("hidden");
+};
 
     const loadDeliveryOptions = () => {
       db.collection("delivery").orderBy("orden").onSnapshot((snapshot) => {
@@ -1486,7 +1487,7 @@
           </div> -->
 
 
-          <div style="width: 100%;margin-bottom: 20px;text-align: justify;">
+          <div style="width: 100%;margin-bottom: 0px;text-align: justify;">
           <p>Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.</p>
             </div>
 
