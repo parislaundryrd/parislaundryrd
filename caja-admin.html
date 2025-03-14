@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./css/styles_caja.css">
+  <title>Manejo de Caja - Paris Laundry</title>
+  <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+
+
+  <div class="MasterBox0">
+
+    <!-- Menu -->
+    <div class="BarraMenu">
+
+      <div class="BarraMenu_Left">
+
+        <div class="menu_tittle">
+          <img src="./img/Paris Laundry 1.png">
+          <h1>Paris Laundry</h1>
+        </div>
+
+        <div class="linediv"></div>
+
+        <div class="box_btns">
+          <button><a href="facturacion-admin.html">Facturación</a></button>
+          <button><a href="facturas-generadas-admin.html">Facturas Generadas</a></button>
+          <button><a style="color: #0078df;" href="caja-admin.html">Caja/Cuadre</a></button>
+          <button><a href="inventario.html">Inventario</a></button>
+          <button><a href="contabilidad.html">Contabilidad</a></button>
+          <button><a href="admin.html">Admin</a></button>
+        </div>
+      </div>
+
+
+
+      <div class="BarraMenu_Right">
+
+        <div class="linediv" style="margin: 0px 15px 0px 12px;"></div>
+
+        <div id="dateTime">
+          <h1 id="time">--:--:--</h1>
+          <p id="date">Cargando fecha...</p>
+        </div>
+
+        <div class="linediv" style="margin: 0px 5px 0px 12px; display: none;"></div>
+
+        <button id="logout1" style=" display: none;"><img src="./img/icon/logout.png"><a href="index.html"></a></button>
+      </div>
+
+    </div>
+    <!-- Menu FIN -->
+
+
+    <!-- Contenedor de inventario -->
+    <div class="container_caja">
+
+      <!-- Titulo -->
+      <div class="panelCaja_tittle">
+        <h2>Manejo de Caja</h2>
+      </div>
+      <!-- Titulo FIN -->
+
+
+      <!-- body -->
+      <div class="panelCaja_body">
+        <!-- Botón para abrir el modal -->
+
+        <div class="button-list">
+          <div>
+            <button id="openModalInicialCaja">Iniciar Caja</button>
+            <button id="openModalButton">Cuadre de Caja</button>
+            <button id="openCierreCajaModal">Cierre de Caja</button>
+          </div>
+          <div>
+            <button id="openIngresarDineroModal">Ingresar Efectivo</button>
+            <button id="openRetirarDineroModal">Retirar Efectivo</button>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div id="inicioCajaInfo" style="display: none;">
+            <span>Hora y Fecha del Inicio de Caja: <span id="inicioCajaHora"></span></span>
+          </div>
+
+          <div id="cierreCajaInfo" style="display: none;">
+            <span>Hora y Fecha de Cierre de Caja: <span id="cierreCajaHoraDisplay"></span></span>
+          </div>
+        </div>
+
+
+        <!-- Cuadro de Totales en Caja -->
+        <div id="totalesCaja">
+          <h2>Totales de Caja</h2>
+
+          <div style="display: inline-flex;flex-direction: row;gap: 5px;">
+            <p style="margin-block-start: 0px;margin-block-end: 0px;">
+              Total en Caja: </p>
+            <div id="totalEnCaja">RD$0</div>
+          </div>
+
+          <div id="totalRecibido">Total Recibido: RD$0</div>
+          <div id="totalCambio">Total Cambio: RD$0</div>
+
+          <div style="display: inline-flex;flex-direction: row;gap: 5px;">
+            <p style="margin-block-start: 0px;margin-block-end: 0px;">
+              Total que Debe Haber en Caja: </p>
+            <div id="totalDeberia">RD$0</div>
+          </div>
+        </div>
+        <!-- Cuadro de Totales en Caja FIN -->
+
+
+
+
+
+        <!-- Tabla para mostrar las facturas -->
+        <h2>Facturas en efectivo generadas desde el inicio de la caja:</h2>
+        <table id="facturasTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre del Cliente</th>
+              <th>Teléfono del Cliente</th>
+              <th>Método de Pago</th>
+              <th>Monto Recibido</th>
+              <th>Cambio</th>
+              <th>Total</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Las filas de las facturas se agregarán aquí -->
+          </tbody>
+        </table>
+        <!-- Tabla para mostrar las facturas FIN -->
+
+
+
+      </div>
+
+      <!-- Down -->
+      <div class="panelCaja_down">
+        <p>© Paris Laundry RD - 2025</p>
+      </div>
+      <!-- Down FIN -->
+
+
+    </div>
+
+    <!-- Modal para Cuadre de Caja -->
+    <div id="cuadreModal" class="modal">
+      <div class="modal-content">
+
+
+        <div class="modal_caja_tittle">
+          <span class="close">&times;</span>
+          <h2>Cuadre de Caja</h2>
+        </div>
+
+        <div class="modal_caja_body">
+          <div class="modal_caja_flex">
+
+            <form id="cuadreForm">
+
+              <div class="CashContainer">
+                <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                  <img src="./img/Money Icon/2000.jpg">
+                  <label for="denomination2000_modal">Billetes de 2000:</label>
+                  <input type="number" id="denomination2000_modal" placeholder="0">
+
+                  <img src="./img/Money Icon/1000.jpg">
+                  <label for="denomination1000_modal">Billetes de 1000:</label>
+                  <input type="number" id="denomination1000_modal" placeholder="0">
+
+                  <img src="./img/Money Icon/500.jpg">
+                  <label for="denomination500_modal">Billetes de 500:</label>
+                  <input type="number" id="denomination500_modal" placeholder="0">
+
+                  <img src="./img/Money Icon/200.jpg">
+                  <label for="denomination200_modal">Billetes de 200:</label>
+                  <input type="number" id="denomination200_modal" placeholder="0">
+
+                  <img src="./img/Money Icon/100.jpg">
+                  <label for="denomination100_modal">Billetes de 100:</label>
+                  <input type="number" id="denomination100_modal" placeholder="0">
+                </div>
+
+                <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                  <img src="./img/Money Icon/50.jpg">
+                  <label for="denomination50_modal">Billetes de 50:</label>
+                  <input type="number" id="denomination50_modal" placeholder="0">
+
+                  <img src="./img/Money Icon/25.png">
+                  <label for="denomination25_modal">Monedas de 25:</label>
+                  <input type="number" id="denomination25_modal" placeholder="0">
+
+                  <img src="./img/Money Icon/10.png">
+                  <label for="denomination10_modal">Billetes de 10:</label>
+                  <input type="number" id="denomination10_modal" placeholder="0">
+
+                  <img src="./img/Money Icon/5.png">
+                  <label for="denomination5_modal">Billetes de 5:</label>
+                  <input type="number" id="denomination5_modal" placeholder="0">
+
+                  <img src="./img/Money Icon/1.png">
+                  <label for="denomination1_modal">Billetes de 1:</label>
+                  <input type="number" id="denomination1_modal" placeholder="0">
+                </div>
+              </div>
+
+          </div>
+        </div>
+
+        <div class="modal_caja_down">
+
+          <div style="display: inline-flex;flex-direction: column;align-items: center;">
+            <p>Total en Caja:</p>
+            <div id="modalTotalDeberia">RD$0</div>
+          </div>
+
+          <div style="display: inline-flex;flex-direction: column;align-items: center;">
+            <div id="modalStatus"></div>
+            <button type="submit">Validar Cuadre</button>
+          </div>
+
+          <div style="display: inline-flex;flex-direction: column;align-items: center;">
+            <p>Total Contado:</p>
+            <div id="modalTotalAmount">RD$0</div>
+          </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- Modal para Iniciar Caja -->
+    <!-- Formulario de solo lectura -->
+    <div id="ModalInicialCaja" class="modal">
+      <div class="modal-content">
+
+        <div class="modal_caja_tittle">
+          <span class="close">&times;</span>
+          <h2>Iniciar Caja</h2>
+        </div>
+
+        <div class="modal_caja_body">
+          <div class="modal_caja_flex">
+
+            <form id="readOnlyForm" style="display: flex;">
+              <div class="CashContainer_master">
+
+                <div class="Casstittle">
+                  <h2>Efectivo en Caja</h2>
+                </div>
+
+                <div class="CashContainer">
+                  <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+
+                    <img src="./img/Money Icon/2000.jpg">
+                    <label for="denomination2000_read">Billetes de 2000:</label>
+                    <input type="number" id="denomination2000_read" placeholder="0" readonly>
+
+                    <img src="./img/Money Icon/1000.jpg">
+                    <label for="denomination1000_read">Billetes de 1000:</label>
+                    <input type="number" id="denomination1000_read" placeholder="0" readonly>
+
+                    <img src="./img/Money Icon/500.jpg">
+                    <label for="denomination500_read">Billetes de 500:</label>
+                    <input type="number" id="denomination500_read" placeholder="0" readonly>
+
+                    <img src="./img/Money Icon/200.jpg">
+                    <label for="denomination200_read">Billetes de 200:</label>
+                    <input type="number" id="denomination200_read" placeholder="0" readonly>
+
+                    <img src="./img/Money Icon/100.jpg">
+                    <label for="denomination100_read">Billetes de 100:</label>
+                    <input type="number" id="denomination100_read" placeholder="0" readonly>
+                  </div>
+
+                  <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                    <img src="./img/Money Icon/50.jpg">
+                    <label for="denomination50_read">Billetes de 50:</label>
+                    <input type="number" id="denomination50_read" placeholder="0" readonly>
+
+                    <img src="./img/Money Icon/25.png">
+                    <label for="denomination25_read">Monedas de 25:</label>
+                    <input type="number" id="denomination25_read" placeholder="0" readonly>
+
+                    <img src="./img/Money Icon/10.png">
+                    <label for="denomination10_read">Monedas de 10:</label>
+                    <input type="number" id="denomination10_read" placeholder="0" readonly>
+
+                    <img src="./img/Money Icon/5.png">
+                    <label for="denomination5_read">Monedas de 5:</label>
+                    <input type="number" id="denomination5_read" placeholder="0" readonly>
+
+                    <img src="./img/Money Icon/1.png">
+                    <label for="denomination1_read">Monedas de 1:</label>
+                    <input type="number" id="denomination1_read" placeholder="0" readonly>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+
+            <!-- Formulario editable -->
+            <!-- <h2>Actualizar Datos de Caja</h2> -->
+            <form id="editForm" style="display: flex;">
+
+
+              <div class="CashContainer_master">
+
+                <div class="Casstittle">
+                  <h2>Efectivo Contado</h2>
+                </div>
+
+                <div class="CashContainer">
+
+                  <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                    <img src="./img/Money Icon/2000.jpg">
+                    <label for="denomination2000">Billetes de 2000:</label>
+                    <input type="number" id="denomination2000" placeholder="0">
+
+                    <img src="./img/Money Icon/1000.jpg">
+                    <label for="denomination1000">Billetes de 1000:</label>
+                    <input type="number" id="denomination1000" placeholder="0">
+
+                    <img src="./img/Money Icon/500.jpg">
+                    <label for="denomination500">Billetes de 500:</label>
+                    <input type="number" id="denomination500" placeholder="0">
+
+                    <img src="./img/Money Icon/200.jpg">
+                    <label for="denomination200">Billetes de 200:</label>
+                    <input type="number" id="denomination200" placeholder="0">
+
+                    <img src="./img/Money Icon/100.jpg">
+                    <label for="denomination100">Billetes de 100:</label>
+                    <input type="number" id="denomination100" placeholder="0">
+                  </div>
+
+                  <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                    <img src="./img/Money Icon/50.jpg">
+                    <label for="denomination50">Billetes de 50:</label>
+                    <input type="number" id="denomination50" placeholder="0">
+
+                    <img src="./img/Money Icon/25.png">
+                    <label for="denomination25">Monedas de 25:</label>
+                    <input type="number" id="denomination25" placeholder="0">
+
+                    <img src="./img/Money Icon/10.png">
+                    <label for="denomination10">Monedas de 10:</label>
+                    <input type="number" id="denomination10" placeholder="0">
+
+                    <img src="./img/Money Icon/5.png">
+                    <label for="denomination5">Monedas de 5:</label>
+                    <input type="number" id="denomination5" placeholder="0">
+
+                    <img src="./img/Money Icon/1.png">
+                    <label for="denomination1">Monedas de 1:</label>
+                    <input type="number" id="denomination1" placeholder="0">
+                  </div>
+                </div>
+
+              </div>
+          </div>
+        </div>
+
+        <div class="modal_caja_down">
+          <div style="display: inline-flex;flex-direction: column;align-items: center;">
+            <p>Total en Caja</p>
+            <div id="totalAmount_read">RD$0</div>
+          </div>
+          <button type="submit">Iniciar Caja</button>
+          <div id="totalAmount">Total Contado: <span>RD$0</span></div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- Modal para Iniciar Caja FIN -->
+
+
+  <!-- Modal para Retirar Dinero -->
+  <div id="retirarDineroModal" class="modal">
+    <div class="modal-content">
+
+      <div class="modal_caja_tittle">
+        <span class="close">&times;</span>
+        <h2>Retirar Efectivo</h2>
+      </div>
+
+      <div class="modal_caja_body">
+        <div class="modal_caja_flex">
+          <!-- Primer formulario: Montos recuperados -->
+          <form id="retirarDineroForm" style="display: flex;">
+
+            <div class="CashContainer_master">
+
+              <div class="Casstittle">
+                <h2>Efectivo en Caja</h2>
+              </div>
+
+              <div class="CashContainer">
+                <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+
+                  <img src="./img/Money Icon/2000.jpg">
+                  <label for="denomination2000_retirar">Billetes de 2000:</label>
+                  <input type="number" id="denomination2000_retirar" placeholder="0" readonly>
+
+                  <img src="./img/Money Icon/1000.jpg">
+                  <label for="denomination1000_retirar">Billetes de 1000:</label>
+                  <input type="number" id="denomination1000_retirar" placeholder="0" readonly>
+
+                  <img src="./img/Money Icon/500.jpg">
+                  <label for="denomination500_retirar">Billetes de 500:</label>
+                  <input type="number" id="denomination500_retirar" placeholder="0" readonly>
+
+                  <img src="./img/Money Icon/200.jpg">
+                  <label for="denomination200_retirar">Billetes de 200:</label>
+                  <input type="number" id="denomination200_retirar" placeholder="0" readonly>
+
+                  <img src="./img/Money Icon/100.jpg">
+                  <label for="denomination100_retirar">Billetes de 100:</label>
+                  <input type="number" id="denomination100_retirar" placeholder="0" readonly>
+                </div>
+
+                <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                  <img src="./img/Money Icon/50.jpg">
+                  <label for="denomination50_retirar">Billetes de 50:</label>
+                  <input type="number" id="denomination50_retirar" placeholder="0" readonly>
+
+                  <img src="./img/Money Icon/25.png">
+                  <label for="denomination25_retirar">Monedas de 25:</label>
+                  <input type="number" id="denomination25_retirar" placeholder="0" readonly>
+
+                  <img src="./img/Money Icon/10.png">
+                  <label for="denomination10_retirar">Billetes de 10:</label>
+                  <input type="number" id="denomination10_retirar" placeholder="0" readonly>
+
+                  <img src="./img/Money Icon/5.png">
+                  <label for="denomination5_retirar">Billetes de 5:</label>
+                  <input type="number" id="denomination5_retirar" placeholder="0" readonly>
+
+                  <img src="./img/Money Icon/1.png">
+                  <label for="denomination1_retirar">Billetes de 1:</label>
+                  <input type="number" id="denomination1_retirar" placeholder="0" readonly>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <!-- Segundo formulario RETIRAR: Editable -->
+          <form id="editarRetiroForm" style="display: flex;">
+
+            <div class="CashContainer_master">
+
+              <div class="Casstittle">
+                <h2>Efectivo a Retirar</h2>
+              </div>
+
+              <div class="CashContainer">
+
+                <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                  <img src="./img/Money Icon/2000.jpg">
+                  <label for="denomination2000_edit">Billetes de 2000:</label>
+                  <input type="number" id="denomination2000_edit" placeholder="0">
+
+                  <img src="./img/Money Icon/1000.jpg">
+                  <label for="denomination1000_edit">Billetes de 1000:</label>
+                  <input type="number" id="denomination1000_edit" placeholder="0">
+
+                  <img src="./img/Money Icon/500.jpg">
+                  <label for="denomination500_edit">Billetes de 500:</label>
+                  <input type="number" id="denomination500_edit" placeholder="0">
+
+                  <img src="./img/Money Icon/200.jpg">
+                  <label for="denomination200_edit">Billetes de 200:</label>
+                  <input type="number" id="denomination200_edit" placeholder="0">
+
+                  <img src="./img/Money Icon/100.jpg">
+                  <label for="denomination100_edit">Billetes de 100:</label>
+                  <input type="number" id="denomination100_edit" placeholder="0">
+                </div>
+
+                <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                  <img src="./img/Money Icon/50.jpg">
+                  <label for="denomination50_edit">Billetes de 50:</label>
+                  <input type="number" id="denomination50_edit" placeholder="0">
+
+                  <img src="./img/Money Icon/25.png">
+                  <label for="denomination25_edit">Monedas de 25:</label>
+                  <input type="number" id="denomination25_edit" placeholder="0">
+
+                  <img src="./img/Money Icon/10.png">
+                  <label for="denomination10_edit">Billetes de 10:</label>
+                  <input type="number" id="denomination10_edit" placeholder="0">
+
+                  <img src="./img/Money Icon/5.png">
+                  <label for="denomination5_edit">Billetes de 5:</label>
+                  <input type="number" id="denomination5_edit" placeholder="0">
+
+                  <img src="./img/Money Icon/1.png">
+                  <label for="denomination1_edit">Billetes de 1:</label>
+                  <input type="number" id="denomination1_edit" placeholder="0">
+                </div>
+              </div>
+
+            </div>
+        </div>
+      </div>
+
+      <div class="modal_caja_down">
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <p>Total en Caja</p>
+          <div id="modalTotalRetirar">RD$0</div>
+        </div>
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <div id="modalQuedariaEnCaja">Lo que quedaría en caja: RD$0</div> <!-- Nuevo div agregado -->
+          <button type="submit">Aplicar Retiro</button>
+        </div>
+
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <p>Total a Retirar</p>
+          <div id="totalRetirar">RD$0</div>
+        </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+
+
+  <!-- Modal para Ingresar Dinero -->
+  <div id="ingresarDineroModal" class="modal">
+    <div class="modal-content">
+
+      <div class="modal_caja_tittle">
+        <span class="close">&times;</span>
+        <h2>Ingresar Efectivo</h2>
+      </div>
+
+      <div class="modal_caja_body">
+        <div class="modal_caja_flex">
+          <!-- Formulario para mostrar los montos actuales -->
+          <form id="currentAmountsForm" style="display: flex;">
+
+            <div class="CashContainer_master">
+
+              <div class="Casstittle">
+                <h2>Efectivo en Caja</h2>
+              </div>
+
+              <div class="CashContainer">
+                <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                  <img src="./img/Money Icon/2000.jpg">
+                  <label for="denomination2000_current">Billetes de 2000:</label>
+                  <input type="number" id="denomination2000_current" readonly>
+
+                  <img src="./img/Money Icon/1000.jpg">
+                  <label for="denomination1000_current">Billetes de 1000:</label>
+                  <input type="number" id="denomination1000_current" readonly>
+
+                  <img src="./img/Money Icon/500.jpg">
+                  <label for="denomination500_current">Billetes de 500:</label>
+                  <input type="number" id="denomination500_current" readonly>
+
+                  <img src="./img/Money Icon/200.jpg">
+                  <label for="denomination200_current">Billetes de 200:</label>
+                  <input type="number" id="denomination200_current" readonly>
+
+                  <img src="./img/Money Icon/100.jpg">
+                  <label for="denomination100_current">Billetes de 100:</label>
+                  <input type="number" id="denomination100_current" readonly>
+                </div>
+
+                <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                  <img src="./img/Money Icon/50.jpg">
+                  <label for="denomination50_current">Billetes de 50:</label>
+                  <input type="number" id="denomination50_current" readonly>
+
+                  <img src="./img/Money Icon/25.png">
+                  <label for="denomination25_current">Monedas de 25:</label>
+                  <input type="number" id="denomination25_current" readonly>
+
+                  <img src="./img/Money Icon/10.png">
+                  <label for="denomination10_current">Billetes de 10:</label>
+                  <input type="number" id="denomination10_current" readonly>
+
+                  <img src="./img/Money Icon/5.png">
+                  <label for="denomination5_current">Billetes de 5:</label>
+                  <input type="number" id="denomination5_current" readonly>
+
+                  <img src="./img/Money Icon/1.png">
+                  <label for="denomination1_current">Billetes de 1:</label>
+                  <input type="number" id="denomination1_current" readonly>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <!-- Formulario para ingresar dinero Editable-->
+          <form id="ingresarDineroForm" style="display: flex;">
+
+            <div class="CashContainer_master">
+
+              <div class="Casstittle">
+                <h2>Efectivo a Ingresar</h2>
+              </div>
+
+              <div class="CashContainer">
+
+                <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                  <img src="./img/Money Icon/2000.jpg">
+                  <label for="denomination2000_ingresar">Billetes de 2000:</label>
+                  <input type="number" id="denomination2000_ingresar" placeholder="0">
+
+                  <img src="./img/Money Icon/1000.jpg">
+                  <label for="denomination1000_ingresar">Billetes de 1000:</label>
+                  <input type="number" id="denomination1000_ingresar" placeholder="0">
+
+                  <img src="./img/Money Icon/500.jpg">
+                  <label for="denomination500_ingresar">Billetes de 500:</label>
+                  <input type="number" id="denomination500_ingresar" placeholder="0">
+
+                  <img src="./img/Money Icon/200.jpg">
+                  <label for="denomination200_ingresar">Billetes de 200:</label>
+                  <input type="number" id="denomination200_ingresar" placeholder="0">
+
+                  <img src="./img/Money Icon/100.jpg">
+                  <label for="denomination100_ingresar">Billetes de 100:</label>
+                  <input type="number" id="denomination100_ingresar" placeholder="0">
+                </div>
+
+                <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                  <img src="./img/Money Icon/50.jpg">
+                  <label for="denomination50_ingresar">Billetes de 50:</label>
+                  <input type="number" id="denomination50_ingresar" placeholder="0">
+
+                  <img src="./img/Money Icon/25.png">
+                  <label for="denomination25_ingresar">Monedas de 25:</label>
+                  <input type="number" id="denomination25_ingresar" placeholder="0">
+
+                  <img src="./img/Money Icon/10.png">
+                  <label for="denomination10_ingresar">Billetes de 10:</label>
+                  <input type="number" id="denomination10_ingresar" placeholder="0">
+
+                  <img src="./img/Money Icon/5.png">
+                  <label for="denomination5_ingresar">Billetes de 5:</label>
+                  <input type="number" id="denomination5_ingresar" placeholder="0">
+
+                  <img src="./img/Money Icon/1.png">
+                  <label for="denomination1_ingresar">Billetes de 1:</label>
+                  <input type="number" id="denomination1_ingresar" placeholder="0">
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+
+      <div class="modal_caja_down">
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <p>Total en Caja</p>
+          <div id="totalCurrentAmount">Total en Caja: RD$0</div>
+        </div>
+
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <div id="ReviewIngresoEnCaja">Lo que quedaría en caja: RD$0</div> <!-- Cambiado el ID aquí -->
+          <button type="submit">Aplicar Ingreso</button>
+        </div>
+
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <p>Total a Ingresar</p>
+          <div id="modalTotalIngresar">RD$0</div>
+        </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Modal para Cierre de Caja -->
+  <div id="cierreCajaModal" class="modal">
+    <div class="modal-content">
+
+      <div class="modal_caja_tittle">
+        <span class="close">&times;</span>
+        <h2>Cierre de Caja</h2>
+      </div>
+
+      <div class="modal_caja_body">
+        <div class="modal_caja_flex">
+
+          <form id="cierreCajaForm">
+
+            <div class="CashContainer">
+              <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                <img src="./img/Money Icon/2000.jpg">
+                <label for="denomination2000_cierre">Billetes de 2000:</label>
+                <input type="number" id="denomination2000_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/1000.jpg">
+                <label for="denomination1000_cierre">Billetes de 1000:</label>
+                <input type="number" id="denomination1000_cierre" placeholder="0" value="">
+
+
+                <img src="./img/Money Icon/500.jpg">
+                <label for="denomination500_cierre">Billetes de 500:</label>
+                <input type="number" id="denomination500_cierre" placeholder="0" value="">
+
+
+                <img src="./img/Money Icon/200.jpg">
+                <label for="denomination200_cierre">Billetes de 200:</label>
+                <input type="number" id="denomination200_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/100.jpg">
+                <label for="denomination100_cierre">Billetes de 100:</label>
+                <input type="number" id="denomination100_cierre" placeholder="0" value="">
+              </div>
+
+
+              <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                <img src="./img/Money Icon/50.jpg">
+                <label for="denomination50_cierre">Billetes de 50:</label>
+                <input type="number" id="denomination50_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/25.png">
+                <label for="denomination25_cierre">Monedas de 25:</label>
+                <input type="number" id="denomination25_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/10.png">
+                <label for="denomination10_cierre">Monedas de 10:</label>
+                <input type="number" id="denomination10_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/5.png">
+                <label for="denomination5_cierre">Monedas de 5:</label>
+                <input type="number" id="denomination5_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/1.png">
+                <label for="denomination1_cierre">Monedas de 1:</label>
+                <input type="number" id="denomination1_cierre" placeholder="0" value="">
+              </div>
+            </div>
+
+        </div>
+      </div>
+
+      <div class="modal_caja_down">
+
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <p>Total en Caja:</p>
+          <div id="modalTotalEnCaja">RD$0</div>
+        </div>
+
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <div id="modalStatusCierre" style="color: rgb(255, 71, 71);"></div> <!-- Div para mostrar el estado -->
+          <button type="submit">Cierre de Caja</button>
+        </div>
+
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <p>Total Contado:</p>
+          <div id="modalTotalContado">RD$0</div>
+        </div>
+
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+  </div>
+
+
+
+  </div>
+
+  <script>
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
+      authDomain: "paris-laundry.firebaseapp.com",
+      projectId: "paris-laundry",
+      storageBucket: "paris-laundry.appspot.com",
+      messagingSenderId: "1022712814457",
+      appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+
+    // Manejo del modal "Ingresar Dinero"
+    const ingresarDineroModal = document.getElementById("ingresarDineroModal");
+    const btnIngresarDinero = document.getElementById("openIngresarDineroModal");
+    const spanIngresarDinero = ingresarDineroModal.getElementsByClassName("close")[0];
+
+    // Abrir el modal "Ingresar Dinero"
+    btnIngresarDinero.onclick = function () {
+      ingresarDineroModal.style.display = "block";
+    };
+
+    // Cerrar el modal "Ingresar Dinero"
+    spanIngresarDinero.onclick = function () {
+      ingresarDineroModal.style.display = "none";
+    };
+
+    // Cerrar el modal si se hace clic fuera de él
+    window.onclick = function (event) {
+      if (event.target == ingresarDineroModal) {
+        ingresarDineroModal.style.display = "none";
+      }
+    };
+
+    // Función para calcular el total a ingresar
+    const calcularTotalIngresar = () => {
+      const total = Array.from(document.querySelectorAll('#ingresarDineroForm input[type="number"]'))
+        .reduce((acc, input) => acc + (parseInt(input.value) || 0) * parseInt(input.id.replace('denomination', '')) || 0, 0);
+
+      document.getElementById('modalTotalIngresar').innerText = `RD$${total}`;
+    };
+
+    // Agregar eventos de entrada a cada campo del formulario de "Ingresar Dinero"
+    document.querySelectorAll('#ingresarDineroForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', calcularTotalIngresar);
+    });
+
+    // Guardar los montos a ingresar en Firebase
+    document.getElementById('ingresarDineroForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      // Obtener los montos a ingresar del formulario
+      const denominationsToDeposit = {
+        2000: parseInt(document.getElementById('denomination2000_ingresar').value) || 0,
+        1000: parseInt(document.getElementById('denomination1000_ingresar').value) || 0,
+        500: parseInt(document.getElementById('denomination500_ingresar').value) || 0,
+        200: parseInt(document.getElementById('denomination200_ingresar').value) || 0,
+        100: parseInt(document.getElementById('denomination100_ingresar').value) || 0,
+        50: parseInt(document.getElementById('denomination50_ingresar').value) || 0,
+        25: parseInt(document.getElementById('denomination25_ingresar').value) || 0,
+        10: parseInt(document.getElementById('denomination10_ingresar').value) || 0,
+        5: parseInt(document.getElementById('denomination5_ingresar').value) || 0,
+        1: parseInt(document.getElementById('denomination1_ingresar').value) || 0,
+      };
+
+      try {
+        const querySnapshot = await db.collection("caja").get();
+        if (!querySnapshot.empty) {
+          const doc = querySnapshot.docs[0];
+          const currentDenominations = doc.data().denominations;
+
+          // Sumar los montos a ingresar a las denominaciones actuales
+          const updatedDenominations = {
+            2000: currentDenominations[2000] + denominationsToDeposit[2000],
+            1000: currentDenominations[1000] + denominationsToDeposit[1000],
+            500: currentDenominations[500] + denominationsToDeposit[500],
+            200: currentDenominations[200] + denominationsToDeposit[200],
+            100: currentDenominations[100] + denominationsToDeposit[100],
+            50: currentDenominations[50] + denominationsToDeposit[50],
+            25: currentDenominations[25] + denominationsToDeposit[25],
+            10: currentDenominations[10] + denominationsToDeposit[10],
+            5: currentDenominations[5] + denominationsToDeposit[5],
+            1: currentDenominations[1] + denominationsToDeposit[1],
+          };
+
+          // Calcular el nuevo total en caja
+          const totalEnCaja = parseInt(document.getElementById('totalAmount_read').innerText.replace('RD$', '').trim()) || 0;
+          const totalIngresar = Object.keys(denominationsToDeposit).reduce((acc, key) => acc + (denominationsToDeposit[key] * key), 0);
+          const nuevoTotalEnCaja = totalEnCaja + totalIngresar;
+
+          // Actualizar Firebase con las nuevas denominaciones y el nuevo total en caja
+          await doc.ref.update({
+            denominations: updatedDenominations,
+            totalEnCaja: nuevoTotalEnCaja,
+          });
+
+          // Alertas después de la actualización
+          alert("El ingreso a caja es correcto.");
+          alert("Caja actualizada exitosamente.");
+          location.reload(); // Recargar la página después de guardar
+        } else {
+          alert("No se encontraron datos en la colección 'caja'.");
+        }
+      } catch (error) {
+        console.error("Error al actualizar los montos a ingresar:", error);
+        alert("Error al actualizar los montos a ingresar. Intenta nuevamente.");
+      }
+    });
+
+
+    // Manejo del modal "Retirar Dinero"
+    const retirarDineroModal = document.getElementById("retirarDineroModal");
+    const btnRetirarDinero = document.getElementById("openRetirarDineroModal");
+    const spanRetirarDinero = retirarDineroModal.getElementsByClassName("close")[0];
+
+    // Abrir el modal "Retirar Dinero"
+    btnRetirarDinero.onclick = function () {
+      retirarDineroModal.style.display = "block";
+      loadRetirarDineroData(); // Cargar datos de Firebase al abrir el modal
+    };
+
+    // Cerrar el modal "Retirar Dinero"
+    spanRetirarDinero.onclick = function () {
+      retirarDineroModal.style.display = "none";
+    };
+
+    // Cerrar el modal si se hace clic fuera de él
+    window.onclick = function (event) {
+      if (event.target == retirarDineroModal) {
+        retirarDineroModal.style.display = "none";
+      }
+    };
+
+    // Función para calcular y mostrar lo que quedaría en caja
+    const calcularQuedariaEnCaja = () => {
+      const totalEnCaja = parseInt(document.getElementById('totalAmount_read').innerText.replace('RD$', '').trim()) || 0;
+      const totalRetirar = Array.from(document.querySelectorAll('#editarRetiroForm input[type="number"]'))
+        .reduce((acc, input) => acc + (parseInt(input.value) || 0) * parseInt(input.id.replace('denomination', '')) || 0, 0);
+
+      const quedariaEnCaja = totalEnCaja - totalRetirar;
+      document.getElementById('modalQuedariaEnCaja').innerText = `Lo que quedaría en caja: RD$${quedariaEnCaja}`;
+    };
+
+    // Agregar eventos de entrada a cada campo del formulario de "Actualizar Montos a Retirar"
+    document.querySelectorAll('#editarRetiroForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', calcularQuedariaEnCaja);
+    });
+
+
+
+
+
+    // Función para cargar los montos actuales de Firebase al abrir el modal
+    const loadCurrentAmounts = async () => {
+      const cajaSnapshot = await db.collection("caja").get();
+      if (!cajaSnapshot.empty) {
+        const cajaDoc = cajaSnapshot.docs[0].data();
+        document.getElementById('denomination2000_current').value = cajaDoc.denominations[2000] || 0;
+        document.getElementById('denomination1000_current').value = cajaDoc.denominations[1000] || 0;
+        document.getElementById('denomination500_current').value = cajaDoc.denominations[500] || 0;
+        document.getElementById('denomination200_current').value = cajaDoc.denominations[200] || 0;
+        document.getElementById('denomination100_current').value = cajaDoc.denominations[100] || 0;
+        document.getElementById('denomination50_current').value = cajaDoc.denominations[50] || 0;
+        document.getElementById('denomination25_current').value = cajaDoc.denominations[25] || 0;
+        document.getElementById('denomination10_current').value = cajaDoc.denominations[10] || 0;
+        document.getElementById('denomination5_current').value = cajaDoc.denominations[5] || 0;
+        document.getElementById('denomination1_current').value = cajaDoc.denominations[1] || 0;
+
+        // Calcular y mostrar el total actual en caja
+        const totalEnCaja = Object.keys(cajaDoc.denominations).reduce((acc, key) => {
+          return acc + (cajaDoc.denominations[key] * key);
+        }, 0);
+        document.getElementById('totalCurrentAmount').innerText = `RD$${totalEnCaja}`;
+      }
+    };
+
+    // Función para calcular lo que habría en caja después de agregar el dinero
+    const calcularReviewIngresoEnCaja = () => {
+      const totalEnCaja = parseInt(document.getElementById('totalCurrentAmount').innerText.replace('RD$', '').trim()) || 0;
+      const totalIngresar = Array.from(document.querySelectorAll('#ingresarDineroForm input[type="number"]'))
+        .reduce((acc, input) => acc + (parseInt(input.value) || 0) * parseInt(input.id.replace('denomination', '')) || 0, 0);
+
+      const quedariaEnCaja = totalEnCaja + totalIngresar;
+      document.getElementById('ReviewIngresoEnCaja').innerText = `Lo que quedaría en caja: RD$${quedariaEnCaja}`;
+    };
+
+    // Agregar eventos de entrada a cada campo del formulario de "Ingresar Dinero"
+    document.querySelectorAll('#ingresarDineroForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', calcularReviewIngresoEnCaja);
+    });
+
+    // Abrir el modal "Ingresar Dinero" y cargar los montos actuales
+    btnIngresarDinero.onclick = async function () {
+      await loadCurrentAmounts(); // Cargar datos de Firebase al abrir el modal
+      ingresarDineroModal.style.display = "block";
+      calcularReviewIngresoEnCaja(); // Calcular lo que quedaría en caja al abrir el modal
+    };
+
+
+
+
+    // Función para verificar si el valor ingresado es mayor que la cantidad disponible
+    const verificarCantidad = () => {
+      // Obtener los valores de los campos del primer formulario (montos recuperados)
+      const cantidadDisponible = {
+        2000: parseInt(document.getElementById('denomination2000_retirar').value) || 0,
+        1000: parseInt(document.getElementById('denomination1000_retirar').value) || 0,
+        500: parseInt(document.getElementById('denomination500_retirar').value) || 0,
+        200: parseInt(document.getElementById('denomination200_retirar').value) || 0,
+        100: parseInt(document.getElementById('denomination100_retirar').value) || 0,
+        50: parseInt(document.getElementById('denomination50_retirar').value) || 0,
+        25: parseInt(document.getElementById('denomination25_retirar').value) || 0,
+        10: parseInt(document.getElementById('denomination10_retirar').value) || 0,
+        5: parseInt(document.getElementById('denomination5_retirar').value) || 0,
+        1: parseInt(document.getElementById('denomination1_retirar').value) || 0,
+      };
+
+      // Obtener los campos del segundo formulario (montos a retirar)
+      const camposRetiro = document.querySelectorAll('#editarRetiroForm input[type="number"]');
+
+      camposRetiro.forEach(input => {
+        const denominacion = input.id.replace('denomination', '').replace('_edit', '');
+        const valorIngresado = parseInt(input.value) || 0;
+
+        if (valorIngresado > cantidadDisponible[denominacion]) {
+          input.style.color = 'red'; // Cambiar el color del texto a rojo
+        } else {
+          input.style.color = ''; // Restaurar el color original
+        }
+      });
+    };
+
+    // Agregar eventos de entrada a cada campo del segundo formulario
+    document.querySelectorAll('#editarRetiroForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', verificarCantidad);
+    });
+
+    // Llamar a la función al cargar el modal para verificar los valores iniciales
+    const loadRetirarDineroData = async () => {
+      const cajaSnapshot = await db.collection("caja").get();
+      if (!cajaSnapshot.empty) {
+        const cajaDoc = cajaSnapshot.docs[0].data();
+        document.getElementById('denomination2000_retirar').value = cajaDoc.denominations[2000] || 0;
+        document.getElementById('denomination1000_retirar').value = cajaDoc.denominations[1000] || 0;
+        document.getElementById('denomination500_retirar').value = cajaDoc.denominations[500] || 0;
+        document.getElementById('denomination200_retirar').value = cajaDoc.denominations[200] || 0;
+        document.getElementById('denomination100_retirar').value = cajaDoc.denominations[100] || 0;
+        document.getElementById('denomination50_retirar').value = cajaDoc.denominations[50] || 0;
+        document.getElementById('denomination25_retirar').value = cajaDoc.denominations[25] || 0;
+        document.getElementById('denomination10_retirar').value = cajaDoc.denominations[10] || 0;
+        document.getElementById('denomination5_retirar').value = cajaDoc.denominations[5] || 0;
+        document.getElementById('denomination1_retirar').value = cajaDoc.denominations[1] || 0;
+
+        // Actualizar el total en el modal
+        document.getElementById('modalTotalRetirar').innerText = `RD$${cajaDoc.totalEnCaja || 0}`;
+        calcularQuedariaEnCaja(); // Calcular lo que quedaría en caja al cargar los datos
+        verificarCantidad(); // Verificar las cantidades al cargar los datos
+      }
+    };
+
+
+
+
+
+
+
+
+
+
+    // Actualizar el total en tiempo real al cambiar los valores de los campos
+    document.querySelectorAll('#editarRetiroForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', async () => {
+        const cajaSnapshot = await db.collection("caja").get();
+        if (!cajaSnapshot.empty) {
+          const cajaDoc = cajaSnapshot.docs[0].data();
+          document.getElementById('modalTotalRetirar').innerText = `RD$${cajaDoc.totalEnCaja || 0}`;
+        }
+      });
+    });
+
+
+
+
+    // Guardar los montos a retirar en Firebase
+    document.getElementById('editarRetiroForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      // Obtener los montos a retirar del formulario
+      const denominationsToWithdraw = {
+        2000: parseInt(document.getElementById('denomination2000_edit').value) || 0,
+        1000: parseInt(document.getElementById('denomination1000_edit').value) || 0,
+        500: parseInt(document.getElementById('denomination500_edit').value) || 0,
+        200: parseInt(document.getElementById('denomination200_edit').value) || 0,
+        100: parseInt(document.getElementById('denomination100_edit').value) || 0,
+        50: parseInt(document.getElementById('denomination50_edit').value) || 0,
+        25: parseInt(document.getElementById('denomination25_edit').value) || 0,
+        10: parseInt(document.getElementById('denomination10_edit').value) || 0,
+        5: parseInt(document.getElementById('denomination5_edit').value) || 0,
+        1: parseInt(document.getElementById('denomination1_edit').value) || 0,
+      };
+
+      try {
+        const querySnapshot = await db.collection("caja").get();
+        if (!querySnapshot.empty) {
+          const doc = querySnapshot.docs[0];
+          const currentDenominations = doc.data().denominations;
+
+          // Validar que no se intente retirar más de lo que hay
+          for (const key in denominationsToWithdraw) {
+            if (denominationsToWithdraw[key] > currentDenominations[key]) {
+              alert(`No puedes retirar más de lo que hay en ${key}.`);
+              return; // Salir si se intenta retirar más de lo disponible
+            }
+          }
+
+          // Restar los montos a retirar de las denominaciones actuales
+          const updatedDenominations = {
+            2000: currentDenominations[2000] - denominationsToWithdraw[2000],
+            1000: currentDenominations[1000] - denominationsToWithdraw[1000],
+            500: currentDenominations[500] - denominationsToWithdraw[500],
+            200: currentDenominations[200] - denominationsToWithdraw[200],
+            100: currentDenominations[100] - denominationsToWithdraw[100],
+            50: currentDenominations[50] - denominationsToWithdraw[50],
+            25: currentDenominations[25] - denominationsToWithdraw[25],
+            10: currentDenominations[10] - denominationsToWithdraw[10],
+            5: currentDenominations[5] - denominationsToWithdraw[5],
+            1: currentDenominations[1] - denominationsToWithdraw[1],
+          };
+
+          // Calcular el nuevo total en caja
+          const totalEnCaja = parseInt(document.getElementById('totalAmount_read').innerText.replace('RD$', '').trim()) || 0;
+          const totalRetirar = Object.keys(denominationsToWithdraw).reduce((acc, key) => acc + (denominationsToWithdraw[key] * key), 0);
+          const nuevoTotalEnCaja = totalEnCaja - totalRetirar;
+
+          // Actualizar Firebase con las nuevas denominaciones y el nuevo total en caja
+          await doc.ref.update({
+            denominations: updatedDenominations,
+            totalEnCaja: nuevoTotalEnCaja,
+          });
+
+          // Alertas después de la actualización
+          alert("El retiro de efectivo es correcto.");
+          alert("Caja actualizada exitosamente.");
+          location.reload(); // Recargar la página después de guardar
+        } else {
+          alert("No se encontraron datos en la colección 'caja'.");
+        }
+      } catch (error) {
+        console.error("Error al actualizar los montos a retirar:", error);
+        alert("Error al actualizar los montos a retirar. Intenta nuevamente.");
+      }
+    });
+
+
+
+
+    // Función para calcular y mostrar el total a retirar
+    const calcularTotalRetirar = () => {
+      const total = Array.from(document.querySelectorAll('#editarRetiroForm input[type="number"]'))
+        .reduce((acc, input) => acc + (parseInt(input.value) || 0) * parseInt(input.id.replace('denomination', '')) || 0, 0);
+
+      document.getElementById('totalRetirar').innerText = `RD$${total}`;
+    };
+
+    // Agregar eventos de entrada a cada campo del formulario de "Actualizar Montos a Retirar"
+    document.querySelectorAll('#editarRetiroForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', calcularTotalRetirar);
+    });
+    // Función para calcular y mostrar el total a retirar FIN
+
+
+
+
+
+
+    // Función para calcular el total
+    const calculateTotal = () => {
+      const denominations = {
+        2000: parseInt(document.getElementById('denomination2000').value) || 0,
+        1000: parseInt(document.getElementById('denomination1000').value) || 0,
+        500: parseInt(document.getElementById('denomination500').value) || 0,
+        200: parseInt(document.getElementById('denomination200').value) || 0,
+        100: parseInt(document.getElementById('denomination100').value) || 0,
+        50: parseInt(document.getElementById('denomination50').value) || 0,
+        25: parseInt(document.getElementById('denomination25').value) || 0,
+        10: parseInt(document.getElementById('denomination10').value) || 0,
+        5: parseInt(document.getElementById('denomination5').value) || 0,
+        1: parseInt(document.getElementById('denomination1').value) || 0,
+      };
+
+      // Calcular el total
+      const total = (denominations[2000] * 2000) +
+        (denominations[1000] * 1000) +
+        (denominations[500] * 500) +
+        (denominations[200] * 200) +
+        (denominations[100] * 100) +
+        (denominations[50] * 50) +
+        (denominations[25] * 25) +
+        (denominations[10] * 10) +
+        (denominations[5] * 5) +
+        (denominations[1] * 1);
+
+      // Mostrar el total en la interfaz
+      document.getElementById('totalAmount').innerHTML = `Total Contado: <span>RD$${total}</span>`;
+    };
+
+    const updateTotals = async () => {
+      try {
+        // Obtener el total en caja desde la base de datos
+        const cajaSnapshot = await db.collection("caja").get();
+        let totalEnCaja = 0;
+        if (!cajaSnapshot.empty) {
+          const cajaDoc = cajaSnapshot.docs[0].data();
+          totalEnCaja = cajaDoc.totalEnCaja || 0; // Obtener el total en caja
+        }
+
+        let totalRecibido = 0;
+        let totalCambio = 0;
+
+        // Obtener las facturas
+        const facturas = document.querySelectorAll('#facturasTable tbody tr');
+        facturas.forEach(factura => {
+          const montoRecibido = parseInt(factura.cells[4].innerText) || 0;
+          const cambio = parseInt(factura.cells[5].innerText) || 0;
+          totalRecibido += montoRecibido;
+          totalCambio += cambio;
+        });
+
+        const totalDeberia = totalEnCaja + totalRecibido - totalCambio;
+
+        // Actualizar los totales en el HTML
+        document.getElementById('totalEnCaja').innerText = `RD$${totalEnCaja}`;
+        document.getElementById('totalRecibido').innerText = `Total Recibido: RD$${totalRecibido}`;
+        document.getElementById('totalCambio').innerText = `Total Cambio: RD$${totalCambio}`;
+        document.getElementById('totalDeberia').innerText = `RD$${totalDeberia}`;
+      } catch (error) {
+        console.error("Error al actualizar los totales:", error);
+      }
+    };
+
+    // Agregar eventos de entrada a cada campo editable
+    document.querySelectorAll('#editForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', calculateTotal);
+    });
+
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Obtener valores de los inputs
+      const denominations = {
+        2000: parseInt(document.getElementById('denomination2000').value) || 0,
+        1000: parseInt(document.getElementById('denomination1000').value) || 0,
+        500: parseInt(document.getElementById('denomination500').value) || 0,
+        200: parseInt(document.getElementById('denomination200').value) || 0,
+        100: parseInt(document.getElementById('denomination100').value) || 0,
+        50: parseInt(document.getElementById('denomination50').value) || 0,
+        25: parseInt(document.getElementById('denomination25').value) || 0,
+        10: parseInt(document.getElementById('denomination10').value) || 0,
+        5: parseInt(document.getElementById('denomination5').value) || 0,
+        1: parseInt(document.getElementById('denomination1').value) || 0,
+      };
+
+      // Calcular el total
+      const total = (denominations[2000] * 2000) +
+        (denominations[1000] * 1000) +
+        (denominations[500] * 500) +
+        (denominations[200] * 200) +
+        (denominations[100] * 100) +
+        (denominations[50] * 50) +
+        (denominations[25] * 25) +
+        (denominations[10] * 10) +
+        (denominations[5] * 5) +
+        (denominations[1] * 1);
+
+      // Obtener los valores de las denominaciones en modo solo lectura
+      const readOnlyDenominations = {
+        2000: parseInt(document.getElementById('denomination2000_read').value) || 0,
+        1000: parseInt(document.getElementById('denomination1000_read').value) || 0,
+        500: parseInt(document.getElementById('denomination500_read').value) || 0,
+        200: parseInt(document.getElementById('denomination200_read').value) || 0,
+        100: parseInt(document.getElementById('denomination100_read').value) || 0,
+        50: parseInt(document.getElementById('denomination50_read').value) || 0,
+        25: parseInt(document.getElementById('denomination25_read').value) || 0,
+        10: parseInt(document.getElementById('denomination10_read').value) || 0,
+        5: parseInt(document.getElementById('denomination5_read').value) || 0,
+        1: parseInt(document.getElementById('denomination1_read').value) || 0,
+      };
+
+      // Validar si las denominaciones y el total coinciden
+      const denominationsMatch = Object.keys(denominations).every(key => denominations[key] === readOnlyDenominations[key]);
+      const totalReadOnly = parseInt(document.getElementById('totalAmount_read').innerText.replace('RD$', '').trim()) || 0;
+
+      if (!denominationsMatch || total !== totalReadOnly) {
+        alert("Las denominaciones o el total no coinciden con los datos de caja. Por favor, verifica los montos.");
+        return; // No continuar con el guardado
+      }
+
+      // Guardar o actualizar en Firebase
+      try {
+        const querySnapshot = await db.collection("caja").get();
+        if (!querySnapshot.empty) {
+          // Si ya existe un documento, actualizarlo
+          const doc = querySnapshot.docs[0];
+          await doc.ref.update({
+            denominations: denominations,
+            totalEnCaja: total,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Guardar el timestamp actual
+            inicioCajaHora: firebase.firestore.FieldValue.serverTimestamp() // Guardar el inicio de caja
+          });
+          alert("Caja actualizada exitosamente.");
+        } else {
+          // Si no existe, crear uno nuevo
+          await db.collection("caja").add({
+            denominations: denominations,
+            totalEnCaja: total,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Guardar el timestamp actual
+            inicioCajaHora: firebase.firestore.FieldValue.serverTimestamp() // Guardar el inicio de caja
+          });
+          alert("Caja guardada exitosamente.");
+        }
+
+        // Recargar la página después de guardar
+        location.reload(); // Esta línea recargará la página
+
+      } catch (error) {
+        console.error("Error al guardar la caja:", error);
+        alert("Error al guardar la caja. Intenta nuevamente.");
+      }
+    });
+
+    // Cargar datos de la caja al iniciar
+    const loadCashData = async () => {
+      const querySnapshot = await db.collection("caja").get();
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0].data();
+        document.getElementById('denomination2000_read').value = doc.denominations[2000] || '';
+        document.getElementById('denomination1000_read').value = doc.denominations[1000] || '';
+        document.getElementById('denomination500_read').value = doc.denominations[500] || '';
+        document.getElementById('denomination200_read').value = doc.denominations[200] || '';
+        document.getElementById('denomination100_read').value = doc.denominations[100] || '';
+        document.getElementById('denomination50_read').value = doc.denominations[50] || '';
+        document.getElementById('denomination25_read').value = doc.denominations[25] || '';
+        document.getElementById('denomination10_read').value = doc.denominations[10] || '';
+        document.getElementById('denomination5_read').value = doc.denominations[5] || '';
+        document.getElementById('denomination1_read').value = doc.denominations[1] || '';
+        document.getElementById('totalAmount_read').innerText = `RD$${doc.totalEnCaja || 0}`; // Cambiado aquí
+
+
+
+
+        // Limpiar el formulario editable
+        document.getElementById('denomination2000').value = '';
+        document.getElementById('denomination1000').value = '';
+        document.getElementById('denomination500').value = '';
+        document.getElementById('denomination200').value = '';
+        document.getElementById('denomination100').value = '';
+        document.getElementById('denomination50').value = '';
+        document.getElementById('denomination25').value = '';
+        document.getElementById('denomination10').value = '';
+        document.getElementById('denomination5').value = '';
+        document.getElementById('denomination1').value = '';
+      }
+    };
+
+    // Cargar las facturas en tiempo real
+    const loadFacturasRealTime = async () => {
+      try {
+        // Obtener el timestamp de la colección "caja"
+        const cajaSnapshot = await db.collection("caja").get();
+        if (!cajaSnapshot.empty) {
+          const cajaDoc = cajaSnapshot.docs[0].data();
+          const cajaTimestamp = cajaDoc.timestamp.toDate(); // Convertir a objeto Date
+
+          // Obtener las facturas generadas después del timestamp de la caja
+          db.collection("facturas")
+            .where("timestamp", ">", cajaTimestamp)
+            .orderBy("timestamp") // Asegúrate de que los documentos estén ordenados por timestamp
+            .onSnapshot((snapshot) => {
+              const facturasTableBody = document.getElementById("facturasTable").getElementsByTagName("tbody")[0];
+              facturasTableBody.innerHTML = ""; // Limpiar la tabla antes de agregar nuevas filas
+
+              snapshot.forEach(doc => {
+                const factura = doc.data();
+                if (factura.paymentMethod === "Efectivo") { // Filtrar por método de pago
+                  const row = facturasTableBody.insertRow();
+                  row.insertCell(0).innerText = factura.id; // ID del campo "id"
+                  row.insertCell(1).innerText = factura.clientName;
+                  row.insertCell(2).innerText = factura.clientPhone;
+                  row.insertCell(3).innerText = factura.paymentMethod; // Agregar el método de pago
+                  row.insertCell(4).innerText = factura.amountReceived; // Agregar el monto recibido
+                  row.insertCell(5).innerText = factura.changeAmount; // Agregar el cambio
+                  row.insertCell(6).innerText = factura.total;
+                  row.insertCell(7).innerText = factura.timestamp.toDate().toLocaleString(); // Formato legible
+                }
+              });
+              updateTotals(); // Llamar a la función para actualizar los totales
+            });
+        }
+      } catch (error) {
+        console.error("Error al cargar las facturas:", error);
+      }
+    };
+
+    // Cargar los datos de la caja y las facturas al inicio
+    loadCashData();
+    loadFacturasRealTime();
+
+    // Manejo del modal cuadre 
+    const modal = document.getElementById("cuadreModal");
+    const btn = document.getElementById("openModalButton");
+    const span = document.getElementsByClassName("close")[0];
+
+    // Abrir el modal
+    btn.onclick = function () {
+      modal.style.display = "block";
+      // Actualizar el total que debe haber en caja en el modal
+      const totalDeberia = document.getElementById('totalDeberia').innerText.replace('RD$', '').trim();
+      document.getElementById('modalTotalDeberia').innerText = `RD$${totalDeberia}`;
+    };
+
+    // Cerrar el modal
+    span.onclick = function () {
+      modal.style.display = "none";
+    };
+
+    // Cerrar el modal si se hace clic fuera de él
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    };
+    // Manejo del modal cuadre FIN
+
+    // Manejo del modal "ModalInicialCaja"
+    const modalInicial = document.getElementById("ModalInicialCaja");
+    const btnInicial = document.getElementById("openModalInicialCaja");
+    const spanInicial = modalInicial.getElementsByClassName("close")[0];
+
+    // Abrir el modal "ModalInicialCaja"
+    btnInicial.onclick = function () {
+      modalInicial.style.display = "block";
+    };
+
+    // Cerrar el modal "ModalInicialCaja"
+    spanInicial.onclick = function () {
+      modalInicial.style.display = "none";
+    };
+
+    // Cerrar el modal si se hace clic fuera de él
+    window.onclick = function (event) {
+      if (event.target == modalInicial) {
+        modalInicial.style.display = "none";
+      }
+    };
+    // Manejo del modal "ModalInicialCaja" FIN
+
+
+    // Calcular total y validar en tiempo real
+    const updateModalTotalAndStatus = () => {
+      const denominations = {
+        2000: parseInt(document.getElementById('denomination2000_modal').value) || 0,
+        1000: parseInt(document.getElementById('denomination1000_modal').value) || 0,
+        500: parseInt(document.getElementById('denomination500_modal').value) || 0,
+        200: parseInt(document.getElementById('denomination200_modal').value) || 0,
+        100: parseInt(document.getElementById('denomination100_modal').value) || 0,
+        50: parseInt(document.getElementById('denomination50_modal').value) || 0,
+        25: parseInt(document.getElementById('denomination25_modal').value) || 0,
+        10: parseInt(document.getElementById('denomination10_modal').value) || 0,
+        5: parseInt(document.getElementById('denomination5_modal').value) || 0,
+        1: parseInt(document.getElementById('denomination1_modal').value) || 0,
+      };
+
+      // Calcular el total
+      const total = (denominations[2000] * 2000) +
+        (denominations[1000] * 1000) +
+        (denominations[500] * 500) +
+        (denominations[200] * 200) +
+        (denominations[100] * 100) +
+        (denominations[50] * 50) +
+        (denominations[25] * 25) +
+        (denominations[10] * 10) +
+        (denominations[5] * 5) +
+        (denominations[1] * 1);
+
+      document.getElementById('modalTotalAmount').innerText = `RD$${total}`;
+
+      // Obtener el total que debe haber en caja
+      const totalDeberia = parseInt(document.getElementById('totalDeberia').innerText.replace('RD$', '').trim()) || 0;
+
+      // Validar si el total coincide
+      const statusDiv = document.getElementById('modalStatus');
+      if (total === totalDeberia) {
+        statusDiv.innerText = "¡Correcto!";
+        statusDiv.style.color = "#3ad33a";
+      } else {
+        const falta = totalDeberia - total;
+        statusDiv.innerText = `Falta: RD$${falta}`;
+        statusDiv.style.color = "#ff4747";
+      }
+    };
+
+    // Función para actualizar el total que debe haber en caja en el modal
+    const updateModalTotalDeberia = () => {
+      const totalDeberia = parseInt(document.getElementById('totalDeberia').innerText.replace('RD$', '').trim()) || 0;
+      document.getElementById('modalTotalDeberia').innerText = `RD$${totalDeberia}`;
+    };
+
+    // Agregar eventos de entrada a cada campo del modal
+    document.querySelectorAll('#cuadreForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', () => {
+        updateModalTotalAndStatus(); // Actualizar el total y el estado
+        updateModalTotalDeberia(); // Actualizar el total que debe haber en caja
+      });
+    });
+
+
+
+
+
+    // Calcular total y validar al enviar el formulario
+    document.getElementById('cuadreForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      updateModalTotalAndStatus(); // Asegurarse de que el total y el estado estén actualizados antes de validar
+      const total = parseInt(document.getElementById('modalTotalAmount').innerText.replace('RD$', '').trim()) || 0;
+      const totalDeberia = parseInt(document.getElementById('modalTotalDeberia').innerText.replace('RD$', '').trim()) || 0;
+
+      if (total === totalDeberia) {
+        // Obtener las denominaciones del modal
+        const denominations = {
+          2000: parseInt(document.getElementById('denomination2000_modal').value) || 0,
+          1000: parseInt(document.getElementById('denomination1000_modal').value) || 0,
+          500: parseInt(document.getElementById('denomination500_modal').value) || 0,
+          200: parseInt(document.getElementById('denomination200_modal').value) || 0,
+          100: parseInt(document.getElementById('denomination100_modal').value) || 0,
+          50: parseInt(document.getElementById('denomination50_modal').value) || 0,
+          25: parseInt(document.getElementById('denomination25_modal').value) || 0,
+          10: parseInt(document.getElementById('denomination10_modal').value) || 0,
+          5: parseInt(document.getElementById('denomination5_modal').value) || 0,
+          1: parseInt(document.getElementById('denomination1_modal').value) || 0,
+        };
+
+        // Guardar o actualizar en Firebase
+        try {
+          const querySnapshot = await db.collection("caja").get();
+          if (!querySnapshot.empty) {
+            // Si ya existe un documento, actualizarlo
+            const doc = querySnapshot.docs[0];
+            await doc.ref.update({
+              // denominations: denominations, // Esta línea se ha comentado para no actualizar denominations
+              // totalEnCaja: total, // Esta línea se ha comentado para no actualizar totalEnCaja
+              cuadreCajaHora: firebase.firestore.FieldValue.serverTimestamp() // Guardar la hora del cuadre
+            });
+            alert("Caja actualizada exitosamente.");
+          } else {
+            // Si no existe, crear uno nuevo
+            await db.collection("caja").add({
+              // denominations: denominations, // Esta línea se ha comentado para no actualizar denominations
+              // totalEnCaja: total, // Esta línea se ha comentado para no actualizar totalEnCaja
+              cuadreCajaHora: firebase.firestore.FieldValue.serverTimestamp() // Guardar la hora del cuadre
+            });
+            alert("Caja guardada exitosamente.");
+          }
+
+          // Recargar la página después de guardar
+          location.reload(); // Esta línea recargará la página
+
+        } catch (error) {
+          console.error("Error al guardar la caja:", error);
+          alert("Error al guardar la caja. Intenta nuevamente.");
+        }
+      } else {
+        alert("El cuadre de caja no coincide. Verifica los montos.");
+      }
+    });
+
+
+
+
+
+    // Manejo del modal "Cierre de Caja"
+    const cierreCajaModal = document.getElementById("cierreCajaModal");
+    const btnCierreCaja = document.getElementById("openCierreCajaModal");
+    const spanCierreCaja = cierreCajaModal.getElementsByClassName("close")[0];
+
+    // Abrir el modal "Cierre de Caja"
+    btnCierreCaja.onclick = function () {
+      cierreCajaModal.style.display = "block";
+      loadTotalEnCaja(); // Cargar el total que debe haber en caja desde Firebase
+    };
+
+    // Cerrar el modal "Cierre de Caja"
+    spanCierreCaja.onclick = function () {
+      cierreCajaModal.style.display = "none";
+    };
+
+    // Cerrar el modal si se hace clic fuera de él
+    window.onclick = function (event) {
+      if (event.target == cierreCajaModal) {
+        cierreCajaModal.style.display = "none";
+      }
+    };
+
+    // Función para cargar el total que debe haber en caja desde Firebase
+    const loadTotalEnCaja = async () => {
+      try {
+        const querySnapshot = await db.collection("caja").get();
+        if (!querySnapshot.empty) {
+          const doc = querySnapshot.docs[0].data();
+          const totalDeberia = parseInt(document.getElementById('totalDeberia').innerText.replace('RD$', '').trim()) || 0;
+          document.getElementById('modalTotalEnCaja').innerText = `RD$${totalDeberia}`;
+        }
+      } catch (error) {
+        console.error("Error al cargar el total en caja:", error);
+      }
+    };
+
+    // Función para calcular el total en tiempo real
+    const calcularTotalCierre = () => {
+      const denominations = {
+        2000: parseInt(document.getElementById('denomination2000_cierre').value) || 0,
+        1000: parseInt(document.getElementById('denomination1000_cierre').value) || 0,
+        500: parseInt(document.getElementById('denomination500_cierre').value) || 0,
+        200: parseInt(document.getElementById('denomination200_cierre').value) || 0,
+        100: parseInt(document.getElementById('denomination100_cierre').value) || 0,
+        50: parseInt(document.getElementById('denomination50_cierre').value) || 0,
+        25: parseInt(document.getElementById('denomination25_cierre').value) || 0,
+        10: parseInt(document.getElementById('denomination10_cierre').value) || 0,
+        5: parseInt(document.getElementById('denomination5_cierre').value) || 0,
+        1: parseInt(document.getElementById('denomination1_cierre').value) || 0,
+      };
+
+      // Calcular el total
+      const total = (denominations[2000] * 2000) +
+        (denominations[1000] * 1000) +
+        (denominations[500] * 500) +
+        (denominations[200] * 200) +
+        (denominations[100] * 100) +
+        (denominations[50] * 50) +
+        (denominations[25] * 25) +
+        (denominations[10] * 10) +
+        (denominations[5] * 5) +
+        (denominations[1] * 1);
+
+      document.getElementById('modalTotalContado').innerText = `RD$${total}`;
+      actualizarEstado(total); // Llamar a la función para actualizar el estado
+    };
+
+    // Función para actualizar el estado en el modal
+    const actualizarEstado = (totalContado) => {
+      const totalEnCaja = parseInt(document.getElementById('modalTotalEnCaja').innerText.replace('RD$', '').trim()) || 0;
+      const statusDiv = document.getElementById('modalStatusCierre');
+
+      if (totalContado === totalEnCaja) {
+        statusDiv.innerText = "¡Correcto!";
+        statusDiv.style.color = "#3ad33a";
+      } else {
+        const diferencia = totalEnCaja - totalContado;
+        statusDiv.innerText = `Falta: RD$${diferencia}`;
+        statusDiv.style.color = diferencia < 0 ? "#ffcc00" : "#ff4747"; // Rojo si falta, amarillo si sobra
+      }
+    };
+
+    // Agregar eventos de entrada a cada campo de denominación
+    document.querySelectorAll('#cierreCajaForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', calcularTotalCierre); // Calcular el total al cambiar el valor
+    });
+
+    // Manejo del formulario de cierre de caja
+document.getElementById('cierreCajaForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const totalCalculado = parseInt(document.getElementById('modalTotalContado').innerText.replace('RD$', '').trim()) || 0;
+  const totalDeberia = parseInt(document.getElementById('modalTotalEnCaja').innerText.replace('RD$', '').trim()) || 0;
+
+  if (totalCalculado === totalDeberia) {
+    try {
+      const querySnapshot = await db.collection("caja").get();
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+
+        // Reemplazar las denominaciones en Firebase
+        const updatedDenominations = {
+          2000: parseInt(document.getElementById('denomination2000_cierre').value) || 0,
+          1000: parseInt(document.getElementById('denomination1000_cierre').value) || 0,
+          500: parseInt(document.getElementById('denomination500_cierre').value) || 0,
+          200: parseInt(document.getElementById('denomination200_cierre').value) || 0,
+          100: parseInt(document.getElementById('denomination100_cierre').value) || 0,
+          50: parseInt(document.getElementById('denomination50_cierre').value) || 0,
+          25: parseInt(document.getElementById('denomination25_cierre').value) || 0,
+          10: parseInt(document.getElementById('denomination10_cierre').value) || 0,
+          5: parseInt(document.getElementById('denomination5_cierre').value) || 0,
+          1: parseInt(document.getElementById('denomination1_cierre').value) || 0,
+        };
+
+        // Actualizar Firebase con las nuevas denominaciones, el nuevo total en caja y los timestamps
+        await doc.ref.update({
+          denominations: updatedDenominations,
+          totalEnCaja: totalCalculado, // Asegúrate de que este sea un número
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Guardar el timestamp actual
+          cierreCajaHora: firebase.firestore.FieldValue.serverTimestamp() // Guardar la hora de cierre
+        });
+
+        alert("Caja cerrada y actualizada exitosamente.");
+        location.reload(); // Recargar la página después de guardar
+      }
+    } catch (error) {
+      console.error("Error al cerrar la caja:", error);
+      alert("Error al cerrar la caja. Intenta nuevamente.");
+    }
+  } else {
+    alert("La suma de las denominaciones no coincide con el total en caja.");
+  }
+});
+
+
+
+
+
+
+    // Función para mostrar la hora y fecha del inicio y cierre de caja
+    const mostrarHorasCaja = async () => {
+      const querySnapshot = await db.collection("caja").get();
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0].data();
+
+        const inicioCajaHora = doc.inicioCajaHora ? doc.inicioCajaHora.toDate() : null; // Convertir a objeto Date
+        const cierreCajaHora = doc.cierreCajaHora ? doc.cierreCajaHora.toDate() : null; // Convertir a objeto Date
+
+        // Mostrar la hora y fecha del inicio de caja
+        if (inicioCajaHora) {
+          const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+          const timeStringInicio = inicioCajaHora.toLocaleString('es-ES', options);
+
+          const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+          const dateStringInicio = inicioCajaHora.toLocaleString('es-ES', dateOptions);
+
+          document.getElementById('inicioCajaHora').innerText = `${timeStringInicio} - ${dateStringInicio}`;
+        }
+
+        // Mostrar la hora y fecha del cierre de caja
+        if (cierreCajaHora) {
+          const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+          const timeStringCierre = cierreCajaHora.toLocaleString('es-ES', options);
+
+          const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+          const dateStringCierre = cierreCajaHora.toLocaleString('es-ES', dateOptions);
+
+          document.getElementById('cierreCajaHoraDisplay').innerText = `${timeStringCierre} - ${dateStringCierre}`;
+        }
+
+        // Comparar y mostrar solo el más reciente
+        if (inicioCajaHora && cierreCajaHora) {
+          if (cierreCajaHora > inicioCajaHora) {
+            document.getElementById('cierreCajaInfo').style.display = 'block';
+            document.getElementById('inicioCajaInfo').style.display = 'none';
+          } else {
+            document.getElementById('inicioCajaInfo').style.display = 'block';
+            document.getElementById('cierreCajaInfo').style.display = 'none';
+          }
+        } else if (inicioCajaHora) {
+          document.getElementById('inicioCajaInfo').style.display = 'block';
+          document.getElementById('cierreCajaInfo').style.display = 'none';
+        } else if (cierreCajaHora) {
+          document.getElementById('cierreCajaInfo').style.display = 'block';
+          document.getElementById('inicioCajaInfo').style.display = 'none';
+        } else {
+          // Si no hay ninguno, ocultar ambos
+          document.getElementById('inicioCajaInfo').style.display = 'none';
+          document.getElementById('cierreCajaInfo').style.display = 'none';
+        }
+      }
+    };
+
+    // Llamar a la función para mostrar las horas de caja al cargar la página
+    mostrarHorasCaja();
+
+
+  </script>
+
+  <script src="./js/fecha-hora.js"></script>
+
+</body>
+
+</html>
