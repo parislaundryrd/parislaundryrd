@@ -29,12 +29,9 @@
         <div class="linediv"></div>
 
         <div class="box_btns">
-          <button><a href="index - admin.html">Facturación</a></button>
-          <button><a href="facturas.html">Facturas Generadas</a></button>
+          <button><a href="facturacion.html">Facturación</a></button>
+          <button><a href="facturas-generadas.html">Facturas Generadas</a></button>
           <button><a style="color: #0078df;" href="caja.html">Caja/Cuadre</a></button>
-          <button><a href="inventario.html">Inventario</a></button>
-          <button><a href="contabilidad.html">Contabilidad</a></button>
-          <button><a href="admin.html">Admin</a></button>
         </div>
       </div>
 
@@ -121,7 +118,7 @@
 
 
         <!-- Tabla para mostrar las facturas -->
-        <h2>Facturas generadas desde el inicio de la caja (Efectivo)</h2>
+        <h2>Facturas en efectivo generadas desde el inicio de la caja:</h2>
         <table id="facturasTable">
           <thead>
             <tr>
@@ -766,6 +763,7 @@
         </div>
 
         <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <div id="modalStatusCierre" style="color: rgb(255, 71, 71);"></div> <!-- Div para mostrar el estado -->
           <button type="submit">Cierre de Caja</button>
         </div>
 
@@ -1474,7 +1472,7 @@
         (denominations[5] * 5) +
         (denominations[1] * 1);
 
-      document.getElementById('modalTotalAmount').innerText = `Total: RD$${total}`;
+      document.getElementById('modalTotalAmount').innerText = `RD$${total}`;
 
       // Obtener el total que debe haber en caja
       const totalDeberia = parseInt(document.getElementById('totalDeberia').innerText.replace('RD$', '').trim()) || 0;
@@ -1482,12 +1480,12 @@
       // Validar si el total coincide
       const statusDiv = document.getElementById('modalStatus');
       if (total === totalDeberia) {
-        statusDiv.innerText = "¡Coincide!";
-        statusDiv.style.color = "green";
+        statusDiv.innerText = "¡Correcto!";
+        statusDiv.style.color = "#3ad33a";
       } else {
         const falta = totalDeberia - total;
         statusDiv.innerText = `Falta: RD$${falta}`;
-        statusDiv.style.color = "red";
+        statusDiv.style.color = "#ff4747";
       }
     };
 
@@ -1513,12 +1511,10 @@
     document.getElementById('cuadreForm').addEventListener('submit', async function (e) {
       e.preventDefault();
       updateModalTotalAndStatus(); // Asegurarse de que el total y el estado estén actualizados antes de validar
-      const total = parseInt(document.getElementById('modalTotalAmount').innerText.replace('Total: RD$', '').trim()) || 0;
+      const total = parseInt(document.getElementById('modalTotalAmount').innerText.replace('RD$', '').trim()) || 0;
       const totalDeberia = parseInt(document.getElementById('modalTotalDeberia').innerText.replace('RD$', '').trim()) || 0;
 
       if (total === totalDeberia) {
-        alert("El cuadre de caja es correcto.");
-
         // Obtener las denominaciones del modal
         const denominations = {
           2000: parseInt(document.getElementById('denomination2000_modal').value) || 0,
@@ -1533,9 +1529,6 @@
           1: parseInt(document.getElementById('denomination1_modal').value) || 0,
         };
 
-
-
-
         // Guardar o actualizar en Firebase
         try {
           const querySnapshot = await db.collection("caja").get();
@@ -1543,17 +1536,17 @@
             // Si ya existe un documento, actualizarlo
             const doc = querySnapshot.docs[0];
             await doc.ref.update({
-              denominations: denominations,
-              totalEnCaja: total,
-              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+              // denominations: denominations, // Esta línea se ha comentado para no actualizar denominations
+              // totalEnCaja: total, // Esta línea se ha comentado para no actualizar totalEnCaja
+              cuadreCajaHora: firebase.firestore.FieldValue.serverTimestamp() // Guardar la hora del cuadre
             });
             alert("Caja actualizada exitosamente.");
           } else {
             // Si no existe, crear uno nuevo
             await db.collection("caja").add({
-              denominations: denominations,
-              totalEnCaja: total,
-              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+              // denominations: denominations, // Esta línea se ha comentado para no actualizar denominations
+              // totalEnCaja: total, // Esta línea se ha comentado para no actualizar totalEnCaja
+              cuadreCajaHora: firebase.firestore.FieldValue.serverTimestamp() // Guardar la hora del cuadre
             });
             alert("Caja guardada exitosamente.");
           }
@@ -1574,8 +1567,6 @@
 
 
 
-
-
     // Manejo del modal "Cierre de Caja"
     const cierreCajaModal = document.getElementById("cierreCajaModal");
     const btnCierreCaja = document.getElementById("openCierreCajaModal");
@@ -1584,7 +1575,7 @@
     // Abrir el modal "Cierre de Caja"
     btnCierreCaja.onclick = function () {
       cierreCajaModal.style.display = "block";
-      loadTotalEnCaja(); // Cargar el total en caja desde Firebase
+      loadTotalEnCaja(); // Cargar el total que debe haber en caja desde Firebase
     };
 
     // Cerrar el modal "Cierre de Caja"
@@ -1599,14 +1590,14 @@
       }
     };
 
-    // Función para cargar el total en caja desde Firebase
+    // Función para cargar el total que debe haber en caja desde Firebase
     const loadTotalEnCaja = async () => {
       try {
         const querySnapshot = await db.collection("caja").get();
         if (!querySnapshot.empty) {
           const doc = querySnapshot.docs[0].data();
-          const totalEnCaja = doc.totalEnCaja || 0;
-          document.getElementById('modalTotalEnCaja').innerText = `RD$${totalEnCaja}`;
+          const totalDeberia = parseInt(document.getElementById('totalDeberia').innerText.replace('RD$', '').trim()) || 0;
+          document.getElementById('modalTotalEnCaja').innerText = `RD$${totalDeberia}`;
         }
       } catch (error) {
         console.error("Error al cargar el total en caja:", error);
@@ -1641,61 +1632,75 @@
         (denominations[1] * 1);
 
       document.getElementById('modalTotalContado').innerText = `RD$${total}`;
+      actualizarEstado(total); // Llamar a la función para actualizar el estado
+    };
+
+    // Función para actualizar el estado en el modal
+    const actualizarEstado = (totalContado) => {
+      const totalEnCaja = parseInt(document.getElementById('modalTotalEnCaja').innerText.replace('RD$', '').trim()) || 0;
+      const statusDiv = document.getElementById('modalStatusCierre');
+
+      if (totalContado === totalEnCaja) {
+        statusDiv.innerText = "¡Correcto!";
+        statusDiv.style.color = "#3ad33a";
+      } else {
+        const diferencia = totalEnCaja - totalContado;
+        statusDiv.innerText = `Falta: RD$${diferencia}`;
+        statusDiv.style.color = diferencia < 0 ? "#ffcc00" : "#ff4747"; // Rojo si falta, amarillo si sobra
+      }
     };
 
     // Agregar eventos de entrada a cada campo de denominación
     document.querySelectorAll('#cierreCajaForm input[type="number"]').forEach(input => {
-      input.addEventListener('input', () => {
-        calcularTotalCierre(); // Calcular el total contado en tiempo real
-      });
+      input.addEventListener('input', calcularTotalCierre); // Calcular el total al cambiar el valor
     });
 
     // Manejo del formulario de cierre de caja
-    document.getElementById('cierreCajaForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+document.getElementById('cierreCajaForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
 
-      const totalCalculado = parseInt(document.getElementById('modalTotalContado').innerText.replace('RD$', '').trim()) || 0;
-      const totalEnCaja = parseInt(document.getElementById('modalTotalEnCaja').innerText.replace('RD$', '').trim()) || 0;
+  const totalCalculado = parseInt(document.getElementById('modalTotalContado').innerText.replace('RD$', '').trim()) || 0;
+  const totalDeberia = parseInt(document.getElementById('modalTotalEnCaja').innerText.replace('RD$', '').trim()) || 0;
 
-      if (totalCalculado === totalEnCaja) {
-        try {
-          const querySnapshot = await db.collection("caja").get();
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
+  if (totalCalculado === totalDeberia) {
+    try {
+      const querySnapshot = await db.collection("caja").get();
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
 
-            // Reemplazar las denominaciones en Firebase
-            const updatedDenominations = {
-              2000: parseInt(document.getElementById('denomination2000_cierre').value) || 0,
-              1000: parseInt(document.getElementById('denomination1000_cierre').value) || 0,
-              500: parseInt(document.getElementById('denomination500_cierre').value) || 0,
-              200: parseInt(document.getElementById('denomination200_cierre').value) || 0,
-              100: parseInt(document.getElementById('denomination100_cierre').value) || 0,
-              50: parseInt(document.getElementById('denomination50_cierre').value) || 0,
-              25: parseInt(document.getElementById('denomination25_cierre').value) || 0,
-              10: parseInt(document.getElementById('denomination10_cierre').value) || 0,
-              5: parseInt(document.getElementById('denomination5_cierre').value) || 0,
-              1: parseInt(document.getElementById('denomination1_cierre').value) || 0,
-            };
+        // Reemplazar las denominaciones en Firebase
+        const updatedDenominations = {
+          2000: parseInt(document.getElementById('denomination2000_cierre').value) || 0,
+          1000: parseInt(document.getElementById('denomination1000_cierre').value) || 0,
+          500: parseInt(document.getElementById('denomination500_cierre').value) || 0,
+          200: parseInt(document.getElementById('denomination200_cierre').value) || 0,
+          100: parseInt(document.getElementById('denomination100_cierre').value) || 0,
+          50: parseInt(document.getElementById('denomination50_cierre').value) || 0,
+          25: parseInt(document.getElementById('denomination25_cierre').value) || 0,
+          10: parseInt(document.getElementById('denomination10_cierre').value) || 0,
+          5: parseInt(document.getElementById('denomination5_cierre').value) || 0,
+          1: parseInt(document.getElementById('denomination1_cierre').value) || 0,
+        };
 
-            // Actualizar Firebase con las nuevas denominaciones, el nuevo total en caja y los timestamps
-            await doc.ref.update({
-              denominations: updatedDenominations,
-              totalEnCaja: totalEnCaja, // Actualizar el total en caja
-              timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Guardar el timestamp actual
-              cierreCajaHora: firebase.firestore.FieldValue.serverTimestamp() // Guardar la hora de cierre
-            });
+        // Actualizar Firebase con las nuevas denominaciones, el nuevo total en caja y los timestamps
+        await doc.ref.update({
+          denominations: updatedDenominations,
+          totalEnCaja: totalCalculado, // Asegúrate de que este sea un número
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Guardar el timestamp actual
+          cierreCajaHora: firebase.firestore.FieldValue.serverTimestamp() // Guardar la hora de cierre
+        });
 
-            alert("Caja cerrada y actualizada exitosamente.");
-            location.reload(); // Recargar la página después de guardar
-          }
-        } catch (error) {
-          console.error("Error al cerrar la caja:", error);
-          alert("Error al cerrar la caja. Intenta nuevamente.");
-        }
-      } else {
-        alert("La suma de las denominaciones no coincide con el total en caja.");
+        alert("Caja cerrada y actualizada exitosamente.");
+        location.reload(); // Recargar la página después de guardar
       }
-    });
+    } catch (error) {
+      console.error("Error al cerrar la caja:", error);
+      alert("Error al cerrar la caja. Intenta nuevamente.");
+    }
+  } else {
+    alert("La suma de las denominaciones no coincide con el total en caja.");
+  }
+});
 
 
 
@@ -1767,5 +1772,3 @@
 </body>
 
 </html>
-
-<!-- 4 -->
