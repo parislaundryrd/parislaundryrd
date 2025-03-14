@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="./css/styles_caja.css">
   <title>Manejo de Caja - Paris Laundry</title>
+  <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
 </head>
@@ -62,7 +63,7 @@
 
       <!-- Titulo -->
       <div class="panelCaja_tittle">
-        <h2>Gestión de Caja</h2>
+        <h2>Manejo de Caja</h2>
       </div>
       <!-- Titulo FIN -->
 
@@ -120,7 +121,7 @@
 
 
         <!-- Tabla para mostrar las facturas -->
-        <h2>Facturas Generadas</h2>
+        <h2>Facturas generadas desde el inicio de la caja (Efectivo)</h2>
         <table id="facturasTable">
           <thead>
             <tr>
@@ -565,45 +566,45 @@
                 <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
                   <img src="./img/Money Icon/2000.jpg">
                   <label for="denomination2000_current">Billetes de 2000:</label>
-                  <input type="number" id="denomination2000_current" readonly><br>
+                  <input type="number" id="denomination2000_current" readonly>
 
                   <img src="./img/Money Icon/1000.jpg">
                   <label for="denomination1000_current">Billetes de 1000:</label>
-                  <input type="number" id="denomination1000_current" readonly><br>
+                  <input type="number" id="denomination1000_current" readonly>
 
                   <img src="./img/Money Icon/500.jpg">
                   <label for="denomination500_current">Billetes de 500:</label>
-                  <input type="number" id="denomination500_current" readonly><br>
+                  <input type="number" id="denomination500_current" readonly>
 
                   <img src="./img/Money Icon/200.jpg">
                   <label for="denomination200_current">Billetes de 200:</label>
-                  <input type="number" id="denomination200_current" readonly><br>
+                  <input type="number" id="denomination200_current" readonly>
 
                   <img src="./img/Money Icon/100.jpg">
                   <label for="denomination100_current">Billetes de 100:</label>
-                  <input type="number" id="denomination100_current" readonly><br>
+                  <input type="number" id="denomination100_current" readonly>
                 </div>
 
                 <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
                   <img src="./img/Money Icon/50.jpg">
                   <label for="denomination50_current">Billetes de 50:</label>
-                  <input type="number" id="denomination50_current" readonly><br>
+                  <input type="number" id="denomination50_current" readonly>
 
                   <img src="./img/Money Icon/25.png">
                   <label for="denomination25_current">Monedas de 25:</label>
-                  <input type="number" id="denomination25_current" readonly><br>
+                  <input type="number" id="denomination25_current" readonly>
 
                   <img src="./img/Money Icon/10.png">
                   <label for="denomination10_current">Billetes de 10:</label>
-                  <input type="number" id="denomination10_current" readonly><br>
+                  <input type="number" id="denomination10_current" readonly>
 
                   <img src="./img/Money Icon/5.png">
                   <label for="denomination5_current">Billetes de 5:</label>
-                  <input type="number" id="denomination5_current" readonly><br>
+                  <input type="number" id="denomination5_current" readonly>
 
                   <img src="./img/Money Icon/1.png">
                   <label for="denomination1_current">Billetes de 1:</label>
-                  <input type="number" id="denomination1_current" readonly><br>
+                  <input type="number" id="denomination1_current" readonly>
                 </div>
               </div>
             </div>
@@ -623,45 +624,45 @@
                 <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
                   <img src="./img/Money Icon/2000.jpg">
                   <label for="denomination2000_ingresar">Billetes de 2000:</label>
-                  <input type="number" id="denomination2000_ingresar" placeholder="0"><br>
+                  <input type="number" id="denomination2000_ingresar" placeholder="0">
 
                   <img src="./img/Money Icon/1000.jpg">
                   <label for="denomination1000_ingresar">Billetes de 1000:</label>
-                  <input type="number" id="denomination1000_ingresar" placeholder="0"><br>
+                  <input type="number" id="denomination1000_ingresar" placeholder="0">
 
                   <img src="./img/Money Icon/500.jpg">
                   <label for="denomination500_ingresar">Billetes de 500:</label>
-                  <input type="number" id="denomination500_ingresar" placeholder="0"><br>
+                  <input type="number" id="denomination500_ingresar" placeholder="0">
 
                   <img src="./img/Money Icon/200.jpg">
                   <label for="denomination200_ingresar">Billetes de 200:</label>
-                  <input type="number" id="denomination200_ingresar" placeholder="0"><br>
+                  <input type="number" id="denomination200_ingresar" placeholder="0">
 
                   <img src="./img/Money Icon/100.jpg">
                   <label for="denomination100_ingresar">Billetes de 100:</label>
-                  <input type="number" id="denomination100_ingresar" placeholder="0"><br>
+                  <input type="number" id="denomination100_ingresar" placeholder="0">
                 </div>
 
                 <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
                   <img src="./img/Money Icon/50.jpg">
                   <label for="denomination50_ingresar">Billetes de 50:</label>
-                  <input type="number" id="denomination50_ingresar" placeholder="0"><br>
+                  <input type="number" id="denomination50_ingresar" placeholder="0">
 
                   <img src="./img/Money Icon/25.png">
                   <label for="denomination25_ingresar">Monedas de 25:</label>
-                  <input type="number" id="denomination25_ingresar" placeholder="0"><br>
+                  <input type="number" id="denomination25_ingresar" placeholder="0">
 
                   <img src="./img/Money Icon/10.png">
                   <label for="denomination10_ingresar">Billetes de 10:</label>
-                  <input type="number" id="denomination10_ingresar" placeholder="0"><br>
+                  <input type="number" id="denomination10_ingresar" placeholder="0">
 
                   <img src="./img/Money Icon/5.png">
                   <label for="denomination5_ingresar">Billetes de 5:</label>
-                  <input type="number" id="denomination5_ingresar" placeholder="0"><br>
+                  <input type="number" id="denomination5_ingresar" placeholder="0">
 
                   <img src="./img/Money Icon/1.png">
                   <label for="denomination1_ingresar">Billetes de 1:</label>
-                  <input type="number" id="denomination1_ingresar" placeholder="0"><br>
+                  <input type="number" id="denomination1_ingresar" placeholder="0">
                 </div>
               </div>
             </div>
@@ -694,6 +695,7 @@
   <!-- Modal para Cierre de Caja -->
   <div id="cierreCajaModal" class="modal">
     <div class="modal-content">
+
       <div class="modal_caja_tittle">
         <span class="close">&times;</span>
         <h2>Cierre de Caja</h2>
@@ -701,67 +703,83 @@
 
       <div class="modal_caja_body">
         <div class="modal_caja_flex">
+
           <form id="cierreCajaForm">
+
             <div class="CashContainer">
-              <div style="display: inline-flex;flex-direction: column;align-items: center;">
+              <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                <img src="./img/Money Icon/2000.jpg">
                 <label for="denomination2000_cierre">Billetes de 2000:</label>
-                <input type="number" id="denomination2000_cierre" placeholder="0" value="0">
-              </div>
-              <div style="display: inline-flex;flex-direction: column;align-items: center;">
+                <input type="number" id="denomination2000_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/1000.jpg">
                 <label for="denomination1000_cierre">Billetes de 1000:</label>
-                <input type="number" id="denomination1000_cierre" placeholder="0" value="0">
-              </div>
-              <div style="display: inline-flex;flex-direction: column;align-items: center;">
+                <input type="number" id="denomination1000_cierre" placeholder="0" value="">
+
+
+                <img src="./img/Money Icon/500.jpg">
                 <label for="denomination500_cierre">Billetes de 500:</label>
-                <input type="number" id="denomination500_cierre" placeholder="0" value="0">
-              </div>
-              <div style="display: inline-flex;flex-direction: column;align-items: center;">
+                <input type="number" id="denomination500_cierre" placeholder="0" value="">
+
+
+                <img src="./img/Money Icon/200.jpg">
                 <label for="denomination200_cierre">Billetes de 200:</label>
-                <input type="number" id="denomination200_cierre" placeholder="0" value="0">
-              </div>
-              <div style="display: inline-flex;flex-direction: column;align-items: center;">
+                <input type="number" id="denomination200_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/100.jpg">
                 <label for="denomination100_cierre">Billetes de 100:</label>
-                <input type="number" id="denomination100_cierre" placeholder="0" value="0">
+                <input type="number" id="denomination100_cierre" placeholder="0" value="">
               </div>
-              <div style="display: inline-flex;flex-direction: column;align-items: center;">
+
+
+              <div style="display: inline-flex;flex-direction: column;align-items: center;margin-top: 10px;">
+                <img src="./img/Money Icon/50.jpg">
                 <label for="denomination50_cierre">Billetes de 50:</label>
-                <input type="number" id="denomination50_cierre" placeholder="0" value="0">
-              </div>
-              <div style="display: inline-flex;flex-direction: column;align-items: center;">
+                <input type="number" id="denomination50_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/25.png">
                 <label for="denomination25_cierre">Monedas de 25:</label>
-                <input type="number" id="denomination25_cierre" placeholder="0" value="0">
-              </div>
-              <div style="display: inline-flex;flex-direction: column;align-items: center;">
+                <input type="number" id="denomination25_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/10.png">
                 <label for="denomination10_cierre">Monedas de 10:</label>
-                <input type="number" id="denomination10_cierre" placeholder="0" value="0">
-              </div>
-              <div style="display: inline-flex;flex-direction: column;align-items: center;">
+                <input type="number" id="denomination10_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/5.png">
                 <label for="denomination5_cierre">Monedas de 5:</label>
-                <input type="number" id="denomination5_cierre" placeholder="0" value="0">
-              </div>
-              <div style="display: inline-flex;flex-direction: column;align-items: center;">
+                <input type="number" id="denomination5_cierre" placeholder="0" value="">
+
+                <img src="./img/Money Icon/1.png">
                 <label for="denomination1_cierre">Monedas de 1:</label>
-                <input type="number" id="denomination1_cierre" placeholder="0" value="0">
+                <input type="number" id="denomination1_cierre" placeholder="0" value="">
               </div>
             </div>
 
-            <div style="display: inline-flex;flex-direction: column;align-items: center;">
-              <p>Total en Caja:</p>
-              <div id="modalTotalEnCaja">RD$0</div>
-            </div>
-
-            <div style="display: inline-flex;flex-direction: column;align-items: center;">
-              <p>Total Contado:</p>
-              <div id="modalTotalContado">RD$0</div>
-            </div>
-
-            <div style="display: inline-flex;flex-direction: column;align-items: center;">
-              <button type="submit">Cierre de Caja</button>
-            </div>
-          </form>
         </div>
       </div>
+
+      <div class="modal_caja_down">
+
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <p>Total en Caja:</p>
+          <div id="modalTotalEnCaja">RD$0</div>
+        </div>
+
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <button type="submit">Cierre de Caja</button>
+        </div>
+
+        <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <p>Total Contado:</p>
+          <div id="modalTotalContado">RD$0</div>
+        </div>
+
+
+        </form>
+      </div>
+
     </div>
+  </div>
   </div>
 
 
@@ -1743,6 +1761,9 @@
 
 
   </script>
+
+  <script src="./js/fecha-hora.js"></script>
+
 </body>
 
 </html>
