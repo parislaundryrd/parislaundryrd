@@ -1172,6 +1172,12 @@ input[type="text"] {
         height: auto;
     }
 
+    .panelfacturacion_body {
+        overflow: auto;
+        flex: 1;
+        padding: 20px 10px 30px 10px;
+    }
+
     .nombre_div_telefono {
         gap: 0px;
         flex-direction: column;
@@ -1181,5 +1187,14 @@ input[type="text"] {
        
         flex-wrap: wrap;
         gap: 4px;
+    }
+
+    .input-cantidad, .input-numeroContacto {
+        margin-top: 0px;
+        margin-bottom: 7px;
+    }
+
+    #detalle-hidden{
+        display: none;
     }
 }
