@@ -196,7 +196,6 @@ body {
     flex-direction: column;
     border-radius: 14px;
     min-height: 130px;
-    min-width: 580px;
 }
 
 .previewfactura_tittle h2 {
@@ -1154,3 +1153,22 @@ input[type="text"] {
 }
 
 /* Modal factura procesada FIN */
+
+
+
+@media screen and (max-width: 750px) {
+    .MasterBox {
+        display: flex;
+        flex-direction: column-reverse;
+    }
+
+    .container_previewfactura {
+        width: 100%;
+    }
+
+    .container_formfactura {
+        width: 100%;
+        position: relative;
+        height: auto;
+    }
+}
