@@ -1194,7 +1194,15 @@ input[type="text"] {
         margin-bottom: 7px;
     }
 
-    #detalle-hidden{
+    #detalles-hidden {
         display: none;
+    }
+
+    .product-item {
+        grid-template-columns: 1fr 0.8fr;
+    }
+
+    .product-header {
+        grid-template-columns: 1fr 0.8fr;
     }
 }
