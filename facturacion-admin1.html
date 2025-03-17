@@ -641,7 +641,7 @@
           productItem.classList.add("product-item");
           productItem.innerHTML = `
         <div>${data.nombre}</div>
-        <div style="align-items: flex-start;">${data.detalles}</div>
+        <div id="detalle-hidden" style="align-items: flex-start;">${data.detalles}</div>
         <div>
           <div class="productPrice">$${data.precio}</div>
           <div class="productQuantity" style="font-size: 14px;font-weight: bold; color: ${data.cantidad < 20 ? 'red' : '#3fbfe7'};">Disponible: ${data.cantidad}</div>
