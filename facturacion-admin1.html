@@ -116,7 +116,7 @@
             <div class="product-list">
               <div class="product-header">
                 <div>Producto</div>
-                <div>Detalles</div>
+                <div id="detalles-hidden">Detalles</div>
                 <div>Precio (RD$)</div>
               </div>
               <div id="productSelection"></div>
@@ -641,7 +641,7 @@
           productItem.classList.add("product-item");
           productItem.innerHTML = `
         <div>${data.nombre}</div>
-        <div id="detalle-hidden" style="align-items: flex-start;">${data.detalles}</div>
+        <div id="detalles-hidden" style="align-items: flex-start;">${data.detalles}</div>
         <div>
           <div class="productPrice">$${data.precio}</div>
           <div class="productQuantity" style="font-size: 14px;font-weight: bold; color: ${data.cantidad < 20 ? 'red' : '#3fbfe7'};">Disponible: ${data.cantidad}</div>
