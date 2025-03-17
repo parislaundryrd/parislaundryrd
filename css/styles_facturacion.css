@@ -1171,4 +1171,15 @@ input[type="text"] {
         position: relative;
         height: auto;
     }
+
+    .nombre_div_telefono {
+        gap: 0px;
+        flex-direction: column;
+    }
+
+    .button-list {
+       
+        flex-wrap: wrap;
+        gap: 4px;
+    }
 }
