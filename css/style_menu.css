@@ -244,14 +244,14 @@
 
 }
 
-
 .modal_Menu_RWD {
     display: none;
     position: fixed;
     z-index: 1000;
-    left: 0;
+    left: auto;
     top: 0;
-    width: 100%;
+    right: 0px;
+    width: 75%;
     height: 100%;
     overflow: auto;
     background-color: rgb(255 255 255);
@@ -362,22 +362,22 @@
 
 @keyframes slideIn {
     from {
-        transform: translateY(100%);
+        transform: translateX(100%);
     }
 
     to {
-        transform: translateY(0);
+        transform: translateX(0);
     }
 }
 
 @keyframes slideOut {
     from {
-        transform: translateY(0);
+        transform: translateX(0);
         /* Comienza en su posición original */
     }
 
     to {
-        transform: translateY(100%);
+        transform: translateX(100%);
     }
 }
 
