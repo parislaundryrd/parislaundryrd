@@ -24,6 +24,13 @@ button{
     -webkit-tap-highlight-color: transparent;
 }
 
+#clientName:focus,
+#clientPhone:focus,
+#clientAddress:focus {
+    outline: none;
+    border: 0px solid #00000000;
+    box-shadow: 0px 0px 0px 2px rgb(139 55 133);
+}
 
 .MasterBox0 {
     position: relative;
@@ -33,7 +40,6 @@ button{
     max-width: 1500px;
     background: #ffffff00;
 }
-
 
 .MasterBox {
     display: flex;
