@@ -44,15 +44,23 @@
           </div>
 
           <div class="previewfactura_down">
-            <div class="seleccionempeados">
-              <label for="categoria">Empleado que Atiende:</label>
-              <select id="empleado" required>
-                <option value="" disabled selected>Selecciona</option>
-              </select>
+
+            <div class="previewfactura_down_space">
+              <div class="seleccionempeados">
+                <label for="categoria">Empleado que Atiende:</label>
+                <select id="empleado" required>
+                  <option value="" disabled selected>Selecciona</option>
+                </select>
+              </div>
+
+              <button id="processInvoice">Procesar Factura</button>
+              <ul id="invoiceList" class="invoice-list hidden"></ul>
             </div>
 
-            <button id="processInvoice">Procesar Factura</button>
-            <ul id="invoiceList" class="invoice-list hidden"></ul>
+            <div class="panelfacturacion_down_RWD">
+              <p>© Paris Laundry RD - 2025</p>
+            </div>
+
           </div>
         </div>
 
@@ -87,7 +95,8 @@
               <div>
                 <label for="numeroCliente">Teléfono del Cliente:</label>
                 <div class="input-numeroContacto">
-                  <input type="tel" id="clientPhone" placeholder="Teléfono" required maxlength="20" oninput="formatPhoneNumber(this)">
+                  <input type="tel" id="clientPhone" placeholder="Teléfono" required maxlength="20"
+                    oninput="formatPhoneNumber(this)">
                   <div class="cantidad-img"><img src="./img/icon/phone_1.png"></div>
                 </div>
               </div>
@@ -332,7 +341,7 @@
         // Mostrar otros servicios ordenados
         otrosServiciosArray.forEach((data) => {
           const button = document.createElement("button");
-          button.type = "button"; 
+          button.type = "button";
           button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre}<br> <strong>RD$${data.precio}</strong>`;
           button.dataset.value = data.precio;
           button.dataset.name = data.nombre;
@@ -1239,8 +1248,6 @@
 
   </script>
 
-
-  <script src="./js/fecha-hora.js"></script>
 </body>
 
 </html>
