@@ -317,7 +317,6 @@
 
 
 
-
 @media screen and (max-width: 900px) {
     .Box_Hora {
         display: none;
@@ -372,6 +371,13 @@
         background: #ad535300;
         margin: 4px;
     }
+
+    .no-scroll {
+        /* esto es para que la pagina de atras no haga scroll si se desplaza el menu */
+        overflow: hidden;
+    }
+
+    
 }
 
 
