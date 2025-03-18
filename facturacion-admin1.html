@@ -317,7 +317,7 @@
         hampersArray.forEach((data) => {
           const button = document.createElement("button");
           button.type = "button";
-          button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre} - RD$${data.precio}`;
+          button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre}<br> <strong>RD$${data.precio}</strong>`;
           button.dataset.value = data.precio;
           button.dataset.name = data.nombre;
           button.dataset.librasmin = data.librasmin;
@@ -332,8 +332,8 @@
         // Mostrar otros servicios ordenados
         otrosServiciosArray.forEach((data) => {
           const button = document.createElement("button");
-          button.type = "button";
-          button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre} - RD$${data.precio}`;
+          button.type = "button"; 
+          button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre}<br> <strong>RD$${data.precio}</strong>`;
           button.dataset.value = data.precio;
           button.dataset.name = data.nombre;
           button.dataset.icon = data.icon;
