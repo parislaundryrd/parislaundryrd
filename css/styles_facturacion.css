@@ -1206,7 +1206,7 @@ input[type="text"] {
         grid-template-columns: 1fr 0.8fr;
     }
 
-    .button-list {
+    #deliverySelection {
         flex-wrap: nowrap;
         gap: 4px;
         width: 100%;
@@ -1215,6 +1215,7 @@ input[type="text"] {
 
     #DeliveryButton {
         width: 24%;
+        font-size: 14px;
     }
 
     #deliverySelection input {
