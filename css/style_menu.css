@@ -195,55 +195,6 @@
     height: 100%;
 }
 
-@media screen and (max-width: 900px) {
-    .Box_Hora {
-        display: none;
-    }
-}
-
-@media screen and (max-width: 750px) {
-    .box_btns {
-        display: none;
-    }
-
-    .Box_LogOut {
-        display: none;
-    }
-
-    #Box_open_Menu_RWD {
-        display: block;
-    }
-
-    #Box_open_Menu_RWD:hover {
-        background: #39393900;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .linediv {
-        display: none;
-    }
-
-    .BarraMenu_Right {
-        display: none;
-    }
-
-    .BarraMenu {
-        justify-content: center;
-    }
-
-    .menu_tittle {
-        justify-content: center;
-    }
-
-    .BarraMenu h1 {
-        margin-right: 0px;
-        margin-left: 0px;
-        margin-block-start: 0px;
-        font-size: 1.2em;
-    }
-
-}
-
 .modal_Menu_RWD {
     display: none;
     position: fixed;
@@ -359,10 +310,70 @@
 
 .close_btn:hover,
 .close_btn:focus {
-    background: #d53b3b;
+    background: #0000002e;
     transition: 0.3s;
     cursor: pointer;
 }
+
+
+
+
+@media screen and (max-width: 900px) {
+    .Box_Hora {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 750px) {
+    .box_btns {
+        display: none;
+    }
+
+    .Box_LogOut {
+        display: none;
+    }
+
+    #Box_open_Menu_RWD {
+        display: block;
+    }
+
+    #Box_open_Menu_RWD:hover {
+        background: #39393900;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .linediv {
+        display: none;
+    }
+
+    .BarraMenu_Right {
+        display: none;
+    }
+
+    .BarraMenu {
+        justify-content: center;
+        height: 50px;
+    }
+
+    .menu_tittle {
+        justify-content: center;
+    }
+
+    .BarraMenu h1 {
+        margin-right: 0px;
+        margin-left: 0px;
+        margin-block-start: 0px;
+        font-size: 1.2em;
+    }
+
+    .close_btn {
+        color: #ad5353;
+        font-size: 37px;
+        background: #ad535300;
+        margin: 4px;
+    }
+}
+
 
 @keyframes slideIn {
     from {
