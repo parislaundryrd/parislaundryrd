@@ -79,17 +79,18 @@ class LaundryMenu extends HTMLElement {
         const modal = this.querySelector("#modal_Menu_RWD");
         const closeButton = this.querySelector(".close_btn");
         const modalContent = this.querySelector(".modal_content_Menu");
-
+    
         openMenuButton.onclick = () => {
             modal.style.display = "block";
             modal.style.animation = "slideIn 0.2s forwards"; // Animación de entrada del modal
             modalContent.style.animation = "contentFadeIn 0.2s forwards"; // Animación de entrada del contenido
+            document.body.classList.add('no-scroll'); // Deshabilitar scroll
         };
-
+    
         closeButton.onclick = () => {
             this.closeModal(modal, modalContent);
         };
-
+    
         // Cerrar el modal al hacer clic en cualquier parte del modal
         modal.onclick = (event) => {
             if (event.target === modal) {
@@ -97,12 +98,13 @@ class LaundryMenu extends HTMLElement {
             }
         };
     }
-
+    
     closeModal(modal, modalContent) {
         modalContent.style.animation = "contentFadeOut 0.2s forwards"; // Animación de salida del contenido
         modal.style.animation = "slideOut 0.2s forwards"; // Animación de salida del modal
         setTimeout(() => {
             modal.style.display = "none"; // Ocultar modal después de la animación
+            document.body.classList.remove('no-scroll'); // Habilitar scroll
         }, 500); // Esperar a que termine la animación
     }
 
