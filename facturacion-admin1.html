@@ -698,8 +698,10 @@
       const productItem = inputField.closest('.product-item');
       if (quantity > 0) {
         productItem.style.backgroundColor = "#f1d6ef";
+        productItem.style.border = "1px solid #e9bbe6";
       } else {
         productItem.style.backgroundColor = "#f9f9f9";
+        productItem.style.border = "1px solid #ddd";
       }
 
       updateInvoicePreview();
