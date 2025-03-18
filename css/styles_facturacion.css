@@ -1205,4 +1205,20 @@ input[type="text"] {
     .product-header {
         grid-template-columns: 1fr 0.8fr;
     }
+
+    .button-list {
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: 100%;
+        overflow: auto;
+    }
+
+    #DeliveryButton {
+        width: 24%;
+    }
+
+    #deliverySelection input {
+        width: 85%;
+    }
+
 }
