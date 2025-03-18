@@ -5,6 +5,10 @@ body {
     background-color: #f0c8e8;
 }
 
+button{
+    -webkit-tap-highlight-color: transparent;
+}
+
 #clientName,
 #clientPhone,
 #clientAddress {
