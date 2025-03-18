@@ -233,6 +233,8 @@
     .BarraMenu h1 {
         margin-right: 0px;
         margin-left: 0px;
+        margin-block-start: 0px;
+        font-size: 1.2em;
     }
 
 }
