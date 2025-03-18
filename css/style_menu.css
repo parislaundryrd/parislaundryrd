@@ -214,6 +214,11 @@
         display: block;
     }
 
+    #Box_open_Menu_RWD:hover {
+        background: #39393900;
+        -webkit-tap-highlight-color: transparent;
+    }
+
     .linediv {
         display: none;
     }
