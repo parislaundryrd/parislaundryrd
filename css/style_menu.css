@@ -354,6 +354,10 @@
         height: 50px;
     }
 
+    .BarraMenu img {
+        height: 50px;
+    }
+
     .menu_tittle {
         justify-content: center;
     }
