@@ -1183,10 +1183,18 @@ input[type="text"] {
         border-radius: 0px;
     }
 
+    .modal_preview_factura_tittle h2 {
+        font-size: 17px;
+    }
+
     .modal_preview_factura_down {
         border-radius: 0px;
     }
 
+    .button-metodo-pago {
+        gap: 5px;
+    }
+    
     .modal_preview_factura_body {
         width: 90%;
         box-sizing: border-box;
@@ -1201,11 +1209,13 @@ input[type="text"] {
 
     .cube-form-flex {
         font-size: 15px;
+        align-items: center;
     }
 
     #cashPaymentOptions input {
         font-size: 15px;
         width: 75px;
+        border-radius: 5px;
     }
 
     .Cube_button_pagado {
