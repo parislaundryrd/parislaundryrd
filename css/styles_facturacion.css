@@ -729,7 +729,6 @@ button {
 
 
 .modal_preview_factura_tittle {
-    height: 40px;
     min-height: 40px;
     background: #ffffff;
     border-bottom: 1px solid rgb(221 221 221);
@@ -745,6 +744,7 @@ button {
     align-items: center;
     justify-content: center;
     height: 100%;
+    padding: 0px 60px;
 }
 
 .modal_preview_factura_body {
@@ -1190,6 +1190,31 @@ input[type="text"] {
     .modal_preview_factura_body {
         width: 90%;
         box-sizing: border-box;
+        padding: 14px 14px 24px 14px;
+        font-size: 0.8em;
+    }
+
+    .button-metodo-pago button {
+        padding: 5px 5px;
+        font-size: 12px;
+    }
+
+    .cube-form-flex {
+        font-size: 15px;
+    }
+
+    #cashPaymentOptions input {
+        font-size: 15px;
+        width: 75px;
+    }
+
+    .Cube_button_pagado {
+        padding: 12px 12px;
+        font-size: 12px;
+    }
+
+    .modal_preview_factura_down h2 {
+    font-size: 17px;
     }
 
 }
