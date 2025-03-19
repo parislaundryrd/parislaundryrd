@@ -1191,10 +1191,14 @@ input[type="text"] {
         border-radius: 0px;
     }
 
+    .modal_preview_factura_down h2 {
+        font-size: 17px;
+    }
+
     .button-metodo-pago {
         gap: 5px;
     }
-    
+
     .modal_preview_factura_body {
         width: 90%;
         box-sizing: border-box;
@@ -1223,8 +1227,6 @@ input[type="text"] {
         font-size: 12px;
     }
 
-    .modal_preview_factura_down h2 {
-    font-size: 17px;
-    }
+
 
 }
