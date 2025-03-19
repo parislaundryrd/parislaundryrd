@@ -5,7 +5,7 @@ body {
     background-color: #f0c8e8;
 }
 
-button{
+button {
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -50,150 +50,7 @@ button{
 
 
 
-/* MENU  */
-.BarraMenu {
-    position: relative;
-    height: 60px;
-    width: 100%;
-    background: white;
-    margin-bottom: 14px;
-    border-radius: 0px 0px 14px 14px;
-    display: inline-flex;
-    justify-content: space-between;
-    padding: 0px 14px;
-    box-sizing: border-box;
-}
-
-.BarraMenu img {
-    height: 60px;
-}
-
-.BarraMenu h1 {
-    margin-block-start: 0px;
-    margin-block-end: 0px;
-    margin-right: 20px;
-}
-
-.linediv {
-    position: relative;
-    height: 40px;
-    width: 2px;
-    background: #efb3ec9c;
-}
-
-.BarraMenu button {
-    border: none;
-    font-size: 16px;
-    font-weight: bold;
-    background: #ffffff00;
-    color: black;
-    transition: 0.3s;
-}
-
-.BarraMenu button:hover {
-    cursor: pointer;
-    color: #0078df;
-    transition: 0.3s;
-}
-
-#dateTime {
-    position: relative;
-    text-align: center;
-    background: #a1bbf700;
-    display: inline-flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-#dateTime h1 {
-    font-size: 17px;
-    margin: 0px;
-    color: #474747;
-    font-weight: bold;
-}
-
-#dateTime p {
-    font-size: 23px;
-    margin: 0;
-    color: #333;
-    font-weight: bold;
-}
-
-.BarraMenu_Left {
-    display: flex;
-    background: #ff000000;
-    align-items: center;
-}
-
-.BarraMenu_Right {
-    display: inline-flex;
-    background: rgb(25 0 255 / 0%);
-    align-items: center;
-}
-
-.menu_tittle {
-    display: inline-flex;
-    align-items: center;
-    min-width: 300px;
-}
-
-.box_btns {
-    position: relative;
-    display: flex;
-    overflow: auto;
-    background: #00800000;
-    align-items: center;
-    padding-top: 9px;
-    gap: 10px;
-    margin-left: 14px;
-}
-
-.box_btns button {
-    padding: 8px 6px;
-    transition: 0.3s;
-}
-
-.box_btns button:hover {
-    background: #f1d6ef;
-    padding: 8px 6px;
-    border-radius: 6px;
-    transition: 0.3s;
-}
-
-.box_btns a {
-    text-decoration: none;
-    color: #4d4d4d;
-    /* transition: 0.3s; */
-}
-
-/* .box_btns a:hover {
-    background: red;
-    transition: 0.3s;
-} */
-
-#logout1 {}
-
-#logout1 img {
-    height: 32px;
-    padding: 5px;
-}
-
-/* @media screen and (max-width: 1000px) {
-    .BarraMenu_Left {
-        display: contents;
-    }
-
-    .box_btns {
-        display: none;
-    }
-} */
-
-/* MENU FIN */
-
-
 /* Container */
-
-
 .container_formfactura {
     width: 65%;
     position: sticky;
@@ -243,11 +100,11 @@ button{
 .button-list {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .button-list button {
-    flex: 1 1 calc(50% - 10px);
-    padding: 4px;
+    padding: 7px 4px;
     background: #ddd;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -257,10 +114,29 @@ button{
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 76px;
     border-radius: 21px;
     box-shadow: 0px 0px 0px 2px rgba(231, 151, 215, 0) inset;
+    flex: 1 1 calc(20% - 10px);
+    gap: 5px;
 }
+
+/* Estilo para 5 botones por fila */
+.button-list:has(button:nth-child(5):last-child) button {
+    flex: 1 1 calc(20% - 10px);
+    /* 5 botones por fila */
+}
+
+/* Estilo para 6 botones por fila, 3 arriba y 3 abajo */
+.button-list:has(button:nth-child(6)) button {
+    flex: 1 1 calc(33.333% - 10px);
+    /* 3 botones por fila */
+}
+
+.button-list:has(button:nth-child(7)) button {
+    flex: 1 1 calc(25% - 10px);
+    /* 3 botones por fila */
+}
+
 
 .button-list button:hover {
     cursor: pointer;
@@ -643,34 +519,34 @@ button{
     overflow-y: auto;
     background: #ffffff00;
     min-width: 255px;
-  }
+}
 
-  #invoiceResult {
+#invoiceResult {
     background: white;
     border-radius: 14px;
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 104px);
     min-height: 133px;
-  }
+}
 
-  .previewfactura_tittle {
+.previewfactura_tittle {
     height: 40px;
     min-height: 40px;
     background: #ffffff00;
     border-bottom: 1px solid rgb(221 221 221);
-  }
+}
 
-  .hidden {
+.hidden {
     display: none;
-  }
+}
 
-  .invoice-list {
+.invoice-list {
     list-style-type: none;
     padding: 0;
-  }
+}
 
-  .invoice-list li {
+.invoice-list li {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -679,7 +555,7 @@ button{
     background: #f9f9f9;
     border: 1px solid #ddd;
     border-radius: 5px;
-  }
+}
 
 #processInvoice {
     border: none;
@@ -1174,6 +1050,11 @@ input[type="text"] {
 
 /* Modal factura procesada FIN */
 
+@media screen and (max-width: 900px) {
+    .button-list button {
+        flex: 1 1 calc(50% - 10px) !important;
+    }
+}
 
 
 @media screen and (max-width: 750px) {
@@ -1222,12 +1103,13 @@ input[type="text"] {
     }
 
     .button-list {
-       
+
         flex-wrap: wrap;
         gap: 4px;
     }
 
-    .input-cantidad, .input-numeroContacto {
+    .input-cantidad,
+    .input-numeroContacto {
         margin-top: 0px;
         margin-bottom: 7px;
     }
@@ -1255,6 +1137,8 @@ input[type="text"] {
         height: auto;
         display: inline-flex;
         flex-direction: column;
+        flex: 1 1 calc(50% - 10px) !important;
+        gap: 0px;
     }
 
     #DeliveryButton {
@@ -1277,7 +1161,7 @@ input[type="text"] {
     #DeliveryButton:hover {
         box-shadow: 0px 0px 0px 2px #57b1ec inset;
     }
-    
+
     #DeliveryButton.active {
         box-shadow: 0px 0px 0px 2px #57b1ec inset;
     }
@@ -1286,7 +1170,26 @@ input[type="text"] {
         box-shadow: 0px 0px 0px 1px rgb(145 145 145) inset;
     }
 
+    .modal-content {
+        width: 100%;
+        top: 0px;
+        left: 0px;
+        transform: translate(0%, 0%);
+        max-height: calc(100% - 0px);
+        height: 100%;
+    }
 
-    
+    .modal_preview_factura_tittle {
+        border-radius: 0px;
+    }
+
+    .modal_preview_factura_down {
+        border-radius: 0px;
+    }
+
+    .modal_preview_factura_body {
+        width: 90%;
+        box-sizing: border-box;
+    }
 
 }
