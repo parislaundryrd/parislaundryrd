@@ -1196,7 +1196,7 @@ input[type="text"] {
     }
 
     .button-metodo-pago {
-        gap: 5px;
+        gap: 10px;
     }
 
     .modal_preview_factura_body {
@@ -1211,9 +1211,20 @@ input[type="text"] {
         font-size: 12px;
     }
 
+    .button-metodo-pago button.active {
+        box-shadow: 3px 3px 11px 2px rgb(161 207 255 / 28%);
+    }
+
     .cube-form-flex {
         font-size: 15px;
         align-items: center;
+    }
+
+
+    .cube-montos {
+        display: flex;
+        margin: 10px 14px;
+        padding: 7px 14px;
     }
 
     #cashPaymentOptions input {
