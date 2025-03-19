@@ -58,7 +58,7 @@
             </div>
 
             <div class="panelfacturacion_down_RWD">
-              <p>© Paris Laundry RD - 2025</p>
+              <p>© Developed by J.P.</p>
             </div>
 
           </div>
@@ -137,7 +137,7 @@
         </div>
 
         <div class="panelfacturacion_down">
-          <p>© Paris Laundry RD - 2025</p>
+          <p>© Developed by J.P.</p>
         </div>
       </div>
 
@@ -293,6 +293,8 @@
     let hampers = [];
     let otrosServicios = [];
 
+
+    
     // Cargar servicios, productos y empleados
     const loadServices = () => {
       db.collection("servicio").onSnapshot((snapshot) => {
@@ -326,7 +328,7 @@
         hampersArray.forEach((data) => {
           const button = document.createElement("button");
           button.type = "button";
-          button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre}<br> <strong>RD$${data.precio}</strong>`;
+          button.innerHTML = `<div><img src="./img/icon/${data.icon}" alt="${data.nombre}"></div> <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>`;
           button.dataset.value = data.precio;
           button.dataset.name = data.nombre;
           button.dataset.librasmin = data.librasmin;
@@ -338,11 +340,13 @@
           serviceSelection.appendChild(button);
         });
 
+        
+
         // Mostrar otros servicios ordenados
         otrosServiciosArray.forEach((data) => {
           const button = document.createElement("button");
           button.type = "button";
-          button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre}<br> <strong>RD$${data.precio}</strong>`;
+          button.innerHTML = `<div><img src="./img/icon/${data.icon}" alt="${data.nombre}"></div> <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>`;
           button.dataset.value = data.precio;
           button.dataset.name = data.nombre;
           button.dataset.icon = data.icon;
