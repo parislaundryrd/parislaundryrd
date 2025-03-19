@@ -791,6 +791,10 @@ button {
     display: inline-block;
 }
 
+.button-metodo-pago button span {
+    pointer-events: none;
+}
+
 .button-metodo-pago button.active {
     background: #a1cfff;
     border: 1px solid #007cff26;
