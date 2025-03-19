@@ -29,7 +29,7 @@ class LaundryMenu extends HTMLElement {
                         <div class="linediv" style="margin: 0px 15px 0px 12px;"></div>
                         <div id="dateTime">
                             <h1 id="time">--:--:--</h1>
-                            <p id="date">Cargando fecha...</p>
+                            <p id="date">--/--/----</p>
                         </div>
                     </div>
 
@@ -72,6 +72,7 @@ class LaundryMenu extends HTMLElement {
         this.initModal();
         this.resaltarEnlaceActivo();
         this.startDateTimeUpdate(); // Iniciar la actualización de fecha y hora
+        this.handleBackButton(); // Manejar el botón de retroceso
     }
 
     initModal() {
@@ -85,6 +86,7 @@ class LaundryMenu extends HTMLElement {
             modal.style.animation = "slideIn 0.2s forwards"; // Animación de entrada del modal
             modalContent.style.animation = "contentFadeIn 0.2s forwards"; // Animación de entrada del contenido
             document.body.classList.add('no-scroll'); // Deshabilitar scroll
+            history.pushState({ modalOpen: true }, ''); // Agregar estado al historial
         };
     
         closeButton.onclick = () => {
@@ -105,7 +107,17 @@ class LaundryMenu extends HTMLElement {
         setTimeout(() => {
             modal.style.display = "none"; // Ocultar modal después de la animación
             document.body.classList.remove('no-scroll'); // Habilitar scroll
+            history.back(); // Regresar al estado anterior
         }, 500); // Esperar a que termine la animación
+    }
+
+    handleBackButton() {
+        window.onpopstate = (event) => {
+            const modal = this.querySelector("#modal_Menu_RWD");
+            if (event.state && event.state.modalOpen) {
+                this.closeModal(modal, this.querySelector(".modal_content_Menu"));
+            }
+        };
     }
 
     resaltarEnlaceActivo() {
