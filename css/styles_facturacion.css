@@ -788,6 +788,7 @@ button {
     border-radius: 14px;
     box-shadow: 0px 0px 0px 2px rgba(231, 151, 215, 0) inset;
     font-size: 16px;
+
 }
 
 .button-metodo-pago button.active {
@@ -1215,6 +1216,7 @@ input[type="text"] {
     .button-metodo-pago button {
         padding: 5px 5px;
         font-size: 12px;
+        display: grid;
     }
 
     .button-metodo-pago button.active {
