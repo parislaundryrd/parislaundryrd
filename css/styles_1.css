@@ -15,8 +15,7 @@ h2 {
     position: absolute;
     top: 0px;
     width: 100%;
-    height: 100%;
-    background: #f1d6ef;
+    background: #f1d6ef00;
 }
 
 /* Container */
@@ -27,33 +26,31 @@ h2 {
     top: 0;
     height: 100%;
     overflow-y: auto;
-    background: #ffffff;
-    backdrop-filter: blur(11px);
     display: flex;
     flex-direction: column;
     margin: 0 auto;
 }
 
-.container_tittle {
-    display: flex;
-    justify-content: center;
-    height: 50px;
-    background: #eeefff00;
-    border-bottom: 1px solid rgb(221 221 221);
-    align-items: center;
+.container_background {
+    position: fixed;
+    height: 400px;
+    width: 100%;
+    background: #f1d6ef;
 }
 
-.logo_tittle {
+.logo_background {
+    height: 100%;
+    width: 100%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
 
-.logo_tittle img {
-    height: 50px;
+.logo_background img {
+    height: 334px;
 }
 
-.logo_tittle h1 {
+.logo_background h1 {
     margin-block-start: 4px;
     margin-block-end: 0px;
     color: #000000;
@@ -62,12 +59,11 @@ h2 {
 }
 
 .container_body {
-    overflow: auto;
-    flex: 1;
     padding: 0px 30px 20px 30px;
     display: inline-flex;
     flex-direction: column;
-    background: #eeefff00;
+    background: #656464;
+    margin-top: 390px;
 }
 
 .container_down {
@@ -93,12 +89,12 @@ h2 {
     pointer-events: none;
     background: #fdabf7;
     color: #000000;
-    height: 35px;
+    height: 100%;
     padding: 0px 0px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px 0px 0px 10px;
+    border-radius: 40px 0px 0px 40px;
 }
 
 .cantidad-img img {
@@ -114,7 +110,7 @@ h2 {
 
 .search-container {
     background: #ff000000;
-    height: 35px;
+    height: 60px;
     width: 100%;
     max-width: 700px;
     display: inline-flex;
@@ -124,13 +120,13 @@ h2 {
 
 .search-container input {
     position: relative;
-    height: 35px;
+    height: 100%;
     width: calc(100% - 60px);
     margin: 0 auto;
     padding: 0px 0px 0px 60px;
     border: none;
-    border-radius: 10px;
-    background: #f1d6ef;
+    border-radius: 40px;
+    background: #ffffff;
     font-size: 17px;
 }
 
@@ -144,6 +140,7 @@ h2 {
 }
 
 .box_search-container {
+    margin-top: -37px;
     background: #788da900;
     display: inline-flex;
     justify-content: center;
@@ -151,6 +148,15 @@ h2 {
     align-items: center;
 }
 
+/* Contenido */
+
+.contenido {
+    height: 900px;
+    width: 100%;
+    background: gray;
+}
+
+/* Contenido FIN */
 
 
 /* Modal */
