@@ -21,7 +21,7 @@ h2 {
 /* Container */
 .container_master {
     width: 100%;
-    max-width: 1500px;
+    max-width: 1300px;
     position: relative;
     top: 0;
     height: 100%;
@@ -61,9 +61,11 @@ h2 {
 
 .container_body {
     padding: 0px 30px 20px 30px;
-    display: inline-flex;
+    display: inline-flex
+;
     flex-direction: column;
-    background: #656464;
+    background: #ffffff99;
+    backdrop-filter: blur(6px);
     margin-top: 225px;
     border-radius: 4px 4px 0px 0px;
 }
@@ -131,6 +133,7 @@ h2 {
     border-radius: 40px;
     background: #ffffff;
     font-size: 17px;
+    box-shadow: 0px 1px 7px -2px rgb(20 20 20 / 28%);
 }
 
 .search-container input:focus {
@@ -152,7 +155,14 @@ h2 {
 .contenido {
     height: 900px;
     width: 100%;
-    background: gray;
+    background: #80808000;
+}
+
+.map-iframe {
+    width: 100%;
+    height: 500px;
+    border: 0;
+    border-radius: 14px;
 }
 
 /* Contenido FIN */
