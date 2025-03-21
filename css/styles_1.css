@@ -2,7 +2,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #3aa92c;
+    background-color: #000000;
     /* background: linear-gradient(45deg, #f0c8e8, #a5d0f5); */
 }
 
@@ -15,7 +15,7 @@ h2 {
     position: absolute;
     top: 0px;
     width: 100%;
-    height: 90%;
+    height: 100%;
     max-width: 1500px;
     background: #b92727;
 }
