@@ -202,49 +202,65 @@
         });
 
         // Función para actualizar el modal según el estado
-        // Función para actualizar el modal según el estado
         const updateModal = (data) => {
-            const options = {
-                year: 'numeric',
-                month: 'numeric',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true // Formato de 12 horas
-            };
-            const fecha = new Date(data.timestamp).toLocaleString('es-ES', options); // Formatear la fecha
+        // Ocultar el teclado
+        searchInput.blur(); // Esto oculta el teclado en dispositivos móviles
 
-
-            // Ocultar todos los detalles de la factura
-            document.querySelectorAll('.invoice-status').forEach(div => {
-                div.style.display = 'none';
-            });
-
-            switch (data.status) {
-                case "pago pendiente":
-                    document.getElementById("pendingID").textContent = data.id;
-                    document.getElementById("pendingDate").textContent = fecha;
-                    document.getElementById("pendingInvoiceDetails").style.display = "block";
-                    break;
-                case "pagado":
-                    document.getElementById("paidID").textContent = data.id;
-                    document.getElementById("paidDate").textContent = fecha;
-                    document.getElementById("paidInvoiceDetails").style.display = "block";
-                    break;
-                case "pagado listo":
-                    document.getElementById("readyID").textContent = data.id;
-                    document.getElementById("readyDate").textContent = fecha;
-                    document.getElementById("readyInvoiceDetails").style.display = "block";
-                    break;
-                default:
-                    messageDiv.textContent = "Estado desconocido";
-                    messageDiv.style.display = "block";
-                    return; // Salir de la función si el estado es desconocido
-            }
-
-            statusModal.style.display = "block"; // Mostrar el modal
-            messageDiv.style.display = "none"; // Ocultar mensaje de error
+        const options = {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true // Formato de 12 horas
         };
+
+    let fecha;
+    // Verificar si el timestamp es un objeto de tipo Timestamp de Firebase
+    if (data.timestamp instanceof firebase.firestore.Timestamp) {
+        // Convertir a Date y ajustar a UTC-4
+        const date = data.timestamp.toDate();
+        const utcOffset = -4 * 60; // UTC-4 en minutos
+        const localDate = new Date(date.getTime() + (utcOffset * 60 * 1000));
+        fecha = localDate.toLocaleString('es-ES', options);
+    } else {
+        // Si el timestamp no es un objeto Timestamp, intentar convertirlo directamente
+        const date = new Date(data.timestamp);
+        const utcOffset = -4 * 60; // UTC-4 en minutos
+        const localDate = new Date(date.getTime() + (utcOffset * 60 * 1000));
+        fecha = localDate.toLocaleString('es-ES', options);
+    }
+
+    // Ocultar todos los detalles de la factura
+    document.querySelectorAll('.invoice-status').forEach(div => {
+        div.style.display = 'none';
+    });
+
+    switch (data.status) {
+        case "pago pendiente":
+            document.getElementById("pendingID").textContent = data.id;
+            document.getElementById("pendingDate").textContent = fecha;
+            document.getElementById("pendingInvoiceDetails").style.display = "block";
+            break;
+        case "pagado":
+            document.getElementById("paidID").textContent = data.id;
+            document.getElementById("paidDate").textContent = fecha;
+            document.getElementById("paidInvoiceDetails").style.display = "block";
+            break;
+        case "pagado listo":
+            document.getElementById("readyID").textContent = data.id;
+            document.getElementById("readyDate").textContent = fecha;
+            document.getElementById("readyInvoiceDetails").style.display = "block";
+            break;
+        default:
+            messageDiv.textContent = "Estado desconocido";
+            messageDiv.style.display = "block";
+            return; // Salir de la función si el estado es desconocido
+    }
+
+    statusModal.style.display = "block"; // Mostrar el modal
+    messageDiv.style.display = "none"; // Ocultar mensaje de error
+};
 
         // Función para abrir el modal si hay un ID en la URL
         const openModalFromHash = async () => {
