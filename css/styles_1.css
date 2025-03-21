@@ -65,7 +65,7 @@ h2 {
     flex-direction: column;
     background: #656464;
     margin-top: 225px;
-    border-radius: 24px 24px 0px 0px;
+    border-radius: 4px 4px 0px 0px;
 }
 
 .container_down {
@@ -87,7 +87,7 @@ h2 {
 .cantidad-img {
     position: absolute;
     top: 3px;
-    left: 3px;
+    left: 9px;
     pointer-events: none;
     background: #fdabf7;
     color: #000000;
@@ -126,7 +126,7 @@ h2 {
     height: 100%;
     width: calc(100% - 60px);
     margin: 0 auto;
-    padding: 0px 0px 0px 60px;
+    padding: 0px 0px 0px 50px;
     border: none;
     border-radius: 40px;
     background: #ffffff;
@@ -135,11 +135,7 @@ h2 {
 
 .search-container input:focus {
     outline: none;
-    /* Elimina el contorno predeterminado del navegador */
-    border: 1px solid #dfb8dc;
-    /* Cambia el color del borde al enfocar */
-    box-shadow: 0 0 5px rgba(223, 184, 220, 0.5);
-    /* Agrega una sombra para resaltar el enfoque */
+    box-shadow: 0px 0px 8px 3px rgb(20 20 20 / 28%);
 }
 
 .box_search-container {
