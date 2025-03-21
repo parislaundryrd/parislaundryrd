@@ -33,7 +33,7 @@ h2 {
 
 .container_background {
     position: fixed;
-    height: 400px;
+    height: 315px;
     width: 100%;
     background: #f1d6ef;
 }
@@ -47,7 +47,8 @@ h2 {
 }
 
 .logo_background img {
-    height: 334px;
+    margin-top: -25px;
+    height: 195px;
 }
 
 .logo_background h1 {
@@ -60,10 +61,11 @@ h2 {
 
 .container_body {
     padding: 0px 30px 20px 30px;
-    display: inline-flex;
+    display: inline-flex
+;
     flex-direction: column;
     background: #656464;
-    margin-top: 390px;
+    margin-top: 315px;
 }
 
 .container_down {
