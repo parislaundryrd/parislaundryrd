@@ -82,8 +82,11 @@ h2 {
 .contenido h2 {
     text-align: center;
     font-size: 1.3em;
-    margin-block-start: 5px;
-    margin-block-end: 5px;
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+    background: #e2e8ff00;
+    padding: 14px;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .contenido h3 {
@@ -207,10 +210,10 @@ h2 {
 .toggle-container {
     background: #e2e8ff;
     border-radius: 14px;
-    padding: 10px;
-    margin: 20px 0;
+    margin: 12px 0;
     width: 100%;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .toggle-content {
