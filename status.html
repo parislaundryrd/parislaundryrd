@@ -15,6 +15,7 @@
     <div class="container_background">
         <div class="logo_background">
             <img src="./img/Paris Laundry 1.png" alt="Logo">
+            <button id="themeToggle"></button>
         </div>
     </div>
 
@@ -37,6 +38,11 @@
 
             <!-- Contenido -->
             <div class="contenido">
+
+                
+
+
+
 
                 <div class="parrafo" style="display: inline-flex;flex-direction: column;align-items: center;">
                     <h2 style="text-align: center;">Horario de Atención</h2>
@@ -100,24 +106,27 @@
                             Sí, si prefieres dividir tu ropa, puedes hacerlo antes del lavado.</p>
 
                         <p><strong>🔹¿Puedo traer mi propio detergente?</strong><br>
-                            Sí, en caso de alergias, puedes traer tu propio detergente. No obstante, contamos con productos
+                            Sí, en caso de alergias, puedes traer tu propio detergente. No obstante, contamos con
+                            productos
                             especializados para pieles sensibles.</p>
                     </div>
                 </div>
 
 
-                <div class="parrafo">
-                    <h2 style="text-align: center;">Información Importante</h2>
+                <div class="toggle-container">
+                    <h2 class="toggle-header">Información Importante ➕</h2>
+                    <div class="toggle-content">
 
-                    <h3>No procesamos:</h3>
-                    <p>❌ Alfombras<br>
-                        ❌ Cojines<br>
-                        ❌ Peluches<br>
-                        ❌ Ropa de animales / mascotas<br>
-                        ❌ Sacos de acampar</p>
+                        <h3>No procesamos:</h3>
+                        <p>❌ Alfombras<br>
+                            ❌ Cojines<br>
+                            ❌ Peluches<br>
+                            ❌ Ropa de animales / mascotas<br>
+                            ❌ Sacos de acampar</p>
 
                         <h3>No usamos:</h3>
                         <p>❌ Detergente rayado o en pasta</p>
+                    </div>
                 </div>
 
 
@@ -142,7 +151,18 @@
             <!-- Contenido FIN -->
 
             <div class="container_down">
-                <p>Developed by J.P.</p>
+
+                <h3>Siguenos en:</h3>
+
+                <div class="cubeSocial">
+                    <a href="#"></a>
+                    <a href="#"></a>
+                    <a href="#"></a>
+                </div>
+
+                <img src="./img/Paris Laundry 1.png" style="height: 130px;">
+
+                <p>© 2025 ParisLaundryRD. Todos los derechos reservados.<br> Desarrollado por José Polanco.</p>
             </div>
 
         </div>
@@ -405,16 +425,51 @@
 
 
 
-<script>
-    // Script para mostrar/ocultar las secciones
-    document.querySelectorAll('.toggle-header').forEach(header => {
-        header.addEventListener('click', function() {
-            const content = this.nextElementSibling; // Obtener el contenido siguiente
-            const isVisible = content.classList.contains('show'); // Verificar si el contenido es visible
-            content.classList.toggle('show', !isVisible); // Alternar la clase 'show'
-            this.innerText = isVisible ? this.innerText.replace('➖', '➕') : this.innerText.replace('➕', '➖'); // Cambiar texto
+    <script>
+        // Script para mostrar/ocultar las secciones
+        document.querySelectorAll('.toggle-header').forEach(header => {
+            header.addEventListener('click', function () {
+                const content = this.nextElementSibling; // Obtener el contenido siguiente
+                const isVisible = content.classList.contains('show'); // Verificar si el contenido es visible
+                content.classList.toggle('show', !isVisible); // Alternar la clase 'show'
+                this.innerText = isVisible ? this.innerText.replace('➖', '➕') : this.innerText.replace('➕', '➖'); // Cambiar texto
+            });
         });
-    });
+    </script>
+
+
+<script>
+const themeToggleButton = document.getElementById('themeToggle');
+
+// Función para aplicar el tema guardado
+const applySavedTheme = () => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+    } else {
+        document.body.classList.remove('dark-theme');
+    }
+};
+
+// Llamar a la función para aplicar el tema guardado al cargar la página
+applySavedTheme();
+
+themeToggleButton.addEventListener('click', () => {
+    // Aplicar transición
+    document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+    const containerBody = document.querySelector('.container_body');
+    containerBody.style.transition = 'background 0.3s ease';
+    
+    // Alternar la clase dark-theme
+    document.body.classList.toggle('dark-theme');
+
+    // Cambiar el texto del botón según el tema
+    if (document.body.classList.contains('dark-theme')) {
+        localStorage.setItem('theme', 'dark'); // Guardar la preferencia en localStorage
+    } else {
+        localStorage.setItem('theme', 'light'); // Guardar la preferencia en localStorage
+    }
+});
 </script>
 
 
