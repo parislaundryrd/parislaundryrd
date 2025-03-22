@@ -197,6 +197,37 @@ h2 {
     box-shadow: 0px 0px 0px 2px rgb(255 181 250);
 }
 
+
+
+
+
+
+
+
+.toggle-container {
+    background: #e2e8ff;
+    border-radius: 14px;
+    padding: 10px;
+    margin: 20px 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.toggle-content {
+    max-height: 0; /* Ocultar contenido por defecto */
+    overflow: hidden; /* Ocultar el desbordamiento */
+    transition: max-height 0.5s ease; /* Transición suave */
+}
+
+.toggle-content.show {
+    max-height: 500px; /* Ajusta este valor según el contenido */
+}
+
+.toggle-header {
+    cursor: pointer;
+    font-size: 20px;
+    color: #007bff;
+}
 /* Contenido FIN */
 
 
