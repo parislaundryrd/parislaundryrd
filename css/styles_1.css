@@ -29,6 +29,7 @@ h2 {
     display: flex;
     flex-direction: column;
     margin: 0 auto;
+    pointer-events: none;
 }
 
 .container_background {
@@ -70,6 +71,7 @@ h2 {
     backdrop-filter: blur(6px);
     margin-top: 225px;
     border-radius: 4px 4px 0px 0px;
+    pointer-events: auto;
 }
 
 .parrafo {
@@ -106,6 +108,11 @@ h2 {
     width: 100%;
     background: #eeefff00;
     border-top: 1px solid hsl(0deg 0% 86.76%);
+    display: inline-flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
 }
 
 .container_down p {
@@ -217,13 +224,19 @@ h2 {
 }
 
 .toggle-content {
-    max-height: 0; /* Ocultar contenido por defecto */
-    overflow: hidden; /* Ocultar el desbordamiento */
-    transition: max-height 0.5s ease; /* Transición suave */
+    max-height: 0;
+    /* Ocultar contenido por defecto */
+    overflow: hidden;
+    /* Ocultar el desbordamiento */
+    transition: max-height 0.5s ease;
+    /* Transición suave */
+    padding: 0px 10px;
 }
 
 .toggle-content.show {
-    max-height: 500px; /* Ajusta este valor según el contenido */
+    max-height: 700px;
+    overflow: auto;
+    padding: 0px 10px;
 }
 
 .toggle-header {
@@ -231,6 +244,27 @@ h2 {
     font-size: 20px;
     color: #007bff;
 }
+
+
+.cubeSocial {
+    display: inline-flex;
+    height: 70px;
+    width: 100%;
+    background: #ffffff00;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+}
+
+.cubeSocial a {
+    display: inline-flex;
+    background: red;
+    border-radius: 50px;
+    height: 50px;
+    width: 50px;
+}
+
 /* Contenido FIN */
 
 
@@ -404,3 +438,64 @@ h2 {
 }
 
 /* Modal */
+
+
+/* black */
+
+
+
+.dark-theme {
+    background-color: black;
+    color: white;
+}
+
+.dark-theme .container_body {
+    background: #1e2329;
+}
+
+#themeToggle {
+    position: absolute;
+    right: 0px;
+    top: 0;
+    margin: 10px;
+    height: 50px;
+    width: 50px;
+    border: none;
+    border-radius: 11px;
+    background: #fdfdfde8;
+    backdrop-filter: blur(7px);
+    background-image: url(../img/icon/luna1.png);
+    background-size: 35px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.dark-theme #themeToggle {
+    background: #1e2329e8;
+    backdrop-filter: blur(7px);
+    background-image: url(../img/icon/sol1.png);
+    background-size: 30px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+
+.dark-theme h1,
+.dark-theme h2 {
+    color: #7eb9f7;
+}
+
+.dark-theme .search-container input {
+    background: #3d414d;
+}
+
+.dark-theme .cantidad-img {
+    background: #0c8db1;
+}
+
+.dark-theme .toggle-container {
+    background: #5179cb;
+}
+
+
+/* black FIN */
