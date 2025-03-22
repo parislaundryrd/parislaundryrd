@@ -65,40 +65,44 @@
                 </div>
 
 
-                <div class="parrafo">
-                    <h2 style="text-align: center;">Productos Utilizados</h2>
-                    <p>🧴 Detergente<br>
-                        🧴 Suavizante<br>
-                        🧴 Fundas perfumadas<br>
-                        🧴 Perlas aromatizantes<br>
-                        🧴 Blanqueador<br>
-                        🧴 Desmanchante<br>
-                        🧴 Tratamiento para moho y óxido</p>
+                <div class="toggle-container">
+                    <h2 class="toggle-header">Productos Utilizados ➕</h2>
+                    <div class="toggle-content">
+                        <p>🧴 Detergente<br>
+                            🧴 Suavizante<br>
+                            🧴 Fundas perfumadas<br>
+                            🧴 Perlas aromatizantes<br>
+                            🧴 Blanqueador<br>
+                            🧴 Desmanchante<br>
+                            🧴 Tratamiento para moho y óxido</p>
+                    </div>
                 </div>
 
-                <div class="parrafo" style="background: #e2e8ff;border-radius: 14px;">
-                    <h2 style="text-align: center;">Preguntas Frecuentes</h2>
-                    <p><strong>🔹¿Tiempo de entrega?</strong><br>
-                        Aproximadamente 2 - 3 horas, dependiendo del volumen de órdenes en turno.</p>
+                <div class="toggle-container">
+                    <h2 class="toggle-header">Preguntas Frecuentes ➕</h2>
+                    <div class="toggle-content">
+                        <p><strong>🔹¿Tiempo de entrega?</strong><br>
+                            Aproximadamente 2 - 3 horas, dependiendo del volumen de órdenes en turno.</p>
 
-                    <p><strong>🔹¿Hasta qué hora se reciben órdenes para entrega el mismo día?</strong><br>
-                        Hasta las 5:00 PM.</p>
+                        <p><strong>🔹¿Hasta qué hora se reciben órdenes para entrega el mismo día?</strong><br>
+                            Hasta las 5:00 PM.</p>
 
-                    <p><strong>🔹¿Puedo elegir solo lavar o solo secar?</strong><br>
-                        Sí, puedes optar por:<br>
-                        ✔️ Lavado y secado<br>
-                        ✔️ Solo secado<br>
-                        ✔️ Lavado y exprimido</p>
+                        <p><strong>🔹¿Puedo elegir solo lavar o solo secar?</strong><br>
+                            Sí, puedes optar por:<br>
+                            ✔️ Lavado y secado<br>
+                            ✔️ Solo secado<br>
+                            ✔️ Lavado y exprimido</p>
 
-                    <p><strong>🔹¿Las órdenes se entregan dobladas y empacadas?</strong><br>
-                        Sí, todas las órdenes se entregan dobladas y empacadas.</p>
+                        <p><strong>🔹¿Las órdenes se entregan dobladas y empacadas?</strong><br>
+                            Sí, todas las órdenes se entregan dobladas y empacadas.</p>
 
-                    <p><strong>🔹¿Puedo quedarme a dividir mi ropa?</strong><br>
-                        Sí, si prefieres dividir tu ropa, puedes hacerlo antes del lavado.</p>
+                        <p><strong>🔹¿Puedo quedarme a dividir mi ropa?</strong><br>
+                            Sí, si prefieres dividir tu ropa, puedes hacerlo antes del lavado.</p>
 
-                    <p><strong>🔹¿Puedo traer mi propio detergente?</strong><br>
-                        Sí, en caso de alergias, puedes traer tu propio detergente. No obstante, contamos con productos
-                        especializados para pieles sensibles.</p>
+                        <p><strong>🔹¿Puedo traer mi propio detergente?</strong><br>
+                            Sí, en caso de alergias, puedes traer tu propio detergente. No obstante, contamos con productos
+                            especializados para pieles sensibles.</p>
+                    </div>
                 </div>
 
 
@@ -398,6 +402,21 @@
         // Llamar a la función al cargar la página
         window.onload = openModalFromHash;
     </script>
+
+
+
+<script>
+    // Script para mostrar/ocultar las secciones
+    document.querySelectorAll('.toggle-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const content = this.nextElementSibling; // Obtener el contenido siguiente
+            const isVisible = content.classList.contains('show'); // Verificar si el contenido es visible
+            content.classList.toggle('show', !isVisible); // Alternar la clase 'show'
+            this.innerText = isVisible ? this.innerText.replace('➖', '➕') : this.innerText.replace('➕', '➖'); // Cambiar texto
+        });
+    });
+</script>
+
 
 </body>
 
