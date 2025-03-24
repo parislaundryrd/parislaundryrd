@@ -930,7 +930,7 @@ ul {
 #modal-body-historial {
     overflow: auto;
     flex: 1;
-    padding: 20px 30px 60px 30px;
+    padding: 20px 30px 20px 30px;
     box-sizing: border-box;
     width: 100%;
     max-width: none;
@@ -1008,6 +1008,12 @@ li {
         margin: 0px;
         max-width: 700%;
     }
+
+    #modal-body-historial {
+        overflow: auto;
+        flex: 1;
+        padding: 10px 20px 10px 20px;
+    }
 }
 
 
@@ -1020,3 +1026,25 @@ li {
     }
 
 }
+
+
+#loadMoreButton {
+    margin: 10px auto;
+    padding: 10px 20px;
+    background-color: #0078df;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  #loadMoreButton:hover {
+    background-color: #005bb5;
+  }
+
+  #noMoreRecordsMessage {
+    font-style: italic;
+    color: #888;
+    text-align: center;
+    margin-top: 10px;
+  }
