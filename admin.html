@@ -402,6 +402,8 @@
         </div>
         <div id="modal-body-historial" class="modal_body">
           <ul id="historialList"></ul>
+          <button id="loadMoreButton" style="display: none;">Cargar más</button>
+          <p id="noMoreRecordsMessage" style="display: none; text-align: center; color: #888; margin-top: 10px;">No hay más registros</p>
         </div>
       </div>
     </div>
@@ -1659,13 +1661,31 @@
 
     // Cargar historial desde Firestore
 
-    const loadHistorial = () => {
-      db.collection("historialAdmin")
+    let lastVisible = null; // Variable para almacenar el último documento visible
+    let historialList = document.getElementById("historialList");
+    let noMoreRecordsMessage = document.getElementById("noMoreRecordsMessage");
+
+    const loadHistorial = (loadMore = false) => {
+      let query = db.collection("historialAdmin")
         .orderBy("fecha", "desc")
-        .get()
+        .limit(10);
+
+      // Si se está cargando más, comenzar después del último documento visible
+      if (loadMore && lastVisible) {
+        query = query.startAfter(lastVisible);
+      }
+
+      query.get()
         .then((snapshot) => {
-          const historialList = document.getElementById("historialList");
-          historialList.innerHTML = "";
+          if (snapshot.empty && !loadMore) {
+            historialList.innerHTML = "<li>No hay registros en el historial.</li>";
+            return;
+          }
+
+          if (!loadMore) {
+            historialList.innerHTML = ""; // Limpiar la lista solo si no se está cargando más
+            noMoreRecordsMessage.style.display = "none"; // Ocultar el mensaje "No hay más registros"
+          }
 
           snapshot.forEach((doc) => {
             const data = doc.data();
@@ -1684,7 +1704,6 @@
             if (data["Precio por Libra"]) contenido += `Precio por Libra: ${data["Precio por Libra"]}<br>`;
             if (data["consumo de inventario"]) contenido += `Consumo de inventario: ${data["consumo de inventario"]}<br>`;
             if (data.cambio) contenido += `Cambios: ${data.cambio}<br>`;
-
 
             li.innerHTML = contenido;
 
@@ -1711,15 +1730,37 @@
               li.classList.add("ITBIS-update"); // Fondo naranja para ITBIS
             }
 
-
             historialList.appendChild(li);
           });
+
+          // Actualizar el último documento visible
+          lastVisible = snapshot.docs[snapshot.docs.length - 1];
+
+          // Mostrar u ocultar el botón "Cargar más" y el mensaje "No hay más registros"
+          if (snapshot.docs.length < 10) {
+            document.getElementById("loadMoreButton").style.display = "none";
+            noMoreRecordsMessage.style.display = "block"; // Mostrar el mensaje "No hay más registros"
+          } else {
+            document.getElementById("loadMoreButton").style.display = "block";
+            noMoreRecordsMessage.style.display = "none"; // Ocultar el mensaje "No hay más registros"
+          }
         })
         .catch((error) => {
           console.error("Error al cargar el historial: ", error);
         });
     };
     // Abrir modal de historial FIN 
+
+
+
+    document.getElementById("loadMoreButton").addEventListener("click", () => {
+      loadHistorial(true); // Cargar más registros
+    });
+
+    document.getElementById("historialButton").onclick = function () {
+      document.getElementById("historialModal").style.display = "block";
+      loadHistorial(); // Cargar los primeros 10 registros
+    };
 
 
 
@@ -1730,4 +1771,4 @@
 
 </html>
 
-<!-- 11 -->
+<!-- 1 -->
