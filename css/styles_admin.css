@@ -300,8 +300,7 @@ h1 {
 }
 
 .box_btns_Menu_RWD {
-    display: inline-flex
-;
+    display: inline-flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
@@ -454,14 +453,17 @@ h1 {
 }
 
 .button-list {
+    display: inline-flex;
     margin: 11px 0px;
     padding: 0px 130px;
+    gap: 15px;
+    justify-content: space-between;
 }
 
 .button-list button {
-    background: #a2f3b0;
+    background: #3eb8ff;
     border: none;
-    border-radius: 7px;
+    border-radius: 12px;
     font-weight: bold;
     display: inline-flex;
     flex-direction: row;
@@ -481,6 +483,27 @@ h1 {
 .button-list button img {
     position: relative;
     height: 32px;
+}
+
+
+#addServiceButton {
+    background: #d2f1d8;
+    box-shadow: 0px 0px 0px 1px rgb(179 241 94);
+}
+
+#configurarITBISButton {
+    background: #ebebeb;
+    box-shadow: 0px 0px 0px 1px rgb(196 233 153);
+}
+
+#empleadosButton {
+    background: #ffe0d7;
+    box-shadow: 0px 0px 0px 1px rgb(249 197 181);
+}
+
+#historialButton {
+    background: #e9f2ff;
+    box-shadow: 0px 0px 0px 1px rgb(200 222 255);
 }
 
 #hamperList,
@@ -550,12 +573,13 @@ h1 {
 #hamperList div button,
 #otherServiceList div button {
     border: none;
-    padding: 4px 10px;
+    padding: 7px 14px;
     border-radius: 5px;
     background: #f7fcff;
     border: 1px solid #6da7cf;
-    font-size: 15px;
+    font-size: 17px;
     transition: 0.3s;
+    margin-top: 5px;
 }
 
 #hamperList div button:hover,
@@ -563,6 +587,12 @@ h1 {
     cursor: pointer;
     background: #cce7f7;
     transition: 0.3s;
+}
+
+
+#grupo-left {
+    display: inline-flex;
+    gap: 14px;
 }
 
 
@@ -670,7 +700,7 @@ h1 {
     background: #ffffff;
     border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
     border-radius: 0px 0px 12px 12px;
-    min-height: 24px;
+    min-height: 50px;
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -785,7 +815,15 @@ h1 {
 .modal_body p {
     margin-block-start: 1em;
     margin-block-end: 4px;
-    font-weight: bold;
+}
+
+.modal_body h4 {
+    margin-block-start: 5px;
+    margin-block-end: 5px;
+}
+
+#configurarITBISForm {
+    text-align: justify;
 }
 
 #consumoListHamper,
@@ -832,3 +870,153 @@ h1 {
 }
 
 /* Estilos para el modal */
+
+/* Estilos para el modal de empleados */
+
+.cube_empleados {
+    display: inline-flex;
+    width: 100%;
+    align-items: baseline;
+    gap: 10px;
+}
+
+#nuevoEmpleado {
+    border: none;
+    padding: 7px 7px;
+    width: 176px;
+    background: #f2f4ff;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #7980a9;
+    width: 70%;
+}
+
+#addEmpleadoButton {
+    background: #00ff508f;
+    border: none;
+    box-shadow: 0px 0px 0px 1px rgb(0 191 48);
+    border-radius: 4px;
+    padding: 5px 7px;
+    width: 30%;
+    cursor: pointer;
+}
+
+#empleadosList button {
+    background: #ff00004a;
+    border: none;
+    box-shadow: 0px 0px 0px 1px rgb(255 0 0);
+    border-radius: 4px;
+    padding: 4px 7px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+
+/* Estilos para el modal de empleados FIN*/
+
+
+
+ul {
+    list-style-type: none;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    padding-inline-start: 0px;
+}
+
+#modal-content-historial {
+    overflow: auto;
+}
+
+#modal-body-historial {
+    overflow: auto;
+    flex: 1;
+    padding: 20px 30px 60px 30px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    background: #ffffff;
+    margin: 0px;
+    border: none;
+    border-radius: 0px;
+}
+
+li {
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.historial-add {
+    background-color: rgb(0 235 5 / 16%);
+    box-shadow: rgb(17 159 35) 0px 0px 0px 1px;
+}
+
+.historial-update {
+    background-color: rgb(230, 243, 255);
+    box-shadow: rgb(119 174 223) 0px 0px 0px 1px;
+}
+
+.historial-delete {
+    background-color: rgb(235 0 0 / 16%);
+    box-shadow: rgb(251 49 49) 0px 0px 0px 1px;
+}
+
+.ITBIS-update {
+    background-color: rgb(246 251 193);
+    box-shadow: rgb(255 212 46) 0px 0px 0px 1px;
+}
+
+
+
+@media screen and (max-width: 700px) {
+
+
+    .panelAdmin_tittle h2 {
+        font-size: 1.3em;
+    }
+
+    .modal {
+        background-color: rgb(255, 255, 255);
+        backdrop-filter: blur(0px);
+    }
+
+    .modal-content {
+        background-color: #ffffff;
+        width: 100%;
+        top: 0px;
+        left: 0px;
+        transform: none;
+        max-height: calc(100% - 0px);
+        height: 100%;
+    }
+
+    .modal_tittle {
+        border-radius: 0px;
+    }
+
+    .modal_down {
+        border-radius: 0px;
+    }
+
+    .modal_body {
+        background: #9199c5;
+        padding: 35px 15px 20px 15px;
+        box-sizing: border-box;
+        background: #bed7ef;
+        border: none;
+        border-radius: 0px;
+        margin: 0px;
+        max-width: 700%;
+    }
+}
+
+
+@media screen and (max-width: 625px) {
+    #grupo-left {
+        display: inline-flex;
+        gap: 14px;
+        flex-direction: column;
+        width: 100%;
+    }
+
+}
