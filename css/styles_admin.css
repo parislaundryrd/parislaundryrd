@@ -613,11 +613,15 @@ h1 {
     transition: 0.3s;
 }
 
+.sortable-list {
+    touch-action: none; /* Deshabilita gestos táctiles */
+  }
 
 #grupo-left {
     display: inline-flex;
     gap: 14px;
 }
+
 
 
 @media screen and (max-width: 1170px) {
