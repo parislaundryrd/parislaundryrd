@@ -329,7 +329,6 @@
 
 
     <!-- Modal para configurar ITBIS -->
-    <!-- Modal para configurar ITBIS -->
     <div id="configurarITBISModal" class="modal">
       <div class="modal-content">
         <div class="modal_tittle">
@@ -348,6 +347,24 @@
               <label for="cantidadPorciento"><strong>Cantidad Porciento (%):</strong></label><br>
               <input type="number" id="cantidadPorciento" placeholder="Ingrese el porcentaje" required>
             </p>
+            <h4>Nota:</h4>
+            <p>El Impuesto sobre Transferencias de Bienes Industrializados y Servicios (ITBIS) es un tributo obligatorio
+              establecido por el gobierno, que debe ser aplicado por las empresas en la venta de bienes y servicios. En
+              esta configuración, puedes definir cómo manejar el ITBIS en tu negocio:
+            <p>
+
+            <p><strong>Asumido por la empresa:</strong> El ITBIS está incluido en el precio de los productos o
+              servicios, pero se mostrará desglosado en la factura para mayor transparencia.</p>
+
+            <p><strong>Asumido por el cliente:</strong> El ITBIS se aplicará de manera separada y será cobrado
+              adicionalmente al cliente.</p>
+
+            <p><strong>Desactivado:</strong> Solo debe usarse si tu empresa está exenta del pago de ITBIS según la
+              normativa vigente.</p>
+
+            <p>El porcentaje establecido actualmente por la ley es del 18%, pero puedes modificarlo en caso de que haya
+              cambios en la legislación fiscal.</p>
+              
           </form>
         </div>
         <div class="modal_down">
@@ -435,24 +452,27 @@
     const editHamperModal = document.getElementById("editHamperModal");
     const editOtherServiceModal = document.getElementById("editOtherServiceModal");
 
-    /// Cargar Hampers
-    const loadHampers = () => {
-      db.collection("servicio")
-        .where("tipo", "==", "hamper")
-        .get()
-        .then((snapshot) => {
-          const hampers = [];
-          snapshot.forEach((doc) => {
-            hampers.push({ id: doc.id, ...doc.data() });
-          });
 
-          hampers.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
 
-          hamperList.innerHTML = "";
-          hampers.forEach((data) => {
-            const hamperDiv = document.createElement("div");
-            hamperDiv.setAttribute("data-id", data.id); // Establecer un atributo data-id
-            hamperDiv.innerHTML = `
+
+  /// Cargar Hampers
+const loadHampers = () => {
+  db.collection("servicio")
+    .where("tipo", "==", "hamper")
+    .get()
+    .then((snapshot) => {
+      const hampers = [];
+      snapshot.forEach((doc) => {
+        hampers.push({ id: doc.id, ...doc.data() });
+      });
+
+      hampers.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
+
+      hamperList.innerHTML = "";
+      hampers.forEach((data) => {
+        const hamperDiv = document.createElement("div");
+        hamperDiv.setAttribute("data-id", data.id); // Establecer un atributo data-id
+        hamperDiv.innerHTML = `
           <h3>${data.nombre}</h3>
           <img src="./img/icon/${data.icon}" alt="${data.nombre}">
           <p>Precio: <strong>RD$${data.precio}</strong></p>
@@ -461,23 +481,22 @@
           <p>Precio por Libra: <strong>RD$${data.preciolibras}</strong></p>
           <button onclick="editHamper('${data.id}')">Editar</button>
         `;
-            hamperList.appendChild(hamperDiv);
-          });
+        hamperList.appendChild(hamperDiv);
+      });
 
-          // Inicializar SortableJS
-          new Sortable(hamperList, {
-            animation: 150,
-            onEnd: (evt) => {
-              updateHamperOrder();
-            },
-          });
-        })
-        .catch((error) => {
-          console.error("Error al cargar hampers: ", error);
-        });
-    };
-
-
+      // Inicializar SortableJS
+      new Sortable(hamperList, {
+        animation: 150,
+        touchStartThreshold: 10, // Establecer un umbral bajo para el toque
+        onEnd: (evt) => {
+          updateHamperOrder();
+        },
+      });
+    })
+    .catch((error) => {
+      console.error("Error al cargar hampers: ", error);
+    });
+};
 
 
 
@@ -632,44 +651,48 @@
 
 
 
-    // Cargar Otros Servicios
-    const loadOtherServices = () => {
-      db.collection("servicio")
-        .where("tipo", "==", "otroservicio")
-        .get()
-        .then((snapshot) => {
-          const otherServices = [];
-          snapshot.forEach((doc) => {
-            otherServices.push({ id: doc.id, ...doc.data() });
-          });
+ // Cargar Otros Servicios
+const loadOtherServices = () => {
+  db.collection("servicio")
+    .where("tipo", "==", "otroservicio")
+    .get()
+    .then((snapshot) => {
+      const otherServices = [];
+      snapshot.forEach((doc) => {
+        otherServices.push({ id: doc.id, ...doc.data() });
+      });
 
-          otherServices.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
+      otherServices.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
 
-          otherServiceList.innerHTML = "";
-          otherServices.forEach((data) => {
-            const serviceDiv = document.createElement("div");
-            serviceDiv.setAttribute("data-id", data.id); // Establecer un atributo data-id
-            serviceDiv.innerHTML = `
+      otherServiceList.innerHTML = "";
+      otherServices.forEach((data) => {
+        const serviceDiv = document.createElement("div");
+        serviceDiv.setAttribute("data-id", data.id); // Establecer un atributo data-id
+        serviceDiv.innerHTML = `
           <h3>${data.nombre}</h3>
           <img src="./img/icon/${data.icon}" alt="${data.nombre}" style="width: 50px; height: 50px;">
           <p>Precio: <strong>RD$${data.precio}</strong></p>
           <button onclick="editOtherService('${data.id}')">Editar</button>
         `;
-            otherServiceList.appendChild(serviceDiv);
-          });
+        otherServiceList.appendChild(serviceDiv);
+      });
 
-          // Inicializar SortableJS
-          new Sortable(otherServiceList, {
-            animation: 150,
-            onEnd: (evt) => {
-              updateOtherServiceOrder();
-            },
-          });
-        })
-        .catch((error) => {
-          console.error("Error al cargar otros servicios: ", error);
-        });
-    };
+      // Inicializar SortableJS
+      new Sortable(otherServiceList, {
+        animation: 150,
+        touchStartThreshold: 10, // Establecer un umbral bajo para el toque
+        onEnd: (evt) => {
+          updateOtherServiceOrder();
+        },
+      });
+    })
+    .catch((error) => {
+      console.error("Error al cargar otros servicios: ", error);
+    });
+};
+
+
+
 
     // Función para actualizar el orden de los Hampers en Firestore
     const updateHamperOrder = () => {
