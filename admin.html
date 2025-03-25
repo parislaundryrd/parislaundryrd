@@ -452,27 +452,24 @@
     const editHamperModal = document.getElementById("editHamperModal");
     const editOtherServiceModal = document.getElementById("editOtherServiceModal");
 
+    /// Cargar Hampers
+    const loadHampers = () => {
+      db.collection("servicio")
+        .where("tipo", "==", "hamper")
+        .get()
+        .then((snapshot) => {
+          const hampers = [];
+          snapshot.forEach((doc) => {
+            hampers.push({ id: doc.id, ...doc.data() });
+          });
 
+          hampers.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
 
-
-  /// Cargar Hampers
-const loadHampers = () => {
-  db.collection("servicio")
-    .where("tipo", "==", "hamper")
-    .get()
-    .then((snapshot) => {
-      const hampers = [];
-      snapshot.forEach((doc) => {
-        hampers.push({ id: doc.id, ...doc.data() });
-      });
-
-      hampers.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
-
-      hamperList.innerHTML = "";
-      hampers.forEach((data) => {
-        const hamperDiv = document.createElement("div");
-        hamperDiv.setAttribute("data-id", data.id); // Establecer un atributo data-id
-        hamperDiv.innerHTML = `
+          hamperList.innerHTML = "";
+          hampers.forEach((data) => {
+            const hamperDiv = document.createElement("div");
+            hamperDiv.setAttribute("data-id", data.id); // Establecer un atributo data-id
+            hamperDiv.innerHTML = `
           <h3>${data.nombre}</h3>
           <img src="./img/icon/${data.icon}" alt="${data.nombre}">
           <p>Precio: <strong>RD$${data.precio}</strong></p>
@@ -481,22 +478,23 @@ const loadHampers = () => {
           <p>Precio por Libra: <strong>RD$${data.preciolibras}</strong></p>
           <button onclick="editHamper('${data.id}')">Editar</button>
         `;
-        hamperList.appendChild(hamperDiv);
-      });
+            hamperList.appendChild(hamperDiv);
+          });
 
-      // Inicializar SortableJS
-      new Sortable(hamperList, {
-        animation: 150,
-        touchStartThreshold: 10, // Establecer un umbral bajo para el toque
-        onEnd: (evt) => {
-          updateHamperOrder();
-        },
-      });
-    })
-    .catch((error) => {
-      console.error("Error al cargar hampers: ", error);
-    });
-};
+          // Inicializar SortableJS
+          new Sortable(hamperList, {
+            animation: 150,
+            onEnd: (evt) => {
+              updateHamperOrder();
+            },
+          });
+        })
+        .catch((error) => {
+          console.error("Error al cargar hampers: ", error);
+        });
+    };
+
+
 
 
 
@@ -651,48 +649,44 @@ const loadHampers = () => {
 
 
 
- // Cargar Otros Servicios
-const loadOtherServices = () => {
-  db.collection("servicio")
-    .where("tipo", "==", "otroservicio")
-    .get()
-    .then((snapshot) => {
-      const otherServices = [];
-      snapshot.forEach((doc) => {
-        otherServices.push({ id: doc.id, ...doc.data() });
-      });
+    // Cargar Otros Servicios
+    const loadOtherServices = () => {
+      db.collection("servicio")
+        .where("tipo", "==", "otroservicio")
+        .get()
+        .then((snapshot) => {
+          const otherServices = [];
+          snapshot.forEach((doc) => {
+            otherServices.push({ id: doc.id, ...doc.data() });
+          });
 
-      otherServices.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
+          otherServices.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
 
-      otherServiceList.innerHTML = "";
-      otherServices.forEach((data) => {
-        const serviceDiv = document.createElement("div");
-        serviceDiv.setAttribute("data-id", data.id); // Establecer un atributo data-id
-        serviceDiv.innerHTML = `
+          otherServiceList.innerHTML = "";
+          otherServices.forEach((data) => {
+            const serviceDiv = document.createElement("div");
+            serviceDiv.setAttribute("data-id", data.id); // Establecer un atributo data-id
+            serviceDiv.innerHTML = `
           <h3>${data.nombre}</h3>
           <img src="./img/icon/${data.icon}" alt="${data.nombre}" style="width: 50px; height: 50px;">
           <p>Precio: <strong>RD$${data.precio}</strong></p>
           <button onclick="editOtherService('${data.id}')">Editar</button>
         `;
-        otherServiceList.appendChild(serviceDiv);
-      });
+            otherServiceList.appendChild(serviceDiv);
+          });
 
-      // Inicializar SortableJS
-      new Sortable(otherServiceList, {
-        animation: 150,
-        touchStartThreshold: 10, // Establecer un umbral bajo para el toque
-        onEnd: (evt) => {
-          updateOtherServiceOrder();
-        },
-      });
-    })
-    .catch((error) => {
-      console.error("Error al cargar otros servicios: ", error);
-    });
-};
-
-
-
+          // Inicializar SortableJS
+          new Sortable(otherServiceList, {
+            animation: 150,
+            onEnd: (evt) => {
+              updateOtherServiceOrder();
+            },
+          });
+        })
+        .catch((error) => {
+          console.error("Error al cargar otros servicios: ", error);
+        });
+    };
 
     // Función para actualizar el orden de los Hampers en Firestore
     const updateHamperOrder = () => {
