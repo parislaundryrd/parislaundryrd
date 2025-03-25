@@ -487,23 +487,47 @@ h1 {
 
 
 #addServiceButton {
-    background: #d2f1d8;
+    background: #d2f1d8bd;
     box-shadow: 0px 0px 0px 1px rgb(179 241 94);
+    transition: 0.3s;
+}
+
+#addServiceButton:hover {
+    background: #b0eebcbd;
+    transition: 0.3s;
 }
 
 #configurarITBISButton {
     background: #ebebeb;
     box-shadow: 0px 0px 0px 1px rgb(196 233 153);
+    transition: 0.3s;
+}
+
+#configurarITBISButton:hover {
+    background: #e1e1e1;
+    transition: 0.3s;
 }
 
 #empleadosButton {
     background: #ffe0d7;
-    box-shadow: 0px 0px 0px 1px rgb(249 197 181);
+    box-shadow: 0px 0px 0px 1px rgb(193 111 86 / 52%);
+    transition: 0.3s;
+}
+
+#empleadosButton:hover {
+    background: #f5d4ca;
+    transition: 0.3s;
 }
 
 #historialButton {
     background: #e9f2ff;
     box-shadow: 0px 0px 0px 1px rgb(200 222 255);
+    transition: 0.3s;
+}
+
+#historialButton:hover {
+    background: #d5e6ff;
+    transition: 0.3s;
 }
 
 #hamperList,
