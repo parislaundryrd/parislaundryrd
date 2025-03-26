@@ -24,12 +24,10 @@ h1 {
 
 .button-list {
     margin-top: 20px;
-}
-
-.button-list button {
-    padding: 10px;
-    margin-right: 10px;
-    cursor: pointer;
+    display: inline-flex;
+    width: 100%;
+    gap: 14px;
+    flex-direction: row;
 }
 
 .modal-historialInvetario {
@@ -202,11 +200,10 @@ h1 {
     transition: 0.3s;
 }
 
-#addProductButton,
-#viewHistoryButton {
-    background: #a6e6ff;
+.button-list button {
+    background: #3eb8ff;
     border: none;
-    border-radius: 7px;
+    border-radius: 12px;
     font-weight: bold;
     display: inline-flex;
     flex-direction: row;
@@ -215,18 +212,34 @@ h1 {
     font-size: 14px;
     gap: 5px;
     transition: 0.3s;
+    cursor: pointer;
 }
 
-#addProductButton:hover,
-#viewHistoryButton:hover {
-    background: #6ac9ee;
+.button-list button img {
+    position: relative;
+    height: 32px;
+}
+
+#addProductButton {
+    background: #d2f1d8bd;
+    box-shadow: 0px 0px 0px 1px rgb(179 241 94);
     transition: 0.3s;
 }
 
-#addProductButton img,
-#viewHistoryButton img {
-    position: relative;
-    height: 32px;
+#addProductButton:hover {
+    background: #b0eebcbd;
+    transition: 0.3s;
+}
+
+#viewHistoryButton {
+    background: #e9f2ff;
+    box-shadow: 0px 0px 0px 1px rgb(200 222 255);
+    transition: 0.3s;
+}
+
+#viewHistoryButton:hover {
+    background: #d5e6ff;
+    transition: 0.3s;
 }
 
 
