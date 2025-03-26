@@ -36,6 +36,12 @@
           <button id="viewHistoryButton"><img src="./img/icon/historial-de-pedidos.png">Ver Historial de
             Inventario</button>
         </div>
+
+        <div id="totalValue" style="margin-top: 20px; font-size: 20px; font-weight: bold;">
+          Total Valor Neto: RD$<span id="totalAmount">0.00</span>
+        </div>
+
+
         <div class="product-list" id="productList"></div>
 
       </div>
@@ -182,37 +188,44 @@
     let currentEditingProductId = null;
     let draggingElement = null; // Elemento que se está arrastrando
 
-    // Cargar productos desde Firestore
-    const loadProducts = () => {
-      db.collection("productos").orderBy("ordenNum", "asc").onSnapshot((snapshot) => {
-        productList.innerHTML = ""; // Limpiar la lista antes de cargar
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const productItem = document.createElement("div");
-          productItem.classList.add("product-item");
-          productItem.setAttribute("draggable", true); // Hacer el elemento arrastrable
-          productItem.setAttribute("data-id", doc.id); // Guardar el ID del producto
-          productItem.innerHTML = `
-  
-          <div style="background: #b3c5ef;height: 100%;">${data.ordenNum}</div>
-          <div><strong>${data.id}</strong></div>
-          <div><strong>${data.nombre}</strong></div> 
-          <div>${data.detalles}</div> 
-          <div style="flex-direction: column;">Precio:<br><strong>RD$${data.precio}</strong></div>
-          <div style="flex-direction: column;">Stock:<br><strong style="color: ${data.cantidad < 20 ? 'red' : 'black'};">${data.cantidad}</strong></div> 
 
 
+// Cargar productos desde Firestore
+const loadProducts = () => {
+  db.collection("productos").orderBy("ordenNum", "asc").onSnapshot((snapshot) => {
+    productList.innerHTML = ""; // Limpiar la lista antes de cargar
+    let totalSum = 0; // Variable para almacenar la sumatoria total
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const valorTotalNeto = data.precio * data.cantidad; // Calcular el valor total neto
+      totalSum += valorTotalNeto; // Sumar al total
+
+      const productItem = document.createElement("div");
+      productItem.classList.add("product-item");
+      productItem.setAttribute("draggable", true); // Hacer el elemento arrastrable
+      productItem.setAttribute("data-id", doc.id); // Guardar el ID del producto
+      productItem.innerHTML = `
+        <div style="background: #b3c5ef;height: 100%;">${data.ordenNum}</div>
+        <div><strong>${data.id}</strong></div>
+        <div><strong>${data.nombre}</strong></div> 
+        <div>${data.detalles}</div> 
+                <div style="flex-direction: column;min-width: 80px;padding: 0px 20px;">Valor Neto:<br><strong>RD$${valorTotalNeto.toFixed(2)}</strong></div> <!-- Nueva columna -->
+        <div style="flex-direction: column;">Precio:<br><strong>RD$${data.precio.toFixed(2)}</strong></div>
+        <div style="flex-direction: column;">Stock:<br><strong style="color: ${data.cantidad < 20 ? 'red' : 'black'};">${data.cantidad}</strong></div>
         <div><button onclick="openEditModal('${doc.id}', '${data.id}', '${data.nombre}', '${data.detalles}', ${data.precio}, ${data.cantidad})">Editar</button></div>
         <div><button id="btnEliminarProduct" onclick="deleteProduct('${doc.id}')">X</button></div>
-        
       `;
-          productList.appendChild(productItem);
-        });
+      productList.appendChild(productItem);
+    });
 
-        // Agregar eventos de drag and drop a los productos
-        addDragAndDropEvents();
-      });
-    };
+    // Actualizar el total en el div correspondiente con formato de miles y sin decimales
+    document.getElementById("totalAmount").innerText = Math.floor(totalSum).toLocaleString("es-DO");
+
+    // Agregar eventos de drag and drop a los productos
+    addDragAndDropEvents();
+  });
+};
 
     // Agregar eventos de drag and drop
     const addDragAndDropEvents = () => {
