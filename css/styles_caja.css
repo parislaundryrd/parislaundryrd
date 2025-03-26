@@ -20,146 +20,6 @@ h2 {
     background: #ffffff00;
 }
 
-/* MENU  */
-.BarraMenu {
-    position: relative;
-    height: 60px;
-    width: 100%;
-    background: white;
-    margin-bottom: 14px;
-    border-radius: 0px 0px 14px 14px;
-    display: inline-flex;
-    justify-content: space-between;
-    padding: 0px 14px;
-    box-sizing: border-box;
-}
-
-.BarraMenu img {
-    height: 60px;
-}
-
-.BarraMenu h1 {
-    margin-block-start: 0px;
-    margin-block-end: 0px;
-    margin-right: 20px;
-}
-
-.linediv {
-    position: relative;
-    height: 40px;
-    width: 2px;
-    background: #efb3ec9c;
-}
-
-.BarraMenu button {
-    border: none;
-    font-size: 16px;
-    font-weight: bold;
-    background: #ffffff00;
-    color: black;
-    transition: 0.3s;
-}
-
-.BarraMenu button:hover {
-    cursor: pointer;
-    color: #0078df;
-    transition: 0.3s;
-}
-
-#dateTime {
-    position: relative;
-    text-align: center;
-    background: #a1bbf700;
-    display: inline-flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-#dateTime h1 {
-    font-size: 17px;
-    margin: 0px;
-    color: #474747;
-    font-weight: bold;
-}
-
-#dateTime p {
-    font-size: 23px;
-    margin: 0;
-    color: #333;
-    font-weight: bold;
-}
-
-.BarraMenu_Left {
-    display: flex;
-    background: #ff000000;
-    align-items: center;
-}
-
-.BarraMenu_Right {
-    display: inline-flex;
-    background: rgb(25 0 255 / 0%);
-    align-items: center;
-}
-
-.menu_tittle {
-    display: inline-flex;
-    align-items: center;
-    min-width: 300px;
-}
-
-.box_btns {
-    position: relative;
-    display: flex;
-    overflow: auto;
-    background: #00800000;
-    align-items: center;
-    padding-top: 9px;
-    gap: 10px;
-    margin-left: 14px;
-}
-
-.box_btns button {
-    padding: 8px 6px;
-    transition: 0.3s;
-}
-
-.box_btns button:hover {
-    background: #f1d6ef;
-    padding: 8px 6px;
-    border-radius: 6px;
-    transition: 0.3s;
-}
-
-.box_btns a {
-    text-decoration: none;
-    color: #4d4d4d;
-    /* transition: 0.3s; */
-}
-
-/* .box_btns a:hover {
-    background: red;
-    transition: 0.3s;
-} */
-
-#logout1 {}
-
-#logout1 img {
-    height: 32px;
-    padding: 5px;
-}
-
-/* @media screen and (max-width: 1000px) {
-    .BarraMenu_Left {
-        display: contents;
-    }
-
-    .box_btns {
-        display: none;
-    }
-} */
-
-/* MENU FIN */
-
 
 /* Container */
 .container_caja {
@@ -223,32 +83,138 @@ h2 {
     margin: 10px 0px;
     display: inline-flex;
     gap: 10px;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .button-list Button {
     background: #a6e6ff;
     border: none;
-    border-radius: 7px;
+    border-radius: 12px;
     font-weight: bold;
     display: inline-flex;
     flex-direction: row;
     align-items: center;
-    padding: 10px;
+    padding: 7px;
     font-size: 14px;
     gap: 5px;
     transition: 0.3s;
-    margin-right: 10px;
     cursor: pointer;
 }
 
+#cuadreCajaInfo {
+    padding: 4px 10px;
+    margin: 7px 0px;
+    font-weight: bold;
+    font-size: 16px;
+    color: #000000;
+    background: #d3ffdb;
+    box-shadow: 0px 0px 0px 1px rgb(142 227 167);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+}
+
+#cuadreCajaInfo img {
+    height: 32px;
+}
+
+.space_button {
+    display: inline-flex;
+    gap: 12px;
+}
+
+#openModalInicialCaja {
+    background: #e7f1ff;
+    box-shadow: 0px 0px 0px 1px rgb(200 222 255);
+}
+
+#openModalInicialCaja:hover {
+    background: #e7f1ff;
+    transition: 0.3s;
+}
+
+#openModalButton {
+    background: #d3ffdb;
+    box-shadow: 0px 0px 0px 1px rgb(142 227 167);
+}
+
+#openCierreCajaModal {
+    background: #e6e7e7;
+    box-shadow: 0px 0px 0px 1px rgb(194 199 205);
+}
+
+#openRetiroEmpleadoModal {
+    background: #fdebeb;
+    box-shadow: 0px 0px 0px 1px rgb(255 169 169);
+}
+
+.button-list button img {
+    position: relative;
+    height: 32px;
+}
+
+#openHistorialModal {
+    background: #e9f2ff;
+    box-shadow: 0px 0px 0px 1px rgb(200 222 255);
+    transition: 0.3s;
+}
+
+#openHistorialModal:hover {
+    background: #d5e6ff;
+    transition: 0.3s;
+}
+
 #inicioCajaInfo span {
-    color: #0093ff;
+    color: #549bff;
     font-weight: bold;
 }
 
+#openIngresarDineroModal {
+    background: #d7fdec;
+    box-shadow: 0px 0px 0px 1px rgb(133 231 154);
+}
+
+#openRetirarDineroModal {
+    background: #fdebeb;
+    box-shadow: 0px 0px 0px 1px rgb(255 169 169);
+}
+
 #cierreCajaInfo {
-    color: #ad4b4b;
+    color: #a32d2d;
     font-weight: bold;
+    background: #cfcfcf;
+    border-radius: 14px;
+    padding: 10px 24px;
+}
+
+#inicioCajaInfo {
+    color: #d0dae8;
+    font-weight: bold;
+    background: #cfcfcf;
+    border-radius: 14px;
+    padding: 10px 24px;
+    background: #e7f1ff;
+    box-shadow: 0px 0px 0px 1px rgb(200 222 255);
+}
+
+
+
+
+
+#inicioCajaInfo h2,
+#cierreCajaInfo h2 {
+    margin-block-start: 0px;
+    margin-block-end: 7px;
+}
+
+#inicioCajaInfo img,
+#cierreCajaInfo img {
+    height: 128px;
+    margin-bottom: 5px;
+    pointer-events: none;
 }
 
 
@@ -390,12 +356,11 @@ th {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    display: inline-flex
-;
+    display: inline-flex;
     flex-direction: column;
     max-height: calc(100% - 50px);
+    overflow: hidden;
 }
-
 
 .close {
     position: absolute;
@@ -444,6 +409,23 @@ th {
     box-sizing: border-box;
     width: 100%;
     background: #232949;
+    display: inline-flex;
+    flex-direction: row;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00000041;
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00000065;
+    border-radius: 2px;
 }
 
 .modal_caja_body h2 {
@@ -456,14 +438,11 @@ th {
 .modal_caja_down {
     width: 100%;
     background: #30365a;
-    /* border-top: 1px solid hsl(208.13deg 44.59% 87.48%); */
     border-radius: 0px 0px 12px 12px;
     min-height: 24px;
-    display: inline-flex
-;
+    display: inline-flex;
     justify-content: space-evenly;
-    padding: 12px 0px;
-    /* gap: 21px; */
+    padding: 10px 0px;
     align-items: center;
 }
 
@@ -488,7 +467,9 @@ th {
 #totalCurrentAmount,
 #modalTotalIngresar,
 #modalTotalEnCaja,
-#modalTotalContado {
+#modalTotalContado,
+#modalTotalDeberiaEmpleado,
+#totalRetiroEmpleado {
     color: #4a9cff;
     font-size: 25px;
     font-weight: bold;
@@ -513,14 +494,12 @@ th {
 }
 
 .modal_caja_down button {
-    /* position: absolute; */
     color: #ffffff;
-    /* right: 11px; */
     font-size: 17px;
     background: #1a4f5d;
     padding: 10px 16px;
     border-radius: 4px;
-    margin: 7px;
+    margin: 0px;
     border: none;
     box-shadow: 0px 0px 0px 1px rgb(11 185 161);
     transition: 0.3s;
@@ -554,13 +533,13 @@ th {
 }
 
 .modal_caja_flex {
-    display: inline-flex
-;
+    display: inline-flex;
     flex-direction: row;
     /* gap: 120px; */
     justify-content: space-evenly;
     width: 100%;
 }
+
 .CashContainer img {
     height: 50px;
 }
@@ -599,6 +578,30 @@ input::placeholder {
     color: rgba(97, 97, 97, 0.5);
     /* Color rojo con 50% de opacidad */
 }
+
+.empleadoYbtn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+}
+
+#empleadoSelectInicio,
+#empleadoSelectCuadre,
+#empleadoSelectCierre,
+#empleadoSelectIngreso,
+#empleadoSelectRetiro,
+#empleadoSelect {
+    cursor: pointer;
+    background: #1a3e5d;
+    border: none;
+    font-size: 15px;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    box-shadow: 0px 0px 0px 1px rgb(11 138 185);
+}
+
 
 @media screen and (max-width: 1010px) {
     .modal-content {
