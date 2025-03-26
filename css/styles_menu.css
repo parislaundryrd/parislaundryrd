@@ -142,10 +142,8 @@
 .menu_tittle {
     display: inline-flex;
     align-items: center;
-    min-width: 300px;
+    min-width: 257px;
 }
-
-
 
 .Box_LogOut {
     height: 60px;
