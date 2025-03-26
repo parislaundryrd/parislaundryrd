@@ -4,54 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./css/styles_facturacion1.css">
-  <title>Sistema de Facturación - Paris Laundry</title>
+  <title>Sistema de Facturación - Laundry</title>
   <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
+  <link rel="stylesheet" href="./css/styles_facturacion.css">
+  <link rel="stylesheet" href="./css/styles_menu.css">
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
+  <script src="./js/menu - empleados.js" defer></script>
 </head>
 
 
 <body>
   <div class="MasterBox0">
 
-    <!-- Menu -->
-    <div class="BarraMenu">
-
-      <div class="BarraMenu_Left">
-
-        <div class="menu_tittle">
-          <img src="./img/Paris Laundry 1.png">
-          <h1>Paris Laundry</h1>
-        </div>
-
-        <div class="linediv"></div>
-
-        <div class="box_btns">
-          <button><a style="color: #0078df;" href="facturacion.html">Facturación</a></button>
-          <button><a href="facturas-generadas.html">Facturas Generadas</a></button>
-          <button><a href="caja.html">Caja/Cuadre</a></button>
-        </div>
-      </div>
-
-
-
-      <div class="BarraMenu_Right">
-
-        <div class="linediv" style="margin: 0px 15px 0px 12px;"></div>
-
-        <div id="dateTime">
-          <h1 id="time">--:--:--</h1>
-          <p id="date">Cargando fecha...</p>
-        </div>
-
-        <div class="linediv" style="margin: 0px 5px 0px 12px; display: none;"></div>
-
-        <button id="logout1" style=" display: none;"><img src="./img/icon/logout.png"><a href="index.html"></a></button>
-      </div>
-
-    </div>
-    <!-- Menu FIN -->
+    <laundry-menu></laundry-menu>
 
     <div class="MasterBox">
 
@@ -78,15 +44,23 @@
           </div>
 
           <div class="previewfactura_down">
-            <div class="seleccionempeados">
-              <label for="categoria">Empleado que Atiende:</label>
-              <select id="empleado" required>
-                <option value="" disabled selected>Selecciona</option>
-              </select>
+
+            <div class="previewfactura_down_space">
+              <div class="seleccionempeados">
+                <label for="categoria">Empleado que Atiende:</label>
+                <select id="empleado" required>
+                  <option value="" disabled selected>Selecciona</option>
+                </select>
+              </div>
+
+              <button id="processInvoice">Procesar Factura</button>
+              <ul id="invoiceList" class="invoice-list hidden"></ul>
             </div>
 
-            <button id="processInvoice">Procesar Factura</button>
-            <ul id="invoiceList" class="invoice-list hidden"></ul>
+            <div class="panelfacturacion_down_RWD">
+              <footer-content></footer-content>
+            </div>
+
           </div>
         </div>
 
@@ -121,7 +95,8 @@
               <div>
                 <label for="numeroCliente">Teléfono del Cliente:</label>
                 <div class="input-numeroContacto">
-                  <input type="tel" id="clientPhone" placeholder="Teléfono" required maxlength="20" oninput="formatPhoneNumber(this)">
+                  <input type="tel" id="clientPhone" placeholder="Teléfono" required maxlength="20"
+                    oninput="formatPhoneNumber(this)">
                   <div class="cantidad-img"><img src="./img/icon/phone_1.png"></div>
                 </div>
               </div>
@@ -150,7 +125,7 @@
             <div class="product-list">
               <div class="product-header">
                 <div>Producto</div>
-                <div>Detalles</div>
+                <div id="detalles-hidden">Detalles</div>
                 <div>Precio (RD$)</div>
               </div>
               <div id="productSelection"></div>
@@ -162,7 +137,7 @@
         </div>
 
         <div class="panelfacturacion_down">
-          <p>© Paris Laundry RD - 2025</p>
+          <footer-content></footer-content>
         </div>
       </div>
 
@@ -191,9 +166,9 @@
           <h2 style="text-align: center;margin-block-start: 5px;margin-block-end: 5px;">Método de Pago:</h2>
 
           <div class="button-metodo-pago">
-            <button id="cashPayment" class="payment-button" value="Efectivo">Efectivo 💵</button>
-            <button id="transferPayment" class="payment-button" value="Transferencia">Transferencia 📲</button>
-            <button id="cardPayment" class="payment-button" value="Tarjeta de Crédito">Tarjeta de Crédito 💳</button>
+            <button id="cashPayment" class="payment-button" value="Efectivo">Efectivo <span>💵</span></button>
+            <button id="transferPayment" class="payment-button" value="Transferencia">Transferencia <span>📲</span></button>
+            <button id="cardPayment" class="payment-button" value="Tarjeta de Crédito">Tarjeta de <span>Crédito 💳</span></button>
           </div>
 
 
@@ -258,7 +233,7 @@
         <!-- Modal_factura_processed_tittle -->
         <div class="factura_processed_tittle">
           <span class="close-button" onclick="closeProcessedInvoiceModal()">&times;</span>
-          <h2>Factura Procesada Correctamente</h2>
+          <h2>Factura Exitosa</h2>
         </div>
         <!-- Modal_factura_processed_tittle FIN -->
 
@@ -271,7 +246,6 @@
           <div class="container_factura_processed_down">
             <div class="container_flex_factura_processed_down">
               <p>¡Factura procesada y guardada con éxito!</p>
-              <img src="./img/Paris Laundry 1.png">
 
               <div style="display: inline-flex;width: 100%;flex-direction: row;justify-content: space-between;">
                 <button id="printInvoiceButton"><img src="./img/icon/imprimir1.png">Imprimir</button>
@@ -318,6 +292,8 @@
     let hampers = [];
     let otrosServicios = [];
 
+
+    
     // Cargar servicios, productos y empleados
     const loadServices = () => {
       db.collection("servicio").onSnapshot((snapshot) => {
@@ -351,7 +327,7 @@
         hampersArray.forEach((data) => {
           const button = document.createElement("button");
           button.type = "button";
-          button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre} - RD$${data.precio}`;
+          button.innerHTML = `<div><img src="./img/icon/${data.icon}" alt="${data.nombre}"></div> <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>`;
           button.dataset.value = data.precio;
           button.dataset.name = data.nombre;
           button.dataset.librasmin = data.librasmin;
@@ -363,11 +339,13 @@
           serviceSelection.appendChild(button);
         });
 
+        
+
         // Mostrar otros servicios ordenados
         otrosServiciosArray.forEach((data) => {
           const button = document.createElement("button");
           button.type = "button";
-          button.innerHTML = `<img src="./img/icon/${data.icon}" alt="${data.nombre}"> ${data.nombre} - RD$${data.precio}`;
+          button.innerHTML = `<div><img src="./img/icon/${data.icon}" alt="${data.nombre}"></div> <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>`;
           button.dataset.value = data.precio;
           button.dataset.name = data.nombre;
           button.dataset.icon = data.icon;
@@ -528,47 +506,95 @@
       hamperDiv.querySelector(".priceDisplay").textContent = `Precio: RD$${totalPrice.toFixed(2)}`;
     };
 
-    const updateInvoicePreview = () => {
-      const clientName = document.getElementById("clientName").value || "Sin nombre";
-      const clientPhone = document.getElementById("clientPhone").value || "Sin teléfono";
-      const clientAddress = document.getElementById("clientAddress").value || "Sin dirección";
 
-      const selectedDelivery = deliverySelection.querySelector("button.active");
-      const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+    
+    let itbisPercentage; // Sin valor por defecto
+let asumirPor; // Variable para almacenar quién asume el ITBIS
+
+const loadITBISPercentage = () => {
+  console.log("Cargando porcentaje de ITBIS...");
+  db.collection("impuestos").limit(1).get()
+    .then((snapshot) => {
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        itbisPercentage = doc.data().cantidadPorciento / 100; // Asegúrate de que cantidadPorciento esté en porcentaje
+        asumirPor = doc.data().asumirPor; // Cargar el valor de asumirPor
+        console.log("Porcentaje de ITBIS cargado:", itbisPercentage);
+        console.log("Asumir por:", asumirPor);
+        updateInvoicePreview(); // Llama a la función aquí
+      } else {
+        console.log("No se encontraron documentos en la colección de impuestos");
+      }
+    })
+    .catch((error) => {
+      console.error("Error al obtener el porcentaje de ITBIS: ", error);
+    });
+};
+
+// Llama a la función al cargar la página
+loadITBISPercentage();
 
 
-      let total = 0;
 
-      hampers.forEach(hamper => {
-        const weight = parseInt(hamper.weightInput.value);
-        const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', ''));
-        total += price;
-      });
+const updateInvoicePreview = () => {
+  const clientName = document.getElementById("clientName").value || "Sin nombre";
+  const clientPhone = document.getElementById("clientPhone").value || "Sin teléfono";
+  const clientAddress = document.getElementById("clientAddress").value || "Sin dirección";
 
-      otrosServicios.forEach(item => {
-        const count = parseInt(item.input.value) || 0;
-        total += count * item.price;
-      });
+  const selectedDelivery = deliverySelection.querySelector("button.active");
+  const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
 
-      // Obtener el precio del delivery desde el input
-      const deliveryPrice = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
-      total += deliveryPrice;
+  let subtotal = 0; // Inicializar subtotal
 
+  // Calcular el total de los hampers
+  hampers.forEach(hamper => {
+    const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
+    subtotal += price; // Sumar al subtotal
+  });
 
-      const productsDetails = selectedProducts.map(product => {
-        const quantity = parseInt(product.value) || 0;
-        const productName = product.closest('.product-item').querySelector('div').textContent;
-        const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
-        const productTotal = quantity * productPrice;
+  // Calcular el total de otros servicios
+  otrosServicios.forEach(item => {
+    const count = parseInt(item.input.value) || 0;
+    subtotal += count * item.price; // Sumar al subtotal
+  });
 
-        if (quantity > 0) {
-          total += productTotal;
-          return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${productName} - Cant. ${quantity} X RD$${productPrice}</span><span>RD$${productTotal.toFixed(2)}</span></div>`;
-        }
-        return null;
-      }).filter(Boolean).join("");
+  // Calcular el total de productos adicionales
+  selectedProducts.forEach(product => {
+    const quantity = parseInt(product.value) || 0;
+    const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+    subtotal += quantity * productPrice; // Sumar al subtotal
+  });
 
-      document.getElementById("invoiceDetails").innerHTML = `
+  // Obtener el precio del delivery
+  const deliveryPrice = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
+  subtotal += deliveryPrice; // Incluir delivery en el subtotal
+
+  // Calcular el ITBIS
+  const itbis = (asumirPor !== "desactivado") ? subtotal * itbisPercentage : 0; // Calcular ITBIS solo si no está desactivado
+
+  // Calcular el total a pagar
+  let total;
+  if (asumirPor === "empresa") {
+    total = subtotal; // El total es solo el subtotal
+  } else {
+    total = subtotal + itbis; // Sumar el ITBIS al total si no es "empresa"
+  }
+
+  // Calcular el total de productos
+  const productsDetails = selectedProducts.map(product => {
+    const quantity = parseInt(product.value) || 0;
+    const productName = product.closest('.product-item').querySelector('div').textContent;
+    const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+    const productTotal = quantity * productPrice;
+
+    if (quantity > 0) {
+      return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${productName} - Cant. ${quantity} X RD$${productPrice}</span><span>RD$${productTotal.toFixed(2)}</span></div>`;
+    }
+    return null;
+  }).filter(Boolean).join("");
+
+  // Actualizar el contenido de invoiceDetails
+  document.getElementById("invoiceDetails").innerHTML = `
     <div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;">
       <strong>Cliente:</strong> ${clientName} </div>
 
@@ -581,13 +607,8 @@
     ${hampers.length > 0 || otrosServicios.length > 0 ? `
       <br><strong>Servicios:</strong>
       ${hampers.length > 0 ? hampers.map(hamper => {
-        const weight = parseInt(hamper.weightInput.value);
         const data = hamper.data;
-        const librasMin = parseInt(data.librasmin);
-        const librasMax = parseInt(data.librasmax);
-        const precioPorLibra = parseFloat(data.preciolibras);
-        const displayWeight = (weight >= librasMin && weight <= librasMax) ? "1 hamper" : `${weight}lbs X RD$${precioPorLibra}`;
-        return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${data.nombre} (${displayWeight})</span><span>RD$${hamper.priceDisplay.textContent.replace('Precio: RD$', '')}</span></div>`;
+        return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${data.nombre}</span><span>RD$${hamper.priceDisplay.textContent.replace('Precio: RD$', '')}</span></div>`;
       }).join("") : ""}
       ${otrosServicios.length > 0 ? otrosServicios.map(service => `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${service.name}: ${service.input.value}</span><span>RD$${(parseFloat(service.price) * parseInt(service.input.value)).toFixed(2)}</span></div>`).join("") : ""}
     ` : ""}
@@ -600,14 +621,28 @@
     <strong><br>Delivery:<br></strong>
     <div style="display: flex; justify-content: space-between;"><span>${selectedDelivery ? selectedDelivery.dataset.name : "Sin delivery"}:</span><span>RD$${selectedDelivery ? selectedDelivery.dataset.value : "0"}</span></div><br>
 
-    <br><div style="display: flex; justify-content: space-between;">
-    <strong>Total:</strong>
-    <strong>RD$${total.toFixed(2)}</strong>
+${asumirPor !== "desactivado" ? `
+  <br><div style="display: flex; justify-content: space-between;">
+    <strong>Subtotal:</strong>
+    <strong>RD$${subtotal.toFixed(2)}</strong>
   </div>
+  <br><div style="display: flex; justify-content: space-between;">
+    <strong>${asumirPor === "empresa" ? "ITBIS Incluidos" : "ITBIS"} (${(itbisPercentage * 100).toFixed(2)}%):</strong>
+    <strong>RD$${itbis.toFixed(2)}</strong>
+  </div>
+` : ""}
+    
+    <br><div style="display: flex; justify-content: space-between;">
+      <strong>Total a Pagar:</strong>
+      <strong>RD$${total.toFixed(2)}</strong>
+    </div>
   `;
 
-      document.getElementById("invoiceResult").classList.remove("hidden");
-    };
+  document.getElementById("invoiceResult").classList.remove("hidden");
+};
+
+
+
 
     const loadDeliveryOptions = () => {
       db.collection("delivery").orderBy("orden").onSnapshot((snapshot) => {
@@ -675,7 +710,7 @@
           productItem.classList.add("product-item");
           productItem.innerHTML = `
         <div>${data.nombre}</div>
-        <div style="align-items: flex-start;">${data.detalles}</div>
+        <div id="detalles-hidden" style="align-items: flex-start;">${data.detalles}</div>
         <div>
           <div class="productPrice">$${data.precio}</div>
           <div class="productQuantity" style="font-size: 14px;font-weight: bold; color: ${data.cantidad < 20 ? 'red' : '#3fbfe7'};">Disponible: ${data.cantidad}</div>
@@ -732,8 +767,10 @@
       const productItem = inputField.closest('.product-item');
       if (quantity > 0) {
         productItem.style.backgroundColor = "#f1d6ef";
+        productItem.style.border = "1px solid #e9bbe6";
       } else {
         productItem.style.backgroundColor = "#f9f9f9";
+        productItem.style.border = "1px solid #ddd";
       }
 
       updateInvoicePreview();
@@ -851,136 +888,171 @@
       await processInvoice("pagado");
     });
 
+
+
+    
     const processInvoice = async (status) => {
-      const paymentMethod = document.querySelector(".payment-button.active").value;
-      const deliveryOption = deliverySelection.querySelector("button.active");
-      const deliveryPrice = deliveryOption ? deliveryOption.dataset.value : "0";
+  const paymentMethod = document.querySelector(".payment-button.active").value;
+  const deliveryOption = deliverySelection.querySelector("button.active");
+  const deliveryPrice = deliveryOption ? deliveryOption.dataset.value : "0";
 
-      // Obtener el total
-      const total = calculateTotal();
+  // Obtener el subtotal
+  let subtotal = 0;
 
-      // Si el método de pago es Efectivo, obtener el monto recibido y calcular el cambio
-      let amountReceived = 0;
-      let changeAmount = 0;
+  // Calcular el total de los hampers
+  hampers.forEach(hamper => {
+    const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
+    subtotal += price; // Sumar al subtotal
+  });
 
-      if (paymentMethod === "Efectivo") {
-        amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
-        changeAmount = amountReceived - total;
+  // Calcular el total de otros servicios
+  otrosServicios.forEach(item => {
+    const count = parseInt(item.input.value) || 0;
+    subtotal += count * item.price; // Sumar al subtotal
+  });
+
+    // Calcular el total de productos adicionales
+    const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+  selectedProducts.forEach(product => {
+    const quantity = parseInt(product.value) || 0;
+    const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+    subtotal += quantity * productPrice; // Sumar al subtotal
+  });
+
+
+  // Obtener el precio del delivery
+  const selectedDelivery = deliverySelection.querySelector("button.active");
+  const deliveryPriceValue = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
+  subtotal += deliveryPriceValue; // Incluir delivery en el subtotal
+
+  // Calcular el ITBIS
+  const itbis = (asumirPor !== "desactivado") ? subtotal * itbisPercentage : 0; // Calcular ITBIS solo si no está desactivado
+
+  // Calcular el total a pagar
+  const total = (asumirPor === "empresa") ? subtotal : subtotal + itbis; // Ajustar el total según asumirPor
+
+  // Si el método de pago es Efectivo, obtener el monto recibido y calcular el cambio
+  let amountReceived = 0;
+  let changeAmount = 0;
+
+  if (paymentMethod === "Efectivo") {
+    amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+    changeAmount = amountReceived - total;
+  }
+
+  const invoiceData = {
+    id: generateNewInvoiceId(await getLastInvoiceId()),
+    clientName: document.getElementById("clientName").value.trim(),
+    clientPhone: document.getElementById("clientPhone").value.trim(),
+    clientAddress: document.getElementById("clientAddress").value.trim(),
+    NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
+    selectedServices: hampers.map(hamper => ({
+      name: hamper.data.nombre,
+      weight: parseInt(hamper.weightInput.value),
+      price: hamper.priceDisplay.textContent.replace('Precio: RD$', '')
+    })),
+    otrosServicios: otrosServicios.map(item => ({
+      name: item.name,
+      count: parseInt(item.input.value) || 0,
+      price: item.price
+    })).filter(item => item.count > 0), // Filtrar solo los servicios con cantidad > 0
+    deliveryOption: deliveryOption ? [{
+      name: deliveryOption.dataset.name,
+      price: deliveryPrice // Usar el precio ingresado
+    }] : [{ name: "Sin Delivery", price: "0" }],
+    selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
+      name: product.closest('.product-item').querySelector('div').textContent,
+      quantity: parseInt(product.value) || 0,
+      price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
+    })).filter(product => product.quantity > 0), // Filtrar solo los productos con cantidad > 0
+    total: total,
+    paymentMethod: paymentMethod,
+    status: status,
+    amountReceived: amountReceived, // Agregar monto recibido
+    changeAmount: changeAmount, // Agregar cambio
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Cambiar aquí
+    ITBISmonto: itbis // Agregar el monto del ITBIS aquí
+  };
+
+  try {
+    const invoiceRef = await db.collection("facturas").add(invoiceData);
+
+    // Obtener el documento recién creado
+    const invoiceDoc = await invoiceRef.get();
+
+    // Mostrar el valor del campo "id" del documento en el modal
+    const invoiceId = invoiceDoc.data().id; // Accediendo al campo "id"
+    document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
+
+    // Actualizar inventario de productos adicionales basado en el array "consumo" de los hampers
+    for (const hamper of hampers) {
+      for (const item of hamper.consumo) {
+        const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+        if (!productDoc.empty) {
+          const productRef = productDoc.docs[0].ref;
+          const productData = productDoc.docs[0].data();
+          const newQuantity = productData.cantidad - item.cantidad;
+          await productRef.update({ cantidad: newQuantity });
+        }
       }
+    }
 
-      const invoiceData = {
-        id: generateNewInvoiceId(await getLastInvoiceId()),
-        clientName: document.getElementById("clientName").value.trim(),
-        clientPhone: document.getElementById("clientPhone").value.trim(),
-        clientAddress: document.getElementById("clientAddress").value.trim(),
-        NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
-        selectedServices: hampers.map(hamper => ({
-          name: hamper.data.nombre,
-          weight: parseInt(hamper.weightInput.value),
-          price: hamper.priceDisplay.textContent.replace('Precio: RD$', '')
-        })),
-        otrosServicios: otrosServicios.map(item => ({
-          name: item.name,
-          count: parseInt(item.input.value) || 0,
-          price: item.price
-        })).filter(item => item.count > 0), // Filtrar solo los servicios con cantidad > 0
-
-
-        deliveryOption: deliveryOption ? [{
-          name: deliveryOption.dataset.name,
-          price: deliveryPrice // Usar el precio ingresado
-        }] : [{ name: "Sin Delivery", price: "0" }],
-
-
-        selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
-          name: product.closest('.product-item').querySelector('div').textContent,
-          quantity: parseInt(product.value) || 0,
-          price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
-        })).filter(product => product.quantity > 0), // Filtrar solo los productos con cantidad > 0
-        total: total,
-        paymentMethod: paymentMethod,
-        status: status,
-        amountReceived: amountReceived, // Agregar monto recibido
-        changeAmount: changeAmount, // Agregar cambio
-        timestamp: firebase.firestore.FieldValue.serverTimestamp() // Cambiar aquí
-      };
-
-      try {
-        const invoiceRef = await db.collection("facturas").add(invoiceData);
-
-        // Obtener el documento recién creado
-        const invoiceDoc = await invoiceRef.get();
-
-        // Mostrar el valor del campo "id" del documento en el modal
-        const invoiceId = invoiceDoc.data().id; // Accediendo al campo "id"
-        document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
-
-        // Actualizar inventario de productos adicionales basado en el array "consumo" de los hampers
-        for (const hamper of hampers) {
-          for (const item of hamper.consumo) {
-            const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-            if (!productDoc.empty) {
-              const productRef = productDoc.docs[0].ref;
-              const productData = productDoc.docs[0].data();
-              const newQuantity = productData.cantidad - item.cantidad;
-              await productRef.update({ cantidad: newQuantity });
-            }
+    // Actualizar inventario de productos adicionales basado en el array "consumo" de los "otroservicio"
+    for (const servicio of otrosServicios) {
+      const cantidadServicio = parseInt(servicio.input.value) || 0;
+      if (cantidadServicio > 0) {
+        for (const item of servicio.consumo) {
+          const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+          if (!productDoc.empty) {
+            const productRef = productDoc.docs[0].ref;
+            const productData = productDoc.docs[0].data();
+            const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
+            await productRef.update({ cantidad: newQuantity });
           }
         }
-
-        // Actualizar inventario de productos adicionales basado en el array "consumo" de los "otroservicio"
-        for (const servicio of otrosServicios) {
-          const cantidadServicio = parseInt(servicio.input.value) || 0;
-          if (cantidadServicio > 0) {
-            for (const item of servicio.consumo) {
-              const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-              if (!productDoc.empty) {
-                const productRef = productDoc.docs[0].ref;
-                const productData = productDoc.docs[0].data();
-                const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
-                await productRef.update({ cantidad: newQuantity });
-              }
-            }
-          }
-        }
-
-        // Actualizar inventario de productos seleccionados manualmente
-        const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
-        for (const product of selectedProducts) {
-          const quantity = parseInt(product.value) || 0;
-          if (quantity > 0) {
-            const productName = product.closest('.product-item').querySelector('div').textContent;
-            const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
-            if (!productDoc.empty) {
-              const productRef = productDoc.docs[0].ref;
-              const productData = productDoc.docs[0].data();
-              const newQuantity = productData.cantidad - quantity;
-              await productRef.update({ cantidad: newQuantity });
-            }
-          }
-        }
-
-        // Deshabilitar los botones de pago después de procesar la factura
-        disablePaymentButtons();
-
-        // Ocultar las opciones de pago en Efectivo
-        document.getElementById("cashPaymentOptions").classList.add("hidden");
-
-        clearSelections();
-        document.getElementById("billingForm").reset();
-        document.getElementById("amountReceived").value = "";
-        document.getElementById("changeAmount").textContent = "";
-        document.getElementById("empleado").selectedIndex = 0;
-        updateInvoicePreview();
-
-      } catch (error) {
-        console.error("Error al guardar la factura: ", error);
-        alert("Hubo un problema al procesar la factura. Inténtalo de nuevo.");
       }
+    }
 
-      document.getElementById("confirmationModal").classList.add("hidden");
-    };
+    // Actualizar inventario de productos seleccionados manualmente
+    const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+    for (const product of selectedProducts) {
+      const quantity = parseInt(product.value) || 0;
+      if (quantity > 0) {
+        const productName = product.closest('.product-item').querySelector('div').textContent;
+        const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
+        if (!productDoc.empty) {
+          const productRef = productDoc.docs[0].ref;
+          const productData = productDoc.docs[0].data();
+          const newQuantity = productData.cantidad - quantity;
+          await productRef.update({ cantidad: newQuantity });
+        }
+      }
+    }
 
+    // Deshabilitar los botones de pago después de procesar la factura
+    disablePaymentButtons();
+
+    // Ocultar las opciones de pago en Efectivo
+    document.getElementById("cashPaymentOptions").classList.add("hidden");
+
+    clearSelections();
+    document.getElementById("billingForm").reset();
+    document.getElementById("amountReceived").value = "";
+    document.getElementById("changeAmount").textContent = "";
+    document.getElementById("empleado").selectedIndex = 0;
+    updateInvoicePreview();
+
+  } catch (error) {
+    console.error("Error al guardar la factura: ", error);
+    alert("Hubo un problema al procesar la factura. Inténtalo de nuevo.");
+  }
+
+  document.getElementById("confirmationModal").classList.add("hidden");
+};
+
+
+
+    
     // Función para deshabilitar los botones de pago
     const disablePaymentButtons = () => {
       const pendingPaymentButton = document.getElementById("pendingPayment");
@@ -1004,33 +1076,51 @@
       return `a${String(newNumber).padStart(5, '0')}`;
     };
 
+
+
+
+
     const calculateTotal = () => {
-      let total = 0;
+  let total = 0;
 
-      hampers.forEach(hamper => {
-        const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
-        total += price;
-      });
+  // Calcular subtotal
+  hampers.forEach(hamper => {
+    const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
+    total += price;
+  });
 
-      otrosServicios.forEach(item => {
-        const count = parseInt(item.input.value) || 0;
-        total += count * item.price;
-      });
+  otrosServicios.forEach(item => {
+    const count = parseInt(item.input.value) || 0;
+    total += count * item.price;
+  });
 
-      const selectedDelivery = deliverySelection.querySelector("button.active");
-      if (selectedDelivery) {
-        total += parseFloat(selectedDelivery.dataset.value) || 0;
-      }
+  const selectedDelivery = deliverySelection.querySelector("button.active");
+  if (selectedDelivery) {
+    total += parseFloat(selectedDelivery.dataset.value) || 0;
+  }
 
-      const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
-      selectedProducts.forEach(product => {
-        const quantity = parseInt(product.value) || 0;
-        const price = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
-        total += quantity * price;
-      });
+  const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+  selectedProducts.forEach(product => {
+    const quantity = parseInt(product.value) || 0;
+    const price = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+    total += quantity * price;
+  });
 
-      return total;
-    };
+  // Calcular el ITBIS solo si asumirPor no está en "desactivado" y está en "cliente"
+  let itbis = 0;
+  if (asumirPor !== "desactivado" && asumirPor !== "empresa") {
+    itbis = total * itbisPercentage; // Asegúrate de que itbisPercentage esté definido y tenga el valor correcto
+  }
+
+  total += itbis; // Sumar el ITBIS al total
+
+  return total;
+};
+
+
+
+
+
 
     const clearSelections = () => {
       const deliveryButtons = deliverySelection.querySelectorAll("button");
@@ -1271,8 +1361,8 @@
 
   </script>
 
-
-  <script src="./js/fecha-hora.js"></script>
 </body>
 
 </html>
+
+<!-- 3 -->
