@@ -9,19 +9,19 @@ class LaundryMenu extends HTMLElement {
             <div class="BarraMenu">
                 <div class="BarraMenu_Left">
                     <div class="menu_tittle">
-                        <img src="./img/icon/logo-premium.png" alt="Logo">
-                        <h1>Laundry Premium</h1>
+                        <img src="./img/Paris Laundry 1.png" alt="Logo">
+                        <h1>Paris Laundry</h1>
                     </div>
                     <div class="linediv"></div>
                 </div>
 
                 <div class="box_btns">
-                    <button><a href="1.html">Facturación</a></button>
-                    <button><a href="2.html">Facturas Generadas</a></button>
-                    <button><a href="3.html">Caja/Cuadre</a></button>
-                    <button><a href="4.html">Inventario</a></button>
-                    <button><a href="5.html">Contabilidad</a></button>
-                    <button><a href="6.html">Admin</a></button>
+                    <button><a href="facturacion-admin.html">Facturación</a></button>
+                    <button><a href="facturas-generadas-admin.html">Facturas Generadas</a></button>
+                    <button><a href="caja-admin.html">Caja/Cuadre</a></button>
+                    <button><a href="inventario.html">Inventario</a></button>
+                    <button><a href="contabilidad.html">Contabilidad</a></button>
+                    <button><a href="admin.html">Admin</a></button>
                 </div>
 
                 <div class="BarraMenu_Right">
@@ -52,17 +52,17 @@ class LaundryMenu extends HTMLElement {
 
                         <div class="modal_menu_body">
                             <div class="box_btns_Menu_RWD">
-                                <button><a href="1.html">Facturación</a></button>
-                                <button><a href="2.html">Facturas Generadas</a></button>
-                                <button><a href="3.html">Caja/Cuadre</a></button>
-                                <button><a href="4.html">Inventario</a></button>
-                                <button><a href="5.html">Contabilidad</a></button>
-                                <button><a href="6.html">Admin</a></button>
+                                <button><a href="facturacion-admin.html.html">Facturación</a></button>
+                                <button><a href="facturas-generadas-admin.html">Facturas Generadas</a></button>
+                                <button><a href="caja-admin.html">Caja/Cuadre</a></button>
+                                <button><a href="inventario.html">Inventario</a></button>
+                                <button><a href="contabilidad.html">Contabilidad</a></button>
+                                <button><a href="admin.html">Admin</a></button>
                             </div>
                         </div>
 
                         <div class="modal_menu_down">
-                            <p>© Paris Laundry RD</p>
+                            <footer-content></footer-content>
                         </div>
                     </div>
                 </div>
@@ -151,3 +151,26 @@ class LaundryMenu extends HTMLElement {
 }
 
 customElements.define('laundry-menu', LaundryMenu);
+
+
+class FooterContent extends HTMLElement {
+    constructor() {
+        super();
+        this.innerHTML = `
+            <style>
+
+                #creditos {
+                   width: 100%;
+                }
+                #creditos p {
+                  text-align: center;
+                  font-size: 14px;
+                  color: #000000;
+                }
+            </style>
+            <div id="creditos"><p>© Developed by J.P.</p></div>
+        `;
+    }
+}
+
+customElements.define('footer-content', FooterContent);
