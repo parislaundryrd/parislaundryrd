@@ -974,6 +974,10 @@ li {
     margin: 10px 0;
 }
 
+#empleadosList li {
+    padding: 0px;
+}
+
 .historial-add {
     background-color: rgb(0 235 5 / 16%);
     box-shadow: rgb(17 159 35) 0px 0px 0px 1px;
