@@ -4,103 +4,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./css/styles_admin.css">
   <title>Administración - Paris Laundry</title>
   <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
+  <link rel="stylesheet" href="./css/styles_admin.css">
+  <link rel="stylesheet" href="./css/styles_menu.css">
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+  <script src="./js/menu.js" defer></script>
 </head>
 
 <body>
 
-
   <div class="MasterBox0">
 
-    <!-- Menu -->
-    <div class="BarraMenu">
-
-      <div class="BarraMenu_Left">
-        <div class="menu_tittle">
-          <img src="./img/Paris Laundry 1.png">
-          <h1>Paris Laundry</h1>
-        </div>
-        <div class="linediv"></div>
-      </div>
-
-      <div class="box_btns">
-        <button><a href="facturacion-admin.html">Facturación</a></button>
-        <button><a href="facturas-generadas-admin.html">Facturas Generadas</a></button>
-        <button><a href="caja-admin.html">Caja/Cuadre</a></button>
-        <button><a href="inventario.html">Inventario</a></button>
-        <button><a href="contabilidad.html">Contabilidad</a></button>
-        <button><a style="color: #0078df;" href="index.html" href="admin.html">Admin</a></button>
-      </div>
-
-      <div class="BarraMenu_Right">
-        <div class="Box_Hora">
-          <div class="linediv" style="margin: 0px 15px 0px 12px;"></div>
-          <div id="dateTime">
-            <h1 id="time">--:--:--</h1>
-            <p id="date">Cargando fecha...</p>
-          </div>
-        </div>
-
-        <div class="Box_LogOut">
-          <div class="linediv" style="margin: 0px 5px 0px 12px;"></div>
-          <button id="logout1"><img src="./img/icon/logout.png"><a href="index.html"></a></button>
-        </div>
-      </div>
-
-      <div id="Box_open_Menu_RWD" style="cursor: pointer;"><img src="./img/icon/menu1.png">
-      </div>
-
-      <div id="modal_Menu_RWD" class="modal_Menu_RWD">
-        <div class="modal_content_Menu">
-
-          <div class="modal_menu_tittle">
-            <span class="close_btn">&times;</span>
-            <h2>Menú</h2>
-          </div>
-
-          <div class="modal_menu_body">
-            <div class="box_btns_Menu_RWD">
-              <button><a href="index - admin.html">Facturación</a></button>
-              <button><a href="facturas.html">Facturas Generadas</a></button>
-              <button><a href="caja.html">Caja/Cuadre</a></button>
-              <button><a href="inventario.html">Inventario</a></button>
-              <button><a href="contabilidad.html">Contabilidad</a></button>
-              <button><a style="color: #0078df;" href="index.html" href="admin.html">Admin</a></button>
-            </div>
-          </div>
-
-          <div class="modal_menu_down">
-            <p>© Paris Laundry RD</p>
-          </div>
-
-        </div>
-      </div>
-      <script>
-        document.getElementById("Box_open_Menu_RWD").onclick = function () {
-          const modal = document.getElementById("modal_Menu_RWD");
-          modal.style.display = "block";
-          modal.style.animation = "slideIn 0.5s forwards"; // Aplicar animación de entrada
-        }
-
-        document.querySelector(".close_btn").onclick = function () {
-          const modal = document.getElementById("modal_Menu_RWD");
-          modal.style.animation = "slideOut 0.5s forwards"; // Aplicar animación de salida
-          setTimeout(() => {
-            modal.style.display = "none"; // Ocultar modal después de la animación
-          }, 500); // Esperar a que termine la animación
-        }
-
-
-      </script>
-    </div>
-    <!-- Menu FIN -->
-
-
+    <laundry-menu></laundry-menu>
 
     <div class="container_admin">
       <div class="panelAdmin_tittle">
