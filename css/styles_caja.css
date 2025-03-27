@@ -560,9 +560,10 @@ th {
 
 .modal_caja_flex {
     display: inline-flex;
-    flex-direction: column;
+    flex-direction: row;
     width: 100%;
     align-items: center;
+    justify-content: space-evenly;
 }
 
 #loadMoreButton {
@@ -805,4 +806,3 @@ ul {
         width: 100%;
     }
 }
-
