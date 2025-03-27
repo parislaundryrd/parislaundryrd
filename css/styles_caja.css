@@ -131,8 +131,9 @@ h2 {
     box-shadow: 0px 0px 0px 1px rgb(200 222 255);
 }
 
+
 #openModalInicialCaja:hover {
-    background: #e7f1ff;
+    background: #caddf7;
     transition: 0.3s;
 }
 
@@ -141,14 +142,29 @@ h2 {
     box-shadow: 0px 0px 0px 1px rgb(142 227 167);
 }
 
+#openModalButton:hover {
+    background: #b5f1c0;
+    transition: 0.3s;
+}
+
 #openCierreCajaModal {
     background: #e6e7e7;
     box-shadow: 0px 0px 0px 1px rgb(194 199 205);
 }
 
+#openCierreCajaModal:hover {
+    background: #cecece;
+    transition: 0.3s;
+}
+
 #openRetiroEmpleadoModal {
     background: #fdebeb;
     box-shadow: 0px 0px 0px 1px rgb(255 169 169);
+}
+
+#openRetiroEmpleadoModal:hover {
+    background: #fcdada;
+    transition: 0.3s;
 }
 
 .button-list button img {
@@ -177,9 +193,19 @@ h2 {
     box-shadow: 0px 0px 0px 1px rgb(133 231 154);
 }
 
+#openIngresarDineroModal:hover {
+    background: #b2ecd2;
+    transition: 0.3s;
+}
+
 #openRetirarDineroModal {
     background: #fdebeb;
     box-shadow: 0px 0px 0px 1px rgb(255 169 169);
+}
+
+#openRetirarDineroModal:hover {
+    background: #fcdada;
+    transition: 0.3s;
 }
 
 #cierreCajaInfo {
@@ -619,4 +645,140 @@ input::placeholder {
     .modal_caja_flex {
         flex-direction: column;
     }
+}
+
+
+
+.boxdetalles {
+    width: 50%;
+    padding: 83px 10px 10px 10px;
+    box-sizing: content-box;
+    background: #30365a;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0px 22px 25px -16px rgb(12 16 41);
+}
+
+.retiro-comentario {
+    margin-top: 20px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: 90%;
+}
+
+
+#detallesGasto {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    resize: vertical;
+    box-sizing: border-box;
+    min-height: 45px;
+    height: 180px;
+    max-height: 380px;
+    background: #e5e5e5;
+}
+
+.boxdetalles label {
+    color: #4a9cff;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    width: 75%;
+}
+
+.detalles {
+    background-color: #f9f9f9;
+    box-shadow: 0px 0px 0px 1px rgb(249 157 157);
+    border-radius: 5px;
+    padding: 10px 5px;
+}
+
+
+#historialList li {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+#historialList li div {
+    margin-bottom: 4px;
+}
+
+#historialList .accion {
+    font-weight: bold;
+    color: #2d2d2d;
+}
+
+#historialList .fecha {
+    color: #000000;
+    font-size: 1em;
+}
+
+#historialList .monto {
+    font-weight: bold;
+}
+
+
+/* Colores por categoría */
+#historialList li[data-categoria="inicio"] {
+    background-color: #e7f1ff;
+    box-shadow: 0px 0px 0px 1px rgb(127 178 255);
+}
+
+#historialList li[data-categoria="inicio"] .accion {
+    color: #1792ff;
+}
+
+#historialList li[data-categoria="cierre"] {
+    background-color: #e1e1e1;
+    box-shadow: 0px 0px 0px 1px rgb(153 153 153);
+}
+
+#historialList li[data-categoria="cierre"] .accion {
+    color: #333232;
+}
+
+#historialList li[data-categoria="cuadre"] {
+    background-color: #ceffe9;
+    box-shadow: 0px 0px 0px 1px rgb(115 245 143);
+}
+
+#historialList li[data-categoria="cuadre"] .accion {
+    color: #1dbb45;
+}
+
+#historialList li[data-categoria="retiro-empleado"] {
+    background-color: #ffc6c6;
+    box-shadow: 0px 0px 0px 1px rgb(235 73 73) inset;
+}
+
+#historialList li[data-categoria="retiro-empleado"] .accion {
+    color: #510202;
+}
+
+#historialList li[data-categoria="ingreso"] {
+    background-color: #ffefc0;
+    box-shadow: 0px 0px 0px 1px rgb(255 191 0);
+}
+
+#historialList li[data-categoria="retiro"] {
+    background-color: #fdd1d1;
+    box-shadow: 0px 0px 0px 1px rgb(249 157 157);
+}
+
+#historialList li[data-categoria="retiro"] .accion {
+    color: #ab3d3d;
 }
