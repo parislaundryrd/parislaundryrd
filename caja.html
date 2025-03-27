@@ -932,7 +932,7 @@
   <!-- Modal para Retiro por Empleado FIN -->
 
 
-  
+
   <!-- Modal para Historial de Transacciones -->
   <div id="historialModal" class="modal">
     <div class="modal-content">
@@ -1687,44 +1687,49 @@
       }
     };
 
-    // Cargar las facturas en tiempo real
-    const loadFacturasRealTime = async () => {
-      try {
-        // Obtener el timestamp de la colección "caja"
-        const cajaSnapshot = await db.collection("caja").get();
-        if (!cajaSnapshot.empty) {
-          const cajaDoc = cajaSnapshot.docs[0].data();
-          const cajaTimestamp = cajaDoc.timestamp.toDate(); // Convertir a objeto Date
+  // Cargar las facturas en tiempo real
+const loadFacturasRealTime = async () => {
+  try {
+    // Obtener el timestamp de la colección "caja"
+    const cajaSnapshot = await db.collection("caja").get();
+    if (!cajaSnapshot.empty) {
+      const cajaDoc = cajaSnapshot.docs[0].data();
+      const cajaTimestamp = cajaDoc.timestamp.toDate(); // Convertir a objeto Date
 
-          // Obtener las facturas generadas después del timestamp de la caja
-          db.collection("facturas")
-            .where("timestamp", ">", cajaTimestamp)
-            .orderBy("timestamp") // Asegúrate de que los documentos estén ordenados por timestamp
-            .onSnapshot((snapshot) => {
-              const facturasTableBody = document.getElementById("facturasTable").getElementsByTagName("tbody")[0];
-              facturasTableBody.innerHTML = ""; // Limpiar la tabla antes de agregar nuevas filas
+      // Obtener las facturas generadas después del timestamp de la caja
+      db.collection("facturas")
+        .where("timestamp", ">", cajaTimestamp)
+        .orderBy("timestamp") // Asegúrate de que los documentos estén ordenados por timestamp
+        .onSnapshot((snapshot) => {
+          const facturasTableBody = document.getElementById("facturasTable").getElementsByTagName("tbody")[0];
+          facturasTableBody.innerHTML = ""; // Limpiar la tabla antes de agregar nuevas filas
 
-              snapshot.forEach(doc => {
-                const factura = doc.data();
-                if (factura.paymentMethod === "Efectivo") { // Filtrar por método de pago
-                  const row = facturasTableBody.insertRow();
-                  row.insertCell(0).innerText = factura.id; // ID del campo "id"
-                  row.insertCell(1).innerText = factura.clientName;
-                  row.insertCell(2).innerText = factura.clientPhone;
-                  row.insertCell(3).innerText = factura.paymentMethod; // Agregar el método de pago
-                  row.insertCell(4).innerText = factura.amountReceived; // Agregar el monto recibido
-                  row.insertCell(5).innerText = factura.changeAmount; // Agregar el cambio
-                  row.insertCell(6).innerText = factura.total;
-                  row.insertCell(7).innerText = factura.timestamp.toDate().toLocaleString(); // Formato legible
-                }
-              });
-              updateTotals(); // Llamar a la función para actualizar los totales
-            });
-        }
-      } catch (error) {
-        console.error("Error al cargar las facturas:", error);
-      }
-    };
+          snapshot.forEach(doc => {
+            const factura = doc.data();
+            if (factura.paymentMethod === "Efectivo") { // Filtrar por método de pago
+              const row = facturasTableBody.insertRow();
+              row.insertCell(0).innerText = factura.id; // ID del campo "id"
+              row.insertCell(1).innerText = factura.clientName;
+              row.insertCell(2).innerText = factura.clientPhone;
+              row.insertCell(3).innerText = factura.paymentMethod; // Agregar el método de pago
+              row.insertCell(4).innerText = factura.amountReceived; // Agregar el monto recibido
+              row.insertCell(5).innerText = factura.changeAmount; // Agregar el cambio
+              row.insertCell(6).innerText = factura.total;
+
+              // Formatear el timestamp en formato de 12 horas
+              const fecha = factura.timestamp.toDate();
+              const options = { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' };
+              const fechaFormateada = fecha.toLocaleString('es-ES', options);
+              row.insertCell(7).innerText = fechaFormateada; // Mostrar la fecha y hora formateada
+            }
+          });
+          updateTotals(); // Llamar a la función para actualizar los totales
+        });
+    }
+  } catch (error) {
+    console.error("Error al cargar las facturas:", error);
+  }
+};
 
     // Cargar los datos de la caja y las facturas al inicio
     loadCashData();
@@ -2634,3 +2639,4 @@ btnHistorial.onclick = async function() {
 
 </html>
 
+<!-- 15 -->
