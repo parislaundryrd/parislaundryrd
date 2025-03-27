@@ -431,7 +431,7 @@ th {
 .modal_caja_body {
     overflow: auto;
     flex: 1;
-    padding: 30px;
+    padding: 10px 20px;
     box-sizing: border-box;
     width: 100%;
     background: #232949;
@@ -560,11 +560,27 @@ th {
 
 .modal_caja_flex {
     display: inline-flex;
-    flex-direction: row;
-    /* gap: 120px; */
-    justify-content: space-evenly;
+    flex-direction: column;
     width: 100%;
+    align-items: center;
 }
+
+#loadMoreButton {
+    margin: 10px auto;
+    padding: 10px 20px;
+    background-color: #0078df;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#loadMoreButton:hover {
+    background-color: #005bb5;
+    transition: 0.3s;
+}
+
 
 .CashContainer img {
     height: 50px;
@@ -629,23 +645,6 @@ input::placeholder {
 }
 
 
-@media screen and (max-width: 1010px) {
-    .modal-content {
-        width: 100%;
-    }
-}
-
-@media screen and (max-width: 770px) {
-    .modal-content {
-        height: 100%;
-        max-height: none;
-        border-radius: 0px;
-    }
-
-    .modal_caja_flex {
-        flex-direction: column;
-    }
-}
 
 
 
@@ -782,3 +781,28 @@ ul {
 #historialList li[data-categoria="retiro"] .accion {
     color: #ab3d3d;
 }
+
+
+
+@media screen and (max-width: 1010px) {
+    .modal-content {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 770px) {
+    .modal-content {
+        height: 100%;
+        max-height: none;
+        border-radius: 0px;
+    }
+
+    .modal_caja_flex {
+        flex-direction: column;
+    }
+
+    ul {
+        width: 100%;
+    }
+}
+
