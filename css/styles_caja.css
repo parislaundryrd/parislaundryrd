@@ -431,7 +431,7 @@ th {
 .modal_caja_body {
     overflow: auto;
     flex: 1;
-    padding: 10px 20px;
+    padding: 15px 20px 30px 20px;
     box-sizing: border-box;
     width: 100%;
     background: #232949;
