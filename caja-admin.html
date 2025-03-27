@@ -932,11 +932,7 @@
   <!-- Modal para Retiro por Empleado FIN -->
 
 
-
-
-
-
-  <!-- Modal para Historial de Transacciones -->
+  
   <!-- Modal para Historial de Transacciones -->
   <div id="historialModal" class="modal">
     <div class="modal-content">
@@ -945,18 +941,18 @@
         <h2 style="color: #000000;">Historial de Transacciones</h2>
       </div>
 
-      <div class="modal_caja_body" style="background: #ffffff;">
+      <div class="modal_caja_body" style="background: #ffffff;display: block;">
         <div class="modal_caja_flex">
           <ul id="historialList">
             <!-- Las transacciones se cargarán aquí como elementos li -->
           </ul>
+        <button id="loadMoreButton" style="display: none;">Cargar más</button>
+        <p id="noMoreRecords" style="display: none; text-align: center;">No hay más registros</p>
+          
         </div>
       </div>
     </div>
   </div>
-
-
-
 
 
 
@@ -2506,97 +2502,136 @@ document.getElementById('cuadreForm').addEventListener('submit', async function 
 
 
     // Función para cargar el historial desde Firebase
-// Función para cargar el historial desde Firebase
-const cargarHistorial = async () => {
+// Variables para la paginación
+let lastVisible = null;
+const limit = 10;
+
+// Función para cargar el historial con paginación
+const cargarHistorial = async (loadMore = false) => {
   try {
-    const querySnapshot = await db.collection("historialCaja")
-      .orderBy("timestamp", "desc")
-      .get();
-
     const historialList = document.getElementById("historialList");
-    historialList.innerHTML = ""; // Limpiar la lista
+    const loadMoreButton = document.getElementById("loadMoreButton");
+    const noMoreRecords = document.getElementById("noMoreRecords");
 
-    if (querySnapshot.empty) {
+    if (!loadMore) {
+      // Primera carga, reiniciar variables
+      historialList.innerHTML = "";
+      lastVisible = null;
+      loadMoreButton.style.display = "none";
+      noMoreRecords.style.display = "none";
+    }
+
+    let query = db.collection("historialCaja")
+      .orderBy("timestamp", "desc")
+      .limit(limit);
+
+    if (loadMore && lastVisible) {
+      query = query.startAfter(lastVisible);
+    }
+
+    const querySnapshot = await query.get();
+
+    if (querySnapshot.empty && !loadMore) {
       const li = document.createElement("li");
       li.innerText = "No hay transacciones registradas";
       historialList.appendChild(li);
       return;
     }
 
-    querySnapshot.forEach(doc => {
-      const transaccion = doc.data();
-      const li = document.createElement("li");
+    if (!querySnapshot.empty) {
+      lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+      
+      querySnapshot.forEach(doc => {
+        const transaccion = doc.data();
+        const li = document.createElement("li");
 
-      // Asignar la categoría según la acción
-      let categoria;
-      switch (transaccion.accion) {
-        case "Inicio de Caja Exitoso":
-          categoria = "inicio";
-          break;
-        case "Cierre de Caja Exitoso":
-          categoria = "cierre";
-          break;
-        case "Cuadre de Caja Exitoso":
-          categoria = "cuadre";
-          break;
-        case "Retiro de Efectivo por Empleado":
-          categoria = "retiro-empleado";
-          break;
-        case "Ingreso de Efectivo Exitoso":
-          categoria = "ingreso";
-          break;
-        case "Retiro de Efectivo Exitoso":
-          categoria = "retiro";
-          break;
-        default:
-          categoria = "otro"; // Para cualquier otra acción no especificada
+        // Asignar la categoría según la acción
+        let categoria;
+        switch (transaccion.accion) {
+          case "Inicio de Caja Exitoso":
+            categoria = "inicio";
+            break;
+          case "Cierre de Caja Exitoso":
+            categoria = "cierre";
+            break;
+          case "Cuadre de Caja Exitoso":
+            categoria = "cuadre";
+            break;
+          case "Retiro de Efectivo por Empleado":
+            categoria = "retiro-empleado";
+            break;
+          case "Ingreso de Efectivo Exitoso":
+            categoria = "ingreso";
+            break;
+          case "Retiro de Efectivo Exitoso":
+            categoria = "retiro";
+            break;
+          default:
+            categoria = "otro";
+        }
+
+        li.setAttribute("data-categoria", categoria);
+
+        const fecha = transaccion.timestamp.toDate();
+        const opcionesFecha = {
+          timeZone: 'America/Santo_Domingo',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        };
+        const fechaFormateada = fecha.toLocaleString('es-DO', opcionesFecha);
+
+        let contenidoHTML = `
+          <div class="accion">Acción: ${transaccion.accion || 'No especificada'}</div>
+          <div class="fecha"><strong>Fecha:</strong> ${fechaFormateada}</div>
+          <div class="empleado"><strong>Empleado:</strong> ${transaccion.empleado || 'No especificado'}</div>
+          <div class="monto">Monto: RD$${transaccion.monto || 0}</div>
+        `;
+
+        if (transaccion.accion === "Retiro de Efectivo por Empleado" && transaccion.detalles) {
+          contenidoHTML += `<div class="detalles"><strong>Detalles:</strong> ${transaccion.detalles}</div>`;
+        }
+
+        li.innerHTML = contenidoHTML;
+        historialList.appendChild(li);
+      });
+
+      // Mostrar u ocultar botón según si hay más registros
+      if (querySnapshot.size === limit) {
+        loadMoreButton.style.display = "block";
+        noMoreRecords.style.display = "none";
+      } else {
+        loadMoreButton.style.display = "none";
+        noMoreRecords.style.display = "block";
       }
-
-      // Establecer el atributo data-categoria
-      li.setAttribute("data-categoria", categoria);
-
-      // Formatear la fecha
-      const fecha = transaccion.timestamp.toDate();
-      const opcionesFecha = {
-        timeZone: 'America/Santo_Domingo',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      };
-      const fechaFormateada = fecha.toLocaleString('es-DO', opcionesFecha);
-
-      // Crear el contenido base de la transacción
-      let contenidoHTML = `
-        <div class="accion">Acción: ${transaccion.accion || 'No especificada'}</div>
-        <div class="fecha"><strong>Fecha:</strong> ${fechaFormateada}</div>
-        <div class="empleado"><strong>Empleado:</strong> ${transaccion.empleado || 'No especificado'}</div>
-        <div class="monto">Monto: RD$${transaccion.monto || 0}</div>
-      `;
-
-      // Mostrar detalles solo si es un retiro por empleado
-      if (transaccion.accion === "Retiro de Efectivo por Empleado" && transaccion.detalles) {
-        contenidoHTML += `<div class="detalles"><strong>Detalles:</strong> ${transaccion.detalles}</div>`;
-      }
-
-      li.innerHTML = contenidoHTML;
-      historialList.appendChild(li);
-    });
-
+    } else if (loadMore) {
+      loadMoreButton.style.display = "none";
+      noMoreRecords.style.display = "block";
+    }
   } catch (error) {
     console.error("Error al cargar el historial:", error);
     alert("Error al cargar el historial. Intente nuevamente.");
   }
 };
 
+// Evento para el botón Cargar más
+document.getElementById("loadMoreButton").addEventListener("click", () => {
+  cargarHistorial(true);
+});
+
+// Modificar el evento de apertura del modal
+btnHistorial.onclick = async function() {
+  historialModal.style.display = "block";
+  await cargarHistorial(false); // Cargar primeros 10 registros
+};
 
   </script>
 
-  <script src="./js/fecha-hora.js"></script>
 
 </body>
 
 </html>
 
-<!-- 12 -->
+<!-- 15 -->
