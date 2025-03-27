@@ -11,122 +11,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
   <script src="./js/menu.js" defer></script>
-
-  <style>
-    .boxdetalles {
-      width: 50%;
-      padding: 83px 10px 10px 10px;
-      box-sizing: content-box;
-      background: #30365a;
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      border-radius: 8px;
-      box-shadow: 0px 22px 25px -16px rgb(12 16 41);
-    }
-
-    .retiro-comentario {
-      margin-top: 20px;
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      width: 90%;
-    }
-
-
-    #detallesGasto {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #000000;
-    border-radius: 10px;
-    resize: vertical;
-    box-sizing: border-box;
-    min-height: 45px;
-    height: 180px;
-    max-height: 380px;
-    background: #e5e5e5;
-}
-
-    .boxdetalles label {
-      color: #4a9cff;
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    ul {
-    list-style-type: none;
-    padding: 0;
-    width: 75%;
-}
-
-.detalles {
-  background-color: #f9f9f9;
-    box-shadow: 0px 0px 0px 1px rgb(249 157 157);
-    border-radius: 5px;
-    padding: 10px 5px;
-}
-
-
-    #historialList li {
-      background-color: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 8px;
-    }
-
-    #historialList li div {
-      margin-bottom: 4px;
-    }
-
-    #historialList .accion {
-      font-weight: bold;
-      color: #2d2d2d;
-    }
-
-    #historialList .fecha {
-    color: #000000;
-    font-size: 1em;
-}
-
-    #historialList .monto {
-      font-weight: bold;
-    }
-
-
-    /* Colores por categoría */
-    #historialList li[data-categoria="inicio"] {
-    background-color: #e3f9ed;
-    box-shadow: 0px 0px 0px 1px rgb(109 245 112);
-}
-
-  #historialList li[data-categoria="cierre"] {
-    background-color: #e1e1e1;
-    box-shadow: 0px 0px 0px 1px rgb(153 153 153);
-}
-
-#historialList li[data-categoria="cuadre"] {
-    background-color: #e7eeff;
-    box-shadow: 0px 0px 0px 1px rgb(153 175 235);
-}
-
-  #historialList li[data-categoria="retiro-empleado"] {
-    background-color: #ffdcdc;
-    box-shadow: 0px 0px 0px 1px rgb(249 157 157);
-}
-
-#historialList li[data-categoria="ingreso"] {
-    background-color: #fff6dc;
-    box-shadow: 0px 0px 0px 1px rgb(255 193 7);
-}
-
-  #historialList li[data-categoria="retiro"] {
-    background-color: #ffefef;
-    box-shadow: 0px 0px 0px 1px rgb(249 157 157);
-}
-  </style>
 </head>
 
 <body>
@@ -1962,29 +1846,24 @@
 
 
 
-    // Calcular total y validar al enviar el formulario
-    document.getElementById('cuadreForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+  // Agregar el evento de envío al formulario de cuadre
+document.getElementById('cuadreForm').addEventListener('submit', async function (e) {
+    e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
 
-      // 1. Validar empleado seleccionado
-      const empleado = document.getElementById('empleadoSelectCuadre').value;
-      if (!empleado) {
-        alert("Por favor seleccione un empleado");
-        return;
-      }
+    // Obtener el total contado
+    const totalContado = parseInt(document.getElementById('modalTotalAmount').innerText.replace('RD$', '').trim()) || 0;
 
-      // 2. Calcular y validar totales
-      updateModalTotalAndStatus();
-      const totalContado = parseInt(document.getElementById('modalTotalAmount').innerText.replace('RD$', '').trim()) || 0;
-      const totalDeberia = parseInt(document.getElementById('modalTotalDeberia').innerText.replace('RD$', '').trim()) || 0;
+    // Obtener el total que debe haber en caja
+    const totalDeberia = parseInt(document.getElementById('modalTotalDeberia').innerText.replace('RD$', '').trim()) || 0;
 
-      if (totalContado !== totalDeberia) {
-        alert("El cuadre de caja no coincide. Verifica los montos.");
-        return;
-      }
+    // Validar que los totales coincidan
+    if (totalContado !== totalDeberia) {
+        alert("El total contado no coincide con el total que debe haber en caja.");
+        return; // Salir si no coinciden
+    }
 
-      // 3. Obtener denominaciones del formulario
-      const denominations = {
+    // Obtener las denominaciones del formulario
+    const denominations = {
         2000: parseInt(document.getElementById('denomination2000_modal').value) || 0,
         1000: parseInt(document.getElementById('denomination1000_modal').value) || 0,
         500: parseInt(document.getElementById('denomination500_modal').value) || 0,
@@ -1995,42 +1874,42 @@
         10: parseInt(document.getElementById('denomination10_modal').value) || 0,
         5: parseInt(document.getElementById('denomination5_modal').value) || 0,
         1: parseInt(document.getElementById('denomination1_modal').value) || 0,
-      };
+    };
 
-      try {
-        // 4. Actualizar en Firebase
+    try {
+        // Actualizar en Firebase
         const cajaRef = db.collection("caja");
         const snapshot = await cajaRef.get();
 
         if (!snapshot.empty) {
-          const doc = snapshot.docs[0];
+            const doc = snapshot.docs[0];
 
-          // Actualizar denominaciones y timestamp
-          await doc.ref.update({
-            denominations: denominations, // AHORA SÍ ACTUALIZAMOS LAS DENOMINACIONES
-            totalEnCaja: totalContado,    // Actualizamos el total
-            cuadreCajaHora: firebase.firestore.FieldValue.serverTimestamp()
-          });
+            // Actualizar denominaciones y total en caja
+            await doc.ref.update({
+                denominations: denominations,
+                totalEnCaja: totalContado,
+                cuadreCajaHora: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-          // 5. Registrar en historial
-          await db.collection("historialCaja").add({
-            accion: "Cuadre de Caja Exitoso",
-            empleado: empleado,
-            monto: totalContado,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            denominaciones: denominations // Enviamos el desglose completo
-          });
+            // Registrar en historial
+            await db.collection("historialCaja").add({
+                accion: "Cuadre de Caja Exitoso",
+                empleado: document.getElementById('empleadoSelectCuadre').value,
+                monto: totalContado,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                denominaciones: denominations // Enviar desglose completo
+            });
 
-          alert("Cuadre de caja registrado exitosamente. Denominaciones actualizadas.");
-          location.reload();
+            alert("Cuadre de caja registrado exitosamente.");
+            location.reload(); // Recargar la página
         } else {
-          alert("No se encontró registro de caja. Realice primero un inicio de caja.");
+            alert("No se encontró registro de caja. Realice primero un inicio de caja.");
         }
-      } catch (error) {
+    } catch (error) {
         console.error("Error al cuadrar caja:", error);
         alert("Error al procesar el cuadre. Intente nuevamente.");
-      }
-    });
+    }
+});
 
 
 
