@@ -95,8 +95,8 @@
               <div>
                 <label for="numeroCliente">Teléfono del Cliente:</label>
                 <div class="input-numeroContacto">
-                  <input type="tel" id="clientPhone" placeholder="Teléfono" required maxlength="20"
-                    oninput="formatPhoneNumber(this)">
+                  <input type="tel" id="clientPhone" placeholder="Teléfono" required maxlength="12" oninput="formatPhoneNumber(this)">
+
                   <div class="cantidad-img"><img src="./img/icon/phone_1.png"></div>
                 </div>
               </div>
@@ -366,42 +366,61 @@
         otrosServicios = otrosServicios.filter(service => service.name !== data.nombre);
       } else {
         const serviceDiv = document.createElement("div");
-        serviceDiv.classList.add("otro-servicio");
-        serviceDiv.dataset.name = data.nombre;
-        serviceDiv.innerHTML = `
-      <h3>${data.nombre} RD$${data.precio}</h3>
-      <img src="./img/icon/${data.icon}" alt="${data.nombre}">
-      <h5>Cantidad</h5>
-      <div id="itemWeight">
-          <button id="btnmenosmas" type="button" class="decreaseItem">-</button>
-          <input type="number" class="itemInput" value="1" min="1" max="100">
-          <button id="btnmenosmas" type="button" class="increaseItem">+</button>
-      </div>
-      <p class="itemTotalDisplay">Total: RD$${data.precio}</p>
-      <button type="button" class="removeOtherService">X</button>
-    `;
+serviceDiv.classList.add("otro-servicio");
+serviceDiv.dataset.name = data.nombre;
+serviceDiv.innerHTML = `
+  <h3>${data.nombre} RD$${data.precio}</h3>
+  <img src="./img/icon/${data.icon}" alt="${data.nombre}">
+  <h5>Cantidad</h5>
+  <div id="itemWeight">
+      <button id="btnmenosmas" type="button" class="decreaseItem">-</button>
+      <input type="number" class="itemInput" value="1" min="1" max="100" placeholder="0">
+      <button id="btnmenosmas" type="button" class="increaseItem">+</button>
+  </div>
+  <p class="itemTotalDisplay">Total: RD$${data.precio}</p>
+  <button type="button" class="removeOtherService">X</button>
+`;
 
-        otrosServiciosDisplay.appendChild(serviceDiv);
-        button.classList.add("active");
+otrosServiciosDisplay.appendChild(serviceDiv);
+button.classList.add("active");
 
-        otrosServicios.push({
-          name: data.nombre,
-          price: parseFloat(data.precio),
-          input: serviceDiv.querySelector(".itemInput"),
-          consumo: data.consumo || [] // Almacenar el array "consumo"
-        });
+otrosServicios.push({
+  name: data.nombre,
+  price: parseFloat(data.precio),
+  input: serviceDiv.querySelector(".itemInput"),
+  consumo: data.consumo || [] // Almacenar el array "consumo"
+});
 
-        serviceDiv.querySelector(".increaseItem").addEventListener("click", () => {
-          const inputField = serviceDiv.querySelector(".itemInput");
-          inputField.value = Math.min(100, parseInt(inputField.value) + 1);
-          updateItemPrice(serviceDiv, data.precio);
-        });
+// Aumentar la cantidad
+serviceDiv.querySelector(".increaseItem").addEventListener("click", () => {
+  const inputField = serviceDiv.querySelector(".itemInput");
+  inputField.value = Math.min(100, parseInt(inputField.value) + 1);
+  updateItemPrice(serviceDiv, data.precio);
+});
 
-        serviceDiv.querySelector(".decreaseItem").addEventListener("click", () => {
-          const inputField = serviceDiv.querySelector(".itemInput");
-          inputField.value = Math.max(1, parseInt(inputField.value) - 1);
-          updateItemPrice(serviceDiv, data.precio);
-        });
+// Disminuir la cantidad
+serviceDiv.querySelector(".decreaseItem").addEventListener("click", () => {
+  const inputField = serviceDiv.querySelector(".itemInput");
+  inputField.value = Math.max(1, parseInt(inputField.value) - 1);
+  updateItemPrice(serviceDiv, data.precio);
+});
+
+// Evento para el campo de entrada
+serviceDiv.querySelector(".itemInput").addEventListener("input", () => {
+  const inputField = serviceDiv.querySelector(".itemInput");
+  // No establecer un valor por defecto si el campo está vacío
+  if (inputField.value === "") {
+    // No hacer nada, dejar el campo vacío
+  } else {
+    // Asegurarse de que el valor sea un número válido
+    const value = parseInt(inputField.value);
+    if (isNaN(value) || value < 1) {
+      inputField.value = 1; // Establecer a 1 si el valor es inválido
+    }
+  }
+  updateItemPrice(serviceDiv, data.precio);
+});
+
 
         const removeButton = serviceDiv.querySelector(".removeOtherService");
         removeButton.addEventListener("click", () => {
@@ -437,7 +456,7 @@
     <h5>Cantidad de Libras</h5>
     <div id="hamperWeight">
       <button id="btnmenosmas" type="button" class="decreaseWeight">-</button>
-      <input type="number" class="weightInput" value="1" min="1" max="100">
+      <input type="number" class="weightInput" value="1" min="1" max="100" placeholder="0">
       <button id="btnmenosmas" type="button" class="increaseWeight">+</button>
     </div>
     <p class="priceDisplay">Precio: RD$0</p>
@@ -473,14 +492,21 @@
       calculatePrice(hamperDiv);
       updateInvoicePreview();
 
-      hamperDiv.querySelector(".weightInput").addEventListener("input", () => {
-        const weightInput = hamperDiv.querySelector(".weightInput");
-        if (weightInput.value === "") {
-          weightInput.value = 0;
+      hamperDiv.querySelector(".weightInput").addEventListener("blur", () => {
+    const weightInput = hamperDiv.querySelector(".weightInput");
+    let value = parseFloat(weightInput.value);
+    if (!isNaN(value) && value >= 1) {
+        if (value % 1 >= 0.5) {
+            weightInput.value = Math.ceil(value); // Redondear hacia arriba
+        } else {
+            weightInput.value = Math.floor(value); // Redondear hacia abajo
         }
-        calculatePrice(hamperDiv);
-        updateInvoicePreview();
-      });
+    } else {
+        weightInput.value = 1; // Establecer a 1 si el valor es inválido
+    }
+    calculatePrice(hamperDiv);
+    updateInvoicePreview();
+});
     };
 
     const calculatePrice = (hamperDiv) => {
@@ -533,6 +559,23 @@ const loadITBISPercentage = () => {
 
 // Llama a la función al cargar la página
 loadITBISPercentage();
+
+
+function formatPhoneNumber(input) {
+    // Eliminar todos los caracteres que no sean dígitos
+    let value = input.value.replace(/\D/g, '');
+
+    // Formatear el número con guiones
+    if (value.length > 0) {
+        value = value.replace(/(\d{3})(\d)/, '$1-$2'); // Agregar guion después de los primeros 3 dígitos
+    }
+    if (value.length > 7) {
+        value = value.replace(/-(\d{3})(\d)/, '-$1-$2'); // Agregar guion después de los siguientes 3 dígitos
+    }
+
+    // Actualizar el valor del input
+    input.value = value;
+}
 
 
 
@@ -607,8 +650,13 @@ const updateInvoicePreview = () => {
     ${hampers.length > 0 || otrosServicios.length > 0 ? `
       <br><strong>Servicios:</strong>
       ${hampers.length > 0 ? hampers.map(hamper => {
+        const weight = parseInt(hamper.weightInput.value);
         const data = hamper.data;
-        return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${data.nombre}</span><span>RD$${hamper.priceDisplay.textContent.replace('Precio: RD$', '')}</span></div>`;
+        const librasMin = parseInt(data.librasmin);
+        const librasMax = parseInt(data.librasmax);
+        const precioPorLibra = parseFloat(data.preciolibras);
+        const displayWeight = (weight >= librasMin && weight <= librasMax) ? "1 hamper" : `${weight}lbs X RD$${precioPorLibra}`;
+        return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${data.nombre} (${displayWeight})</span><span>RD$${hamper.priceDisplay.textContent.replace('Precio: RD$', '')}</span></div>`;
       }).join("") : ""}
       ${otrosServicios.length > 0 ? otrosServicios.map(service => `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${service.name}: ${service.input.value}</span><span>RD$${(parseFloat(service.price) * parseInt(service.input.value)).toFixed(2)}</span></div>`).join("") : ""}
     ` : ""}
@@ -801,7 +849,7 @@ ${asumirPor !== "desactivado" ? `
 
     document.getElementById("processInvoice").addEventListener("click", () => {
       const clientName = document.getElementById("clientName").value.trim();
-      const clientPhone = document.getElementById("clientPhone").value.trim();
+      const clientPhone = document.getElementById("clientPhone").value.replace(/-/g, ''); // Eliminar guiones
       const empleadoSelect = document.getElementById("empleado");
 
       // Validación del número de teléfono
@@ -943,7 +991,7 @@ ${asumirPor !== "desactivado" ? `
   const invoiceData = {
     id: generateNewInvoiceId(await getLastInvoiceId()),
     clientName: document.getElementById("clientName").value.trim(),
-    clientPhone: document.getElementById("clientPhone").value.trim(),
+    clientPhone: document.getElementById("clientPhone").value.replace(/-/g, ''), // Eliminar guiones
     clientAddress: document.getElementById("clientAddress").value.trim(),
     NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
     selectedServices: hampers.map(hamper => ({
@@ -1365,4 +1413,4 @@ ${asumirPor !== "desactivado" ? `
 
 </html>
 
-<!-- 3 -->
+<!-- 9 -->
