@@ -28,14 +28,10 @@
       <div class="panelFacturas_body">
 
         <div class="box_btns_facturas">
-          <button class="button" id="pendingInvoicesButton"><img src="./img/icon/atencion1.png">Facturas con Pago
-            Pendiente</button>
-          <button class="button" id="paidInvoicesButton"><img src="./img/icon/lavando1.png">Facturas Pagadas - En
-            Proceso
-            de
-            Lavado</button>
-          <button class="button" id="readyInvoicesButton"><img src="./img/icon/check1.png">Facturas Pagadas -
-            Listo</button>
+          <button class="button" id="pendingInvoicesButton"><img src="./img/icon/atencion1.png">Facturas con Pago Pendiente</button>
+          <button class="button" id="paidInvoicesButton"><img src="./img/icon/lavando2.gif">Facturas - En Proceso de Lavado</button>
+          <button class="button" id="readyInvoicesButton"><img src="./img/icon/check1.png">Facturas Pagadas - Listo</button>
+          <button class="button" id="deliveredInvoicesButton"><img src="./img/icon/hamper_color.png">Facturas Entregadas</button> <!-- Nuevo botón -->
         </div>
 
         <div class="box_search-container">
@@ -45,7 +41,7 @@
           </div>
         </div>
 
-        <h2 id="invoiceTitle" class="title pending">Facturas con Pago - Pendiente</h2>
+        <h2 id="invoiceTitle" class="title pending">Facturas con Pago Pendiente</h2>
 
         <div class="transaction-table-container">
           <table id="invoicesTable">
@@ -61,7 +57,10 @@
             <tbody id="invoicesBody">
               <!-- Las facturas se cargarán aquí -->
             </tbody>
+
+
           </table>
+          <div id="noInvoicesMessage" class="no-invoices hidden">No hay facturas aquí</div>
         </div>
       </div>
 
@@ -76,14 +75,11 @@
   <div id="invoiceModal" class="modal">
     <div class="modal-content">
 
-      <!-- Modal_preview_factura_tittle -->
       <div class="modal_preview_factura_tittle">
         <span class="close" id="closeModal">&times;</span>
         <h2>Detalles de la Factura</h2>
       </div>
-      <!-- Modal_preview_factura_tittle FIN -->
 
-      <!-- Modal_preview_factura_body -->
       <div class="modal_preview_factura_body">
         <div id="modalInvoiceDetails"></div>
         <div id="paymentDetails" style="display: none;">
@@ -91,14 +87,59 @@
           <strong>Cambio:</strong> <span id="changeDisplay"></span><br>
         </div>
       </div>
-      <!-- Modal_preview_factura_body FIN -->
 
-            <!-- Modal_preview_factura_Down -->
       <div class="modal_preview_factura_down">
-        <button class="button" id="markAsPaidButton" style="display: none;">Marcar como Pagado</button>
-        <button class="button" id="markAsReadyButton" style="display: none;">Marcar como Listo</button>
+        <div class="payment-method-container" id="paymentMethodContainer">
+          <h2 style="text-align: center;margin-block-start: 5px;margin-block-end: 5px;">Método de Pago:</h2>
+          <div class="button-metodo-pago">
+            <button id="cashPayment" class="payment-button" value="Efectivo">Efectivo <span>💵</span></button>
+            <button id="transferPayment" class="payment-button" value="Transferencia">Transferencia <span>📲</span></button>
+            <button id="cardPayment" class="payment-button" value="Tarjeta de Crédito">Tarjeta de <span>Crédito 💳</span></button>
+          </div>
+
+          <div class="cashPaymentOptions_master">
+            <div class="cube-montos">
+              <div class="cube-form-flex">
+                <div>
+                  <label>Total a Pagar:</label>
+                </div>
+                <div>
+                  <span id="totalToPay" style="color: #189dff;font-weight: bold;">RD$0.00</span>
+                </div>
+              </div>
+
+              <div id="cashPaymentOptions" class="hidden">
+                <div class="cube-form-flex">
+                  <div>
+                    <label>Monto Recibido:</label>
+                  </div>
+                  <div>
+                    <div class="input-container">
+                      <span class="prefix">RD$</span>
+                      <input type="text" id="amountReceived" placeholder="0" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="cube-form-flex">
+                  <div>
+                    <label>Cambio:</label>
+                  </div>
+                  <div>
+                    <span id="changeAmount" style="font-weight: bold;color: #f96dd3;">RD$0.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="Cube_button_pagado">
+          <button id="markAsPaidButton" class="disabled" style="display: none;">Marcar Como Pagado</button>
+          <button id="markAsReadyButton" style="display: block;">Marcar como Listo</button>
+          <button id="markAsDeliveredButton" style="display: none;">Marcar como Entregado</button> <!-- Nuevo botón -->
+        </div>
       </div>
-      <!-- Modal_preview_factura_Down FIN -->
 
     </div>
   </div>
@@ -114,7 +155,6 @@
       appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
     };
 
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -124,229 +164,391 @@
     const closeModal = document.getElementById("closeModal");
     const markAsPaidButton = document.getElementById("markAsPaidButton");
     const markAsReadyButton = document.getElementById("markAsReadyButton");
+    const markAsDeliveredButton = document.getElementById("markAsDeliveredButton"); // Nuevo botón
     const paymentDetails = document.getElementById("paymentDetails");
     const amountReceivedDisplay = document.getElementById("amountReceivedDisplay");
     const changeDisplay = document.getElementById("changeDisplay");
     const searchInput = document.getElementById("searchInput");
     const invoiceTitle = document.getElementById("invoiceTitle");
+    const totalToPay = document.getElementById("totalToPay");
+    const amountReceivedInput = document.getElementById("amountReceived");
+    const changeAmount = document.getElementById("changeAmount");
+    const cashPaymentOptions = document.getElementById("cashPaymentOptions");
+    const paymentButtons = document.querySelectorAll(".payment-button");
 
     let currentInvoiceId = null;
-    let invoices = []; // Almacenar todas las facturas
+    let currentInvoiceData = null;
+    let invoices = [];
 
     const loadInvoices = (status) => {
-  invoicesBody.innerHTML = ""; // Limpiar la tabla antes de cargar nuevas facturas
-  db.collection("facturas")
-    .get() // Obtener todas las facturas
-    .then((snapshot) => {
-      invoices = []; // Reiniciar el array de facturas
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        invoices.push({ id: doc.id, ...data });
-      });
+    invoicesBody.innerHTML = "";
+    db.collection("facturas")
+        .get()
+        .then((snapshot) => {
+            invoices = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                invoices.push({ id: doc.id, ...data });
+            });
 
-      // Filtrar las facturas por estado y timestamp
-      const filteredInvoices = invoices.filter(invoice => 
-        invoice.status === status && 
-        invoice.timestamp instanceof firebase.firestore.Timestamp // Asegurarse de que el timestamp sea válido
-      );
+            const filteredInvoices = invoices.filter(invoice =>
+                invoice.status === status &&
+                invoice.timestamp instanceof firebase.firestore.Timestamp
+            );
 
-      // Ordenar las facturas por la fecha que se muestra en la tabla
-      filteredInvoices.sort((a, b) => new Date(b.timestamp.toDate()) - new Date(a.timestamp.toDate()));
+            filteredInvoices.sort((a, b) => new Date(b.timestamp.toDate()) - new Date(a.timestamp.toDate()));
 
-      filteredInvoices.forEach((invoice) => {
-        addInvoiceRow(invoice);
-      });
+            if (filteredInvoices.length === 0) {
+                document.getElementById("noInvoicesMessage").classList.remove("hidden");
+            } else {
+                document.getElementById("noInvoicesMessage").classList.add("hidden");
+                filteredInvoices.forEach((invoice) => {
+                    addInvoiceRow(invoice);
+                });
+            }
 
-      // Actualizar el título y el fondo según el estado
-      updateTitleAndBackground(status);
-    })
-    .catch((error) => {
-      console.error("Error al cargar las facturas:", error);
-    });
+            updateTitleAndBackground(status);
+        })
+        .catch((error) => {
+            console.error("Error al cargar las facturas:", error);
+        });
 };
 
-const addInvoiceRow = (invoice) => {
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td>${invoice.id}</td>
-    <td>${invoice.clientName}</td>
-    <td>${invoice.clientPhone}</td>
-    <td>RD$${invoice.total.toFixed(2)}</td>
-    <td>${invoice.timestamp.toDate().toLocaleDateString()}</td> <!-- Cambiado aquí -->
-  `;
-  row.addEventListener("click", () => {
-    currentInvoiceId = invoice.id;
-    showInvoiceDetails(invoice);
-  });
-  invoicesBody.appendChild(row);
+    const addInvoiceRow = (invoice) => {
+    const row = document.createElement("tr");
+    const formattedDate = invoice.timestamp.toDate().toLocaleString('es-ES', {
+        timeZone: 'America/Santo_Domingo', // Ajusta la zona horaria según sea necesario
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true // Cambia a false si prefieres el formato de 24 horas
+    });
+    
+    row.innerHTML = `
+        <td>${invoice.id}</td>
+        <td>${invoice.clientName}</td>
+        <td>${invoice.clientPhone}</td>
+        <td>RD$${invoice.total.toFixed(2)}</td>
+        <td>${formattedDate}</td> <!-- Mostrar la fecha y hora formateadas -->
+    `;
+    row.addEventListener("click", () => {
+        currentInvoiceId = invoice.id;
+        currentInvoiceData = invoice;
+        showInvoiceDetails(invoice);
+    });
+    invoicesBody.appendChild(row);
 };
 
     const updateTitleAndBackground = (status) => {
-      switch (status) {
-        case "pago pendiente":
-          invoiceTitle.textContent = "Facturas con Pago - Pendiente";
-          invoiceTitle.className = "title pending";
-          break;
-        case "pagado":
-          invoiceTitle.textContent = "Facturas Pagadas - En Proceso de Lavado";
-          invoiceTitle.className = "title paid";
-          break;
-        case "pagado listo":
-          invoiceTitle.textContent = "Facturas Pagadas - Listo";
-          invoiceTitle.className = "title ready";
-          break;
-      }
+        switch (status) {
+            case "pago pendiente":
+                invoiceTitle.textContent = "Facturas con Pago Pendiente";
+                invoiceTitle.className = "title pending";
+                break;
+            case "pagado":
+                invoiceTitle.textContent = "Facturas Pagadas - En Proceso de Lavado";
+                invoiceTitle.className = "title paid";
+                break;
+            case "pagado listo":
+                invoiceTitle.textContent = "Facturas Pagadas - Listo";
+                invoiceTitle.className = "title ready";
+                break;
+            case "pagado entregado": // Nueva opción
+                invoiceTitle.textContent = "Facturas Entregadas";
+                invoiceTitle.className = "title delivered";
+                break;
+        }
     };
 
     const showInvoiceDetails = (data) => {
-  const services = data.selectedServices.map(service => `<div>${service.name} (Peso: ${service.weight} lbs) - RD$${service.price}</div>`).join("");
-  const otherServices = data.otrosServicios.map(service => `<div>${service.name}: ${service.count} - RD$${(service.count * service.price).toFixed(2)}</div>`).join("");
-  const products = data.selectedProducts.map(product => `<div>${product.name} (Cantidad: ${product.quantity}) - RD$${(product.quantity * product.price).toFixed(2)}</div>`).join("");
-  const delivery = data.deliveryOption[0].name + " - RD$" + data.deliveryOption[0].price;
+        const services = data.selectedServices.map(service => `<div>${service.name} (Peso: ${service.weight} lbs) - RD$${service.price}</div>`).join("");
+        const otherServices = data.otrosServicios.map(service => `<div>${service.name}: ${service.count} - RD$${(service.count * service.price).toFixed(2)}</div>`).join("");
+        const products = data.selectedProducts.map(product => `<div>${product.name} (Cantidad: ${product.quantity}) - RD$${(product.quantity * product.price).toFixed(2)}</div>`).join("");
+        const delivery = data.deliveryOption[0].name + " - RD$" + data.deliveryOption[0].price;
 
-  // Formatear la fecha y hora en formato de 12 horas
-  const formattedDate = data.timestamp.toDate().toLocaleString('es-ES', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true // Esto habilita el formato de 12 horas
-  });
+        const formattedDate = data.timestamp.toDate().toLocaleString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+        });
 
-  modalInvoiceDetails.innerHTML = `
-    <strong>Cliente:</strong> ${data.clientName}<br>
-    <strong>Número:</strong> ${data.clientPhone}<br>
-    <strong>ID:</strong> ${data.id}<br>
-    <strong>Monto:</strong> RD$${data.total.toFixed(2)}<br>
-    <strong>Fecha:</strong> ${formattedDate}<br> <!-- Usar la fecha formateada -->
-    <strong>Estado:</strong> ${data.status}<br>
-    <strong>Método de Pago:</strong> ${data.paymentMethod}<br>
-    <strong>Servicios de Hamper:</strong><br>${services || "Ninguno"}<br>
-    <strong>Otros Servicios:</strong><br>${otherServices || "Ninguno"}<br>
-    <strong>Productos Adicionales:</strong><br>${products || "Ninguno"}<br>
-    <strong>Opción de Delivery:</strong> ${delivery}<br>
-  `;
+        modalInvoiceDetails.innerHTML = `
+            <strong>ID:</strong> ${data.id}<br>
+            <strong>Fecha:</strong> ${formattedDate}</p>
+            <strong>Cliente:</strong> ${data.clientName}<br>
+            <strong>Número:</strong> ${data.clientPhone}<br>
+            <strong>Servicios de Hamper:</strong><br>${services || "Ninguno"}<br>
+            <strong>Otros Servicios:</strong><br>${otherServices || "Ninguno"}<br>
+            <strong>Productos Adicionales:</strong><br>${products || "Ninguno"}<br>
+            <strong>Opción de Delivery:</strong> ${delivery}<p>
+            <strong>Total:</strong> RD$${data.total.toFixed(2)}<br>
+            <strong>Estado:</strong> ${data.status}<br>
+            <strong>Método de Pago:</strong> ${data.paymentMethod || "No especificado"}<br>
+        `;
 
-  // Mostrar monto recibido y cambio si el método de pago es efectivo
-  if (data.paymentMethod === "efectivo") {
-    amountReceivedDisplay.textContent = `RD$${data.amountReceived.toFixed(2)}`;
-    const change = data.amountReceived - data.total;
-    changeDisplay.textContent = `RD$${change.toFixed(2)}`;
-    paymentDetails.style.display = "block";
-  } else {
-    paymentDetails.style.display = "none"; // Ocultar si no es efectivo
-  }
+        if (data.paymentMethod === "Efectivo" && data.amountReceived) {
+            amountReceivedDisplay.textContent = `RD$${data.amountReceived.toFixed(2)}`;
+            const change = data.amountReceived - data.total;
+            changeDisplay.textContent = `RD$${change.toFixed(2)}`;
+            paymentDetails.style.display = "block";
+        } else {
+            paymentDetails.style.display = "none";
+        }
 
-  // Mostrar u ocultar botones según el estado de la factura
-  if (data.status === "pago pendiente") {
-    markAsPaidButton.style.display = "block";
-    markAsReadyButton.style.display = "none";
-  } else if (data.status === "pagado") {
-    markAsPaidButton.style.display = "none";
-    markAsReadyButton.style.display = "block";
-  } else if (data.status === "pagado listo") {
-    markAsPaidButton.style.display = "none";
-    markAsReadyButton.style.display = "none";
-  }
+        totalToPay.textContent = `RD$${data.total.toFixed(2)}`;
 
-  invoiceModal.style.display = "block";
-};
+        if (data.status === "pago pendiente") {
+            document.querySelector(".modal_preview_factura_down").style.display = "block";
+            markAsPaidButton.style.display = "block"; // Mostrar botón de "Marcar Como Pagado"
+            markAsReadyButton.style.display = "none"; // Ocultar botón "Marcar como Listo"
+            markAsDeliveredButton.style.display = "none"; // Ocultar botón "Marcar como Entregado"
+            resetPaymentModal();
+            document.getElementById("paymentMethodContainer").style.display = "block"; // Mostrar contenedor de métodos de pago
+        } else if (data.status === "pagado") {
+            document.querySelector(".modal_preview_factura_down").style.display = "block";
+            markAsPaidButton.style.display = "none"; // Ocultar botón de "Marcar Como Pagado"
+            markAsReadyButton.style.display = "block"; // Mostrar botón "Marcar como Listo"
+            markAsDeliveredButton.style.display = "none"; // Ocultar botón "Marcar como Entregado"
+            document.getElementById("paymentMethodContainer").style.display = "none"; // Ocultar contenedor de métodos de pago
+        } else if (data.status === "pagado listo") {
+            document.querySelector(".modal_preview_factura_down").style.display = "block";
+            markAsPaidButton.style.display = "none"; // Ocultar botón de "Marcar Como Pagado"
+            markAsReadyButton.style.display = "none"; // Ocultar botón "Marcar como Listo"
+            markAsDeliveredButton.style.display = "block"; // Mostrar botón "Marcar como Entregado"
+            document.getElementById("paymentMethodContainer").style.display = "none"; // Ocultar contenedor de métodos de pago
+        } else {
+            document.querySelector(".modal_preview_factura_down").style.display = "none";
+        }
+
+        invoiceModal.style.display = "block";
+    };
+
+    const resetPaymentModal = () => {
+        paymentButtons.forEach(button => {
+            button.classList.remove("active");
+        });
+
+        amountReceivedInput.value = "";
+        changeAmount.textContent = "RD$0.00";
+        cashPaymentOptions.classList.add("hidden");
+        markAsPaidButton.classList.add("disabled");
+    };
+
+    paymentButtons.forEach(button => {
+        button.addEventListener("click", (event) => {
+            paymentButtons.forEach(btn => {
+                btn.classList.remove("active");
+            });
+
+            event.target.classList.add("active");
+
+            if (event.target.value === "Efectivo") {
+                cashPaymentOptions.classList.remove("hidden");
+            } else {
+                cashPaymentOptions.classList.add("hidden");
+            }
+
+            markAsPaidButton.classList.remove("disabled");
+        });
+    });
+
+    amountReceivedInput.addEventListener("input", () => {
+        const total = parseFloat(currentInvoiceData.total);
+        const amountReceived = parseFloat(amountReceivedInput.value) || 0;
+        const change = amountReceived - total;
+
+        changeAmount.textContent = `RD$${change.toFixed(2)}`;
+
+        if (document.querySelector(".payment-button.active").value === "Efectivo") {
+            if (amountReceived >= total) {
+                markAsPaidButton.classList.remove("disabled");
+            } else {
+                markAsPaidButton.classList.add("disabled");
+            }
+        }
+    });
 
     closeModal.onclick = () => {
-      invoiceModal.style.display = "none";
+        invoiceModal.style.display = "none";
     };
 
     markAsPaidButton.onclick = async () => {
-      if (currentInvoiceId) {
-        try {
-          const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            await doc.ref.update({ status: "pagado" });
-            loadInvoices("pago pendiente");
-            invoiceModal.style.display = "none";
-          } else {
-            console.error("No existe el documento con el campo 'id':", currentInvoiceId);
-            alert("No se pudo encontrar la factura para actualizar.");
-          }
-        } catch (error) {
-          console.error("Error al actualizar el estado:", error);
-          alert("No se pudo marcar la factura como pagada. Intenta nuevamente.");
+        if (currentInvoiceId) {
+            try {
+                const selectedPaymentMethod = document.querySelector(".payment-button.active")?.value;
+
+                if (!selectedPaymentMethod) {
+                    alert("Por favor seleccione un método de pago");
+                    return;
+                }
+
+                let amountReceived = 0;
+                let change = 0;
+
+                if (selectedPaymentMethod === "Efectivo") {
+                    amountReceived = parseFloat(amountReceivedInput.value) || 0;
+                    const total = parseFloat(currentInvoiceData.total);
+
+                    if (amountReceived < total) {
+                        alert("El monto recibido debe ser mayor o igual al total a pagar");
+                        return;
+                    }
+
+                    change = amountReceived - total;
+                }
+
+                const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
+                if (!querySnapshot.empty) {
+                    const doc = querySnapshot.docs[0];
+
+                    await doc.ref.update({
+                        status: "pagado",
+                        paymentMethod: selectedPaymentMethod,
+                        amountReceived: amountReceived,
+                        changeAmount: change
+                    });
+
+                    loadInvoices("pago pendiente");
+                    invoiceModal.style.display = "none";
+                    alert("Factura marcada como pagada exitosamente");
+                } else {
+                    console.error("No existe el documento con el campo 'id':", currentInvoiceId);
+                    alert("No se pudo encontrar la factura para actualizar.");
+                }
+            } catch (error) {
+                console.error("Error al actualizar el estado:", error);
+                alert("No se pudo marcar la factura como pagada. Intenta nuevamente.");
+            }
         }
-      }
     };
 
     markAsReadyButton.onclick = async () => {
-      if (currentInvoiceId) {
-        try {
-          const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            await doc.ref.update({ status: "pagado listo" });
-            loadInvoices("pagado");
-            invoiceModal.style.display = "none";
-          } else {
-            console.error("No existe el documento con el campo 'id':", currentInvoiceId);
-            alert("No se pudo encontrar la factura para actualizar.");
-          }
-        } catch (error) {
-          console.error("Error al actualizar el estado:", error);
-          alert("No se pudo marcar la factura como lista. Intenta nuevamente.");
+        if (currentInvoiceId) {
+            try {
+                const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
+                if (!querySnapshot.empty) {
+                    const doc = querySnapshot.docs[0];
+
+                    await doc.ref.update({
+                        status: "pagado listo"
+                    });
+
+                    loadInvoices("pagado"); // Recargar las facturas
+                    invoiceModal.style.display = "none";
+                    alert("Factura marcada como lista exitosamente");
+                } else {
+                    console.error("No existe el documento con el campo 'id':", currentInvoiceId);
+                    alert("No se pudo encontrar la factura para actualizar.");
+                }
+            } catch (error) {
+                console.error("Error al actualizar el estado:", error);
+                alert("No se pudo marcar la factura como lista. Intenta nuevamente.");
+            }
         }
-      }
+    };
+
+    markAsDeliveredButton.onclick = async () => {
+        if (currentInvoiceId) {
+            try {
+                const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
+                if (!querySnapshot.empty) {
+                    const doc = querySnapshot.docs[0];
+
+                    await doc.ref.update({
+                        status: "pagado entregado"
+                    });
+
+                    loadInvoices("pagado listo"); // Recargar las facturas
+                    invoiceModal.style.display = "none";
+                    alert("Factura marcada como entregada exitosamente");
+                } else {
+                    console.error("No existe el documento con el campo 'id':", currentInvoiceId);
+                    alert("No se pudo encontrar la factura para actualizar.");
+                }
+            } catch (error) {
+                console.error("Error al actualizar el estado:", error);
+                alert("No se pudo marcar la factura como entregada. Intenta nuevamente.");
+            }
+        }
     };
 
     document.getElementById("pendingInvoicesButton").onclick = () => loadInvoices("pago pendiente");
     document.getElementById("paidInvoicesButton").onclick = () => loadInvoices("pagado");
     document.getElementById("readyInvoicesButton").onclick = () => loadInvoices("pagado listo");
+    document.getElementById("deliveredInvoicesButton").onclick = () => loadInvoices("pagado entregado"); // Cargar facturas entregadas
 
-    // Cargar las facturas con pago pendiente al inicio
     loadInvoices("pago pendiente");
 
-    // Función de búsqueda
     searchInput.addEventListener("input", () => {
-      const searchTerm = searchInput.value.toLowerCase();
-      invoicesBody.innerHTML = ""; // Limpiar la tabla antes de mostrar los resultados
+    const searchTerm = searchInput.value.toLowerCase();
+    invoicesBody.innerHTML = "";
 
-      invoices.forEach((invoice) => {
-        const { clientName, clientPhone, id, total } = invoice;
+    // Filtrar las facturas según el estado actual
+    const currentStatus = invoiceTitle.classList.contains("pending") ? "pago pendiente" :
+                          invoiceTitle.classList.contains("paid") ? "pagado" :
+                          invoiceTitle.classList.contains("ready") ? "pagado listo" :
+                          "pagado entregado";
+
+    const filteredInvoices = invoices.filter(invoice => invoice.status === currentStatus);
+
+    filteredInvoices.forEach((invoice) => {
+        const { clientName, clientPhone, id, total, timestamp } = invoice;
         const totalFormatted = `RD$${total.toFixed(2)}`;
-        const dateFormatted = new Date(invoice.timestamp).toLocaleDateString();
+        
+        // Convertir el timestamp a una fecha y hora legible
+        const dateFormatted = timestamp.toDate().toLocaleString('es-ES', {
+            timeZone: 'America/Santo_Domingo', // Ajusta la zona horaria según sea necesario
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true // Cambia a false si prefieres el formato de 24 horas
+        });
 
-        // Verificar si el término de búsqueda coincide con alguno de los campos
+        // Función para resaltar coincidencias
+        const highlightMatch = (text) => {
+            if (!searchTerm) return text; // Si no hay término de búsqueda, devuelve el texto original
+            const regex = new RegExp(`(${searchTerm})`, 'gi'); // Crea una expresión regular para el término de búsqueda
+            return text.replace(regex, '<span class="highlight">$1</span>'); // Envuelve las coincidencias en un span
+        };
+
+        // Resaltar coincidencias en los campos
+        const highlightedClientName = highlightMatch(clientName);
+        const highlightedClientPhone = highlightMatch(clientPhone);
+        const highlightedId = highlightMatch(id);
+        const highlightedTotal = highlightMatch(totalFormatted);
+
         if (
-          clientName.toLowerCase().includes(searchTerm) ||
-          clientPhone.toLowerCase().includes(searchTerm) ||
-          id.toLowerCase().includes(searchTerm) ||
-          totalFormatted.includes(searchTerm)
+            highlightedClientName.toLowerCase().includes(searchTerm) ||
+            highlightedClientPhone.toLowerCase().includes(searchTerm) ||
+            highlightedId.toLowerCase().includes(searchTerm) ||
+            highlightedTotal.includes(searchTerm)
         ) {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${highlightText(clientName, searchTerm)}</td>
-            <td>${highlightText(clientPhone, searchTerm)}</td>
-            <td>${highlightText(id, searchTerm)}</td>
-            <td>${highlightText(totalFormatted, searchTerm)}</td>
-            <td>${dateFormatted}</td>
-          `;
-          row.addEventListener("click", () => {
-            currentInvoiceId = invoice.id;
-            showInvoiceDetails(invoice);
-          });
-          invoicesBody.appendChild(row);
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${highlightedId}</td>
+                <td>${highlightedClientName}</td>
+                <td>${highlightedClientPhone}</td>
+                <td>${highlightedTotal}</td>
+                <td>${dateFormatted}</td> <!-- Mostrar la fecha y hora formateadas -->
+            `;
+            row.addEventListener("click", () => {
+                currentInvoiceId = invoice.id;
+                currentInvoiceData = invoice;
+                showInvoiceDetails(invoice);
+            });
+            invoicesBody.appendChild(row);
         }
-      });
     });
-
-    // Función para resaltar texto
-    const highlightText = (text, searchTerm) => {
-      if (!searchTerm) return text; // Si no hay término de búsqueda, devolver el texto original
-      const regex = new RegExp(`(${searchTerm})`, 'gi'); // Crear una expresión regular para resaltar
-      return text.replace(regex, '<span class="highlight">$1</span>'); // Resaltar coincidencias
-    };
+});
   </script>
 
-  <script src="./js/fecha-hora.js"></script>
 </body>
 
 </html>
