@@ -52,7 +52,7 @@ class LaundryMenu extends HTMLElement {
 
                         <div class="modal_menu_body">
                             <div class="box_btns_Menu_RWD">
-                                <button><a href="facturacion-admin.html.html">Facturación</a></button>
+                                <button><a href="facturacion-admin.html">Facturación</a></button>
                                 <button><a href="facturas-generadas-admin.html">Facturas Generadas</a></button>
                                 <button><a href="caja-admin.html">Caja/Cuadre</a></button>
                                 <button><a href="inventario.html">Inventario</a></button>
