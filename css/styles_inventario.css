@@ -393,7 +393,7 @@ h1 {
     }
 
     .product-item {
-        grid-template-columns: 0.1fr 0.1fr 1fr 1fr 0.3fr 0.5fr 0.1fr;
+        grid-template-columns: 0.1fr 0.1fr 1fr 0.5fr 0.3fr 0.5fr 0.1fr;
     }
 }
 
@@ -421,5 +421,9 @@ h1 {
 
     .product-item>div {
         padding: 5px 4px;
+    }
+
+    .product-item button {
+        font-size: 12px;
     }
 }
