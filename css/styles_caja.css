@@ -439,6 +439,11 @@ th {
     flex-direction: row;
 }
 
+button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+  }
+
 ::-webkit-scrollbar {
     width: 8px;
     height: 5px;
@@ -502,13 +507,35 @@ th {
 }
 
 #modalQuedariaEnCaja,
-#ReviewIngresoEnCaja {
+#ReviewIngresoEnCaja,
+#modalQuedariaEnRetiroEmpleado {
     color: #71ff98;
     font-size: 16px;
 }
 
+button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    position: relative;
+  }
+  
+  button[disabled]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 100;
+  }
+  
 #modalStatus,
-#modalStatusCierre {
+#modalStatusCierre,
+#modalStatusCuadre {
     font-size: 21px;
     font-weight: bold;
 }
