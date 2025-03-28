@@ -143,7 +143,7 @@ h1 {
     height: 100vh;
     overflow-y: auto;
     background: #ffffff;
-    height: calc(100vh - 74px);
+    height: calc(100vh - 64px);
     display: flex;
     flex-direction: column;
     border-radius: 14px;
