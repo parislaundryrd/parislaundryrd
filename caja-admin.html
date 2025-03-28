@@ -58,11 +58,13 @@
 
             <div id="cuadreCajaInfo"><img src="./img/icon/cuadre_caja1.png">
               <span>Ultimo Cuadre de Caja: <br><span id="cuadreCajaHora"></span></span>
-            </div><P>
+            </div>
+            <P>
 
             <div style="display: inline-flex;flex-direction: row;gap: 5px;">
               <p style="margin-block-start: 0px;margin-block-end: 0px;">
-                <strong>Total en Caja:</strong> </p>
+                <strong>Monto Inicial:</strong>
+              </p>
               <div id="totalEnCaja">RD$0</div>
             </div>
 
@@ -78,7 +80,8 @@
 
               <div style="display: inline-flex;flex-direction: row;gap: 5px;">
                 <p style="margin-block-start: 0px;margin-block-end: 0px;">
-                <strong>Total que Debe Haber en Caja:</strong> </p>
+                  <strong>Total que Debe Haber en Caja:</strong>
+                </p>
                 <div id="totalDeberia">RD$0</div>
               </div>
             </div>
@@ -214,14 +217,20 @@
             <div id="modalTotalDeberia">RD$0</div>
           </div>
 
+                  <!-- Select para empleados -->
           <div class="empleadoYbtn">
-            <div style="display: inline-flex;flex-direction: column;">
-              <label for="empleadoSelectCuadre"></label>
-              <select id="empleadoSelectCuadre" required>
-                <option value="">Seleccione un empleado</option>
+            <div style="display: inline-flex;flex-direction: column;align-items: center;">
+              <div id="modalStatusCuadre" style="color: rgb(255, 71, 71); margin-bottom: 4px;"></div>
+              <!-- Nuevo div para el estado -->
+
+              <div style="display: inline-flex;flex-direction: column;">
+                <label for="empleadoSelectCuadre"></label>
+                <select id="empleadoSelectCuadre" required style="padding: 8px;">
+                  <option value="">Seleccione un empleado</option>
+              </div>
+              <!-- Las opciones se llenarán con JavaScript -->
+              </select>
             </div>
-            <!-- Las opciones se llenarán con JavaScript -->
-            </select>
           </div>
           <button type="submit">Validar Cuadre</button>
         </div>
@@ -699,7 +708,6 @@
             <label for="empleadoSelectIngreso"></label>
             <select id="empleadoSelectIngreso" required>
               <option value="">Seleccione un empleado</option>
-              <option value="Admin">Admin</option>
               <!-- Las opciones de empleados se llenarán con JavaScript -->
             </select>
           </div>
@@ -794,12 +802,12 @@
           <div id="modalTotalEnCaja">RD$0</div>
         </div>
 
-
         <!-- Select para empleados -->
         <div class="empleadoYbtn">
           <div style="display: inline-flex;flex-direction: column;align-items: center;">
             <div id="modalStatusCierre" style="color: rgb(255, 71, 71);margin-bottom: 4px;"></div>
             <!-- Div para mostrar el estado -->
+             
             <label for="empleadoSelectCierre"></label>
             <select id="empleadoSelectCierre" required style="width: 100%; padding: 8px;">
               <option value="">Seleccione un empleado</option>
@@ -808,6 +816,7 @@
           </div>
 
           <div style="display: inline-flex;flex-direction: column;align-items: center;">
+
             <button type="submit">Cierre de Caja</button>
           </div>
         </div>
@@ -914,11 +923,12 @@
 
       <div class="modal_caja_down">
         <div style="display: inline-flex;flex-direction: column;align-items: center;">
-          <p>Total que Debe Haber en Caja:</p>
+          <p>Total en Caja:</p>
           <div id="modalTotalDeberiaEmpleado">RD$0</div>
         </div>
 
         <div style="display: inline-flex;flex-direction: column;align-items: center;">
+          <div id="modalQuedariaEnRetiroEmpleado" style="margin-bottom: 7px;">Lo que quedaría en caja: RD$0</div>
           <button type="button" id="confirmarRetiroEmpleado">Confirmar Retiro</button>
         </div>
 
@@ -946,9 +956,9 @@
           <ul id="historialList">
             <!-- Las transacciones se cargarán aquí como elementos li -->
           </ul>
-        <button id="loadMoreButton" style="display: none;">Cargar más</button>
-        <p id="noMoreRecords" style="display: none; text-align: center;">No hay más registros</p>
-          
+          <button id="loadMoreButton" style="display: none;">Cargar más</button>
+          <p id="noMoreRecords" style="display: none; text-align: center;">No hay más registros</p>
+
         </div>
       </div>
     </div>
@@ -1018,9 +1028,6 @@
       try {
         console.log("Cargando empleados..."); // Debug
         const empleadosSelect = document.getElementById('empleadoSelectIngreso');
-
-        // Mantener solo las primeras dos opciones (vacía y Admin)
-        empleadosSelect.innerHTML = '<option value="">Seleccione un empleado</option><option value="Admin">Admin</option>';
 
         const querySnapshot = await db.collection("empleados").orderBy("nombre").get();
 
@@ -1314,7 +1321,24 @@
 
 
 
+    // Función para calcular y mostrar lo que quedaría en caja en el modal de Retiro por Empleado
+    const calcularQuedariaEnRetiroEmpleado = () => {
+      // Obtener el total que debería haber en caja
+      const totalDeberia = parseInt(document.getElementById('totalDeberia').innerText.replace('RD$', '').trim()) || 0;
 
+      // Calcular el total a retirar
+      const totalRetirar = Array.from(document.querySelectorAll('#retiroEmpleadoForm input[type="number"]'))
+        .reduce((acc, input) => acc + (parseInt(input.value) || 0) * parseInt(input.id.replace('denomination', '').replace('_empleado', '')) || 0, 0);
+
+      // Calcular lo que quedaría en caja
+      const quedariaEnCaja = totalDeberia - totalRetirar;
+      document.getElementById('modalQuedariaEnRetiroEmpleado').innerText = `Lo que quedaría en caja: RD$${quedariaEnCaja}`;
+    };
+
+    // Agregar eventos de entrada a cada campo del formulario de "Retiro por Empleado"
+    document.querySelectorAll('#retiroEmpleadoForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', calcularQuedariaEnRetiroEmpleado);
+    });
 
 
 
@@ -1687,53 +1711,55 @@
       }
     };
 
-  // Cargar las facturas en tiempo real
-const loadFacturasRealTime = async () => {
-  try {
-    // Obtener el timestamp de la colección "caja"
-    const cajaSnapshot = await db.collection("caja").get();
-    if (!cajaSnapshot.empty) {
-      const cajaDoc = cajaSnapshot.docs[0].data();
-      const cajaTimestamp = cajaDoc.timestamp.toDate(); // Convertir a objeto Date
+    // Cargar las facturas en tiempo real
+    const loadFacturasRealTime = async () => {
+      try {
+        // Obtener el timestamp de la colección "caja"
+        const cajaSnapshot = await db.collection("caja").get();
+        if (!cajaSnapshot.empty) {
+          const cajaDoc = cajaSnapshot.docs[0].data();
+          const cajaTimestamp = cajaDoc.timestamp.toDate(); // Convertir a objeto Date
 
-      // Obtener las facturas generadas después del timestamp de la caja
-      db.collection("facturas")
-        .where("timestamp", ">", cajaTimestamp)
-        .orderBy("timestamp") // Asegúrate de que los documentos estén ordenados por timestamp
-        .onSnapshot((snapshot) => {
-          const facturasTableBody = document.getElementById("facturasTable").getElementsByTagName("tbody")[0];
-          facturasTableBody.innerHTML = ""; // Limpiar la tabla antes de agregar nuevas filas
+          // Obtener las facturas generadas después del timestamp de la caja
+          db.collection("facturas")
+            .where("timestamp", ">", cajaTimestamp)
+            .orderBy("timestamp") // Asegúrate de que los documentos estén ordenados por timestamp
+            .onSnapshot((snapshot) => {
+              const facturasTableBody = document.getElementById("facturasTable").getElementsByTagName("tbody")[0];
+              facturasTableBody.innerHTML = ""; // Limpiar la tabla antes de agregar nuevas filas
 
-          snapshot.forEach(doc => {
-            const factura = doc.data();
-            if (factura.paymentMethod === "Efectivo") { // Filtrar por método de pago
-              const row = facturasTableBody.insertRow();
-              row.insertCell(0).innerText = factura.id; // ID del campo "id"
-              row.insertCell(1).innerText = factura.clientName;
-              row.insertCell(2).innerText = factura.clientPhone;
-              row.insertCell(3).innerText = factura.paymentMethod; // Agregar el método de pago
-              row.insertCell(4).innerText = factura.amountReceived; // Agregar el monto recibido
-              row.insertCell(5).innerText = factura.changeAmount; // Agregar el cambio
-              row.insertCell(6).innerText = factura.total;
+              snapshot.forEach(doc => {
+                const factura = doc.data();
+                if (factura.paymentMethod === "Efectivo") { // Filtrar por método de pago
+                  const row = facturasTableBody.insertRow();
+                  row.insertCell(0).innerText = factura.id; // ID del campo "id"
+                  row.insertCell(1).innerText = factura.clientName;
+                  row.insertCell(2).innerText = factura.clientPhone;
+                  row.insertCell(3).innerText = factura.paymentMethod; // Agregar el método de pago
+                  row.insertCell(4).innerText = factura.amountReceived; // Agregar el monto recibido
+                  row.insertCell(5).innerText = factura.changeAmount; // Agregar el cambio
+                  row.insertCell(6).innerText = factura.total;
 
-              // Formatear el timestamp en formato de 12 horas
-              const fecha = factura.timestamp.toDate();
-              const options = { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' };
-              const fechaFormateada = fecha.toLocaleString('es-ES', options);
-              row.insertCell(7).innerText = fechaFormateada; // Mostrar la fecha y hora formateada
-            }
-          });
-          updateTotals(); // Llamar a la función para actualizar los totales
-        });
-    }
-  } catch (error) {
-    console.error("Error al cargar las facturas:", error);
-  }
-};
+                  // Formatear el timestamp en formato de 12 horas
+                  const fecha = factura.timestamp.toDate();
+                  const options = { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' };
+                  const fechaFormateada = fecha.toLocaleString('es-ES', options);
+                  row.insertCell(7).innerText = fechaFormateada; // Mostrar la fecha y hora formateada
+                }
+              });
+              updateTotals(); // Llamar a la función para actualizar los totales
+            });
+        }
+      } catch (error) {
+        console.error("Error al cargar las facturas:", error);
+      }
+    };
 
     // Cargar los datos de la caja y las facturas al inicio
     loadCashData();
     loadFacturasRealTime();
+
+
 
     // Manejo del modal cuadre 
     const modal = document.getElementById("cuadreModal");
@@ -1760,6 +1786,75 @@ const loadFacturasRealTime = async () => {
       }
     };
     // Manejo del modal cuadre FIN
+
+    // Función para calcular el total en el modal de Cuadre de Caja
+    const calcularTotalCuadre = () => {
+      const denominations = {
+        2000: parseInt(document.getElementById('denomination2000_modal').value) || 0,
+        1000: parseInt(document.getElementById('denomination1000_modal').value) || 0,
+        500: parseInt(document.getElementById('denomination500_modal').value) || 0,
+        200: parseInt(document.getElementById('denomination200_modal').value) || 0,
+        100: parseInt(document.getElementById('denomination100_modal').value) || 0,
+        50: parseInt(document.getElementById('denomination50_modal').value) || 0,
+        25: parseInt(document.getElementById('denomination25_modal').value) || 0,
+        10: parseInt(document.getElementById('denomination10_modal').value) || 0,
+        5: parseInt(document.getElementById('denomination5_modal').value) || 0,
+        1: parseInt(document.getElementById('denomination1_modal').value) || 0,
+      };
+
+      const total = (denominations[2000] * 2000) +
+        (denominations[1000] * 1000) +
+        (denominations[500] * 500) +
+        (denominations[200] * 200) +
+        (denominations[100] * 100) +
+        (denominations[50] * 50) +
+        (denominations[25] * 25) +
+        (denominations[10] * 10) +
+        (denominations[5] * 5) +
+        (denominations[1] * 1);
+
+      document.getElementById('modalTotalAmount').innerText = `RD$${total}`;
+      return total;
+    };
+
+    // Función para actualizar el estado del cuadre
+    const actualizarEstadoCuadre = () => {
+      const totalContado = calcularTotalCuadre();
+      const totalDeberia = parseInt(document.getElementById('modalTotalDeberia').innerText.replace('RD$', '').trim()) || 0;
+      const statusDiv = document.getElementById('modalStatusCuadre');
+
+      if (totalContado === totalDeberia) {
+        statusDiv.innerText = "¡Correcto!";
+        statusDiv.style.color = "#3ad33a"; // Verde
+      } else if (totalContado < totalDeberia) {
+        const falta = totalDeberia - totalContado;
+        statusDiv.innerText = `Falta: RD$${falta}`;
+        statusDiv.style.color = "#ff4747"; // Rojo
+      } else {
+        const sobra = totalContado - totalDeberia;
+        statusDiv.innerText = `Sobra: RD$${sobra}`;
+        statusDiv.style.color = "#ffcc00"; // Amarillo
+      }
+    };
+
+    // Agregar eventos de entrada a cada campo del formulario de "Cuadre de Caja"
+    document.querySelectorAll('#cuadreForm input[type="number"]').forEach(input => {
+      input.addEventListener('input', actualizarEstadoCuadre);
+    });
+
+    // Manejo del evento de envío del formulario de cuadre
+    document.getElementById('cuadreForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const totalContado = calcularTotalCuadre();
+      const totalDeberia = parseInt(document.getElementById('modalTotalDeberia').innerText.replace('RD$', '').trim()) || 0;
+
+      // Aquí puedes agregar la lógica para guardar el cuadre en Firebase
+    });
+
+
+
+
+
 
     // Manejo del modal "ModalInicialCaja"
     const modalInicial = document.getElementById("ModalInicialCaja");
@@ -1847,70 +1942,53 @@ const loadFacturasRealTime = async () => {
 
 
 
-  // Agregar el evento de envío al formulario de cuadre
-document.getElementById('cuadreForm').addEventListener('submit', async function (e) {
-    e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+    // Agregar el evento de envío al formulario de cuadre
+    document.getElementById('cuadreForm').addEventListener('submit', async function (e) {
+      e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
 
-    // Obtener el total contado
-    const totalContado = parseInt(document.getElementById('modalTotalAmount').innerText.replace('RD$', '').trim()) || 0;
+      // Obtener el total contado
+      const totalContado = parseInt(document.getElementById('modalTotalAmount').innerText.replace('RD$', '').trim()) || 0;
 
-    // Obtener el total que debe haber en caja
-    const totalDeberia = parseInt(document.getElementById('modalTotalDeberia').innerText.replace('RD$', '').trim()) || 0;
+      // Obtener el total que debe haber en caja
+      const totalDeberia = parseInt(document.getElementById('modalTotalDeberia').innerText.replace('RD$', '').trim()) || 0;
 
-    // Validar que los totales coincidan
-    if (totalContado !== totalDeberia) {
+      // Validar que los totales coincidan
+      if (totalContado !== totalDeberia) {
         alert("El total contado no coincide con el total que debe haber en caja.");
         return; // Salir si no coinciden
-    }
+      }
 
-    // Obtener las denominaciones del formulario
-    const denominations = {
-        2000: parseInt(document.getElementById('denomination2000_modal').value) || 0,
-        1000: parseInt(document.getElementById('denomination1000_modal').value) || 0,
-        500: parseInt(document.getElementById('denomination500_modal').value) || 0,
-        200: parseInt(document.getElementById('denomination200_modal').value) || 0,
-        100: parseInt(document.getElementById('denomination100_modal').value) || 0,
-        50: parseInt(document.getElementById('denomination50_modal').value) || 0,
-        25: parseInt(document.getElementById('denomination25_modal').value) || 0,
-        10: parseInt(document.getElementById('denomination10_modal').value) || 0,
-        5: parseInt(document.getElementById('denomination5_modal').value) || 0,
-        1: parseInt(document.getElementById('denomination1_modal').value) || 0,
-    };
-
-    try {
-        // Actualizar en Firebase
+      try {
+        // Actualizar solo el campo cuadreCajaHora en Firebase
         const cajaRef = db.collection("caja");
         const snapshot = await cajaRef.get();
 
         if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
+          const doc = snapshot.docs[0];
 
-            // Actualizar denominaciones y total en caja
-            await doc.ref.update({
-                denominations: denominations,
-                totalEnCaja: totalContado,
-                cuadreCajaHora: firebase.firestore.FieldValue.serverTimestamp()
-            });
+          // Actualizar solo el campo cuadreCajaHora
+          await doc.ref.update({
+            cuadreCajaHora: firebase.firestore.FieldValue.serverTimestamp()
+          });
 
-            // Registrar en historial
-            await db.collection("historialCaja").add({
-                accion: "Cuadre de Caja Exitoso",
-                empleado: document.getElementById('empleadoSelectCuadre').value,
-                monto: totalContado,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                denominaciones: denominations // Enviar desglose completo
-            });
+          // Registrar en historial
+          await db.collection("historialCaja").add({
+            accion: "Cuadre de Caja Exitoso",
+            empleado: document.getElementById('empleadoSelectCuadre').value,
+            monto: totalContado,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
 
-            alert("Cuadre de caja registrado exitosamente.");
-            location.reload(); // Recargar la página
+          alert("Cuadre de caja registrado exitosamente.");
+          location.reload(); // Recargar la página
         } else {
-            alert("No se encontró registro de caja. Realice primero un inicio de caja.");
+          alert("No se encontró registro de caja. Realice primero un inicio de caja.");
         }
-    } catch (error) {
+      } catch (error) {
         console.error("Error al cuadrar caja:", error);
         alert("Error al procesar el cuadre. Intente nuevamente.");
-    }
-});
+      }
+    });
 
 
 
@@ -1991,11 +2069,16 @@ document.getElementById('cuadreForm').addEventListener('submit', async function 
 
       if (totalContado === totalEnCaja) {
         statusDiv.innerText = "¡Correcto!";
-        statusDiv.style.color = "#3ad33a";
+        statusDiv.style.color = "#3ad33a"; // Verde
       } else {
         const diferencia = totalEnCaja - totalContado;
-        statusDiv.innerText = `Falta: RD$${diferencia}`;
-        statusDiv.style.color = diferencia < 0 ? "#ffcc00" : "#ff4747"; // Rojo si falta, amarillo si sobra
+        if (diferencia > 0) {
+          statusDiv.innerText = `Falta: RD$${diferencia}`;
+          statusDiv.style.color = "#ff4747"; // Rojo si falta
+        } else {
+          statusDiv.innerText = `Sobra: RD$${Math.abs(diferencia)}`;
+          statusDiv.style.color = "#ffcc00"; // Amarillo si sobra
+        }
       }
     };
 
@@ -2264,10 +2347,18 @@ document.getElementById('cuadreForm').addEventListener('submit', async function 
       }
     };
 
-    // Modificar el evento de apertura del modal para cargar empleados
+    // Modificar el evento de apertura del modal para Iniciar Caja
     btnInicial.onclick = async function () {
+      // Verificar si la caja ya está abierta
+      const inicioCajaInfo = document.getElementById('inicioCajaInfo');
+      if (inicioCajaInfo.style.display === 'block') {
+        alert("La caja ya está iniciada");
+        btnInicial.style.cursor = 'not-allowed';
+        return;
+      }
+
       modalInicial.style.display = "block";
-      await loadEmpleadosInicioCaja(); // AÑADIR ESTA LÍNEA
+      await loadEmpleadosInicioCaja();
     };
 
 
@@ -2364,12 +2455,54 @@ document.getElementById('cuadreForm').addEventListener('submit', async function 
     };
 
 
-    // Modificar el evento de apertura del modal de cierre
+    // Modificar el evento de apertura del modal para Cierre de Caja
     btnCierreCaja.onclick = async function () {
+      // Verificar si la caja está cerrada
+      const cierreCajaInfo = document.getElementById('cierreCajaInfo');
+      if (cierreCajaInfo.style.display === 'block') {
+        alert("La caja ya está cerrada");
+        btnCierreCaja.style.cursor = 'not-allowed';
+        return;
+      }
+
       cierreCajaModal.style.display = "block";
-      await loadEmpleadosCierre(); // Cargar empleados
-      loadTotalEnCaja(); // Cargar el total que debe haber en caja
+      await loadEmpleadosCierre();
+      loadTotalEnCaja();
     };
+
+
+    // Función para actualizar el estado de los botones
+    const actualizarEstadoBotones = () => {
+      const inicioCajaInfo = document.getElementById('inicioCajaInfo');
+      const cierreCajaInfo = document.getElementById('cierreCajaInfo');
+
+      // Botón Iniciar Caja
+      if (inicioCajaInfo.style.display === 'block') {
+        document.getElementById('openModalInicialCaja').disabled = true;
+        document.getElementById('openModalInicialCaja').style.cursor = 'not-allowed';
+      } else {
+        document.getElementById('openModalInicialCaja').disabled = false;
+        document.getElementById('openModalInicialCaja').style.cursor = 'pointer';
+      }
+
+      // Botón Cierre de Caja
+      if (cierreCajaInfo.style.display === 'block') {
+        document.getElementById('openCierreCajaModal').disabled = true;
+        document.getElementById('openCierreCajaModal').style.cursor = 'not-allowed';
+      } else {
+        document.getElementById('openCierreCajaModal').disabled = false;
+        document.getElementById('openCierreCajaModal').style.cursor = 'pointer';
+      }
+    };
+
+    // Llamar a esta función cuando se cargue la página y después de cualquier cambio de estado
+    document.addEventListener('DOMContentLoaded', () => {
+      actualizarEstadoBotones();
+      mostrarHorasCaja(); // Esta función ya existe en tu código
+    });
+
+    // También llamarla después de cualquier operación que cambie el estado de la caja
+    // Por ejemplo, después de iniciar o cerrar caja
 
 
     // Función para generar ID basado en timestamp (formato: tgeDDMMYY-HHMMSS)
@@ -2460,12 +2593,13 @@ document.getElementById('cuadreForm').addEventListener('submit', async function 
 
 
 
-    // Llamar a loadEmpleados cuando se abra el modal
+    // Modificar el evento de apertura del modal de retiro por empleado
     btnRetiroEmpleado.onclick = async function () {
       retiroEmpleadoModal.style.display = "block";
       // Mostrar el total que debe haber en caja
       const totalDeberia = document.getElementById('totalDeberia').innerText;
       document.getElementById('modalTotalDeberiaEmpleado').innerText = totalDeberia;
+      calcularQuedariaEnRetiroEmpleado(); // Calcular lo que quedaría en caja al abrir el modal
       // Cargar los empleados
       await loadEmpleados();
     };
@@ -2507,130 +2641,130 @@ document.getElementById('cuadreForm').addEventListener('submit', async function 
 
 
     // Función para cargar el historial desde Firebase
-// Variables para la paginación
-let lastVisible = null;
-const limit = 10;
+    // Variables para la paginación
+    let lastVisible = null;
+    const limit = 10;
 
-// Función para cargar el historial con paginación
-const cargarHistorial = async (loadMore = false) => {
-  try {
-    const historialList = document.getElementById("historialList");
-    const loadMoreButton = document.getElementById("loadMoreButton");
-    const noMoreRecords = document.getElementById("noMoreRecords");
+    // Función para cargar el historial con paginación
+    const cargarHistorial = async (loadMore = false) => {
+      try {
+        const historialList = document.getElementById("historialList");
+        const loadMoreButton = document.getElementById("loadMoreButton");
+        const noMoreRecords = document.getElementById("noMoreRecords");
 
-    if (!loadMore) {
-      // Primera carga, reiniciar variables
-      historialList.innerHTML = "";
-      lastVisible = null;
-      loadMoreButton.style.display = "none";
-      noMoreRecords.style.display = "none";
-    }
-
-    let query = db.collection("historialCaja")
-      .orderBy("timestamp", "desc")
-      .limit(limit);
-
-    if (loadMore && lastVisible) {
-      query = query.startAfter(lastVisible);
-    }
-
-    const querySnapshot = await query.get();
-
-    if (querySnapshot.empty && !loadMore) {
-      const li = document.createElement("li");
-      li.innerText = "No hay transacciones registradas";
-      historialList.appendChild(li);
-      return;
-    }
-
-    if (!querySnapshot.empty) {
-      lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-      
-      querySnapshot.forEach(doc => {
-        const transaccion = doc.data();
-        const li = document.createElement("li");
-
-        // Asignar la categoría según la acción
-        let categoria;
-        switch (transaccion.accion) {
-          case "Inicio de Caja Exitoso":
-            categoria = "inicio";
-            break;
-          case "Cierre de Caja Exitoso":
-            categoria = "cierre";
-            break;
-          case "Cuadre de Caja Exitoso":
-            categoria = "cuadre";
-            break;
-          case "Retiro de Efectivo por Empleado":
-            categoria = "retiro-empleado";
-            break;
-          case "Ingreso de Efectivo Exitoso":
-            categoria = "ingreso";
-            break;
-          case "Retiro de Efectivo Exitoso":
-            categoria = "retiro";
-            break;
-          default:
-            categoria = "otro";
+        if (!loadMore) {
+          // Primera carga, reiniciar variables
+          historialList.innerHTML = "";
+          lastVisible = null;
+          loadMoreButton.style.display = "none";
+          noMoreRecords.style.display = "none";
         }
 
-        li.setAttribute("data-categoria", categoria);
+        let query = db.collection("historialCaja")
+          .orderBy("timestamp", "desc")
+          .limit(limit);
 
-        const fecha = transaccion.timestamp.toDate();
-        const opcionesFecha = {
-          timeZone: 'America/Santo_Domingo',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit'
-        };
-        const fechaFormateada = fecha.toLocaleString('es-DO', opcionesFecha);
+        if (loadMore && lastVisible) {
+          query = query.startAfter(lastVisible);
+        }
 
-        let contenidoHTML = `
+        const querySnapshot = await query.get();
+
+        if (querySnapshot.empty && !loadMore) {
+          const li = document.createElement("li");
+          li.innerText = "No hay transacciones registradas";
+          historialList.appendChild(li);
+          return;
+        }
+
+        if (!querySnapshot.empty) {
+          lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+          querySnapshot.forEach(doc => {
+            const transaccion = doc.data();
+            const li = document.createElement("li");
+
+            // Asignar la categoría según la acción
+            let categoria;
+            switch (transaccion.accion) {
+              case "Inicio de Caja Exitoso":
+                categoria = "inicio";
+                break;
+              case "Cierre de Caja Exitoso":
+                categoria = "cierre";
+                break;
+              case "Cuadre de Caja Exitoso":
+                categoria = "cuadre";
+                break;
+              case "Retiro de Efectivo por Empleado":
+                categoria = "retiro-empleado";
+                break;
+              case "Ingreso de Efectivo Exitoso":
+                categoria = "ingreso";
+                break;
+              case "Retiro de Efectivo Exitoso":
+                categoria = "retiro";
+                break;
+              default:
+                categoria = "otro";
+            }
+
+            li.setAttribute("data-categoria", categoria);
+
+            const fecha = transaccion.timestamp.toDate();
+            const opcionesFecha = {
+              timeZone: 'America/Santo_Domingo',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            };
+            const fechaFormateada = fecha.toLocaleString('es-DO', opcionesFecha);
+
+            let contenidoHTML = `
           <div class="accion">Acción: ${transaccion.accion || 'No especificada'}</div>
           <div class="fecha"><strong>Fecha:</strong> ${fechaFormateada}</div>
           <div class="empleado"><strong>Empleado:</strong> ${transaccion.empleado || 'No especificado'}</div>
           <div class="monto">Monto: RD$${transaccion.monto || 0}</div>
         `;
 
-        if (transaccion.accion === "Retiro de Efectivo por Empleado" && transaccion.detalles) {
-          contenidoHTML += `<div class="detalles"><strong>Detalles:</strong> ${transaccion.detalles}</div>`;
+            if (transaccion.accion === "Retiro de Efectivo por Empleado" && transaccion.detalles) {
+              contenidoHTML += `<div class="detalles"><strong>Detalles:</strong> ${transaccion.detalles}</div>`;
+            }
+
+            li.innerHTML = contenidoHTML;
+            historialList.appendChild(li);
+          });
+
+          // Mostrar u ocultar botón según si hay más registros
+          if (querySnapshot.size === limit) {
+            loadMoreButton.style.display = "block";
+            noMoreRecords.style.display = "none";
+          } else {
+            loadMoreButton.style.display = "none";
+            noMoreRecords.style.display = "block";
+          }
+        } else if (loadMore) {
+          loadMoreButton.style.display = "none";
+          noMoreRecords.style.display = "block";
         }
-
-        li.innerHTML = contenidoHTML;
-        historialList.appendChild(li);
-      });
-
-      // Mostrar u ocultar botón según si hay más registros
-      if (querySnapshot.size === limit) {
-        loadMoreButton.style.display = "block";
-        noMoreRecords.style.display = "none";
-      } else {
-        loadMoreButton.style.display = "none";
-        noMoreRecords.style.display = "block";
+      } catch (error) {
+        console.error("Error al cargar el historial:", error);
+        alert("Error al cargar el historial. Intente nuevamente.");
       }
-    } else if (loadMore) {
-      loadMoreButton.style.display = "none";
-      noMoreRecords.style.display = "block";
-    }
-  } catch (error) {
-    console.error("Error al cargar el historial:", error);
-    alert("Error al cargar el historial. Intente nuevamente.");
-  }
-};
+    };
 
-// Evento para el botón Cargar más
-document.getElementById("loadMoreButton").addEventListener("click", () => {
-  cargarHistorial(true);
-});
+    // Evento para el botón Cargar más
+    document.getElementById("loadMoreButton").addEventListener("click", () => {
+      cargarHistorial(true);
+    });
 
-// Modificar el evento de apertura del modal
-btnHistorial.onclick = async function() {
-  historialModal.style.display = "block";
-  await cargarHistorial(false); // Cargar primeros 10 registros
-};
+    // Modificar el evento de apertura del modal
+    btnHistorial.onclick = async function () {
+      historialModal.style.display = "block";
+      await cargarHistorial(false); // Cargar primeros 10 registros
+    };
 
   </script>
 
@@ -2638,5 +2772,3 @@ btnHistorial.onclick = async function() {
 </body>
 
 </html>
-
-<!-- 15 -->
