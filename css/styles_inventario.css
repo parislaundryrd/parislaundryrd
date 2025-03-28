@@ -242,6 +242,12 @@ h1 {
     transition: 0.3s;
 }
 
+#totalValue {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
 
 
 /* Modal agregar y editar transaccion */
@@ -387,6 +393,7 @@ h1 {
     }
 
     .button-list {
+        margin-top: 10px;
         justify-content: space-between;
         padding: 0px 15px;
         box-sizing: border-box;
@@ -425,5 +432,31 @@ h1 {
 
     .product-item button {
         font-size: 12px;
+    }
+
+    .button-list button {
+        width: 150px;
+    }
+
+    .panelInventario_tittle h2 {
+        font-size: 1em;
+    }
+
+    .modalInvetario_tittle h2 {
+        font-size: 1em;
+        padding: 0px 60px;
+    }
+
+    .modalInvetario_body {
+        padding: 0px 12px 0px 12px;
+        font-size: 12px;
+    }
+
+    #totalValue {
+        margin-top: 12px;
+    }
+
+    .product-list {
+        margin-top: 12px;
     }
 }
