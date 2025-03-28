@@ -998,7 +998,12 @@ li {
     box-shadow: rgb(255 212 46) 0px 0px 0px 1px;
 }
 
-
+@media screen and (max-width: 750px) {
+    .container_admin {
+        height: calc(100vh - 64px);
+        border-radius: 14px 14px 0px 0px;
+    }
+}
 
 @media screen and (max-width: 700px) {
 
