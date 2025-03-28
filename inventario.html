@@ -33,8 +33,7 @@
 
         <div class="button-list">
           <button id="addProductButton"><img src="./img/icon/mas1.png">Añadir Producto</button>
-          <button id="viewHistoryButton"><img src="./img/icon/historial1.png">Ver Historial de
-            Inventario</button>
+          <button id="viewHistoryButton"><img src="./img/icon/historial1.png">Historial de Inventario</button>
         </div>
 
         <div id="totalValue" style="margin-top: 20px; font-size: 20px; font-weight: bold;">
@@ -49,7 +48,7 @@
 
       <!-- Down -->
       <div class="panelInventario_down">
-        <p>© Paris Laundry RD - 2025</p>
+        <footer-content></footer-content>
       </div>
       <!-- Down FIN -->
 
@@ -147,10 +146,14 @@
 
         <div class="modalInvetario_body">
           <div class="history-list" id="historyList"></div>
+          <div id="loadMoreContainer" style="text-align: center;margin: 14px 0px;">
+            <button id="loadMoreButton" style="display: none;">Cargar más</button>
+            <div id="noMoreRecords"  style="display: none; text-align: center; color: rgb(136, 136, 136); margin-top: 10px;">No hay más registros</div>
+          </div>
         </div>
 
-        <div class="modalInvetario_down">
-          <p>© Paris Laundry RD</p>
+        <div class="modalInvetario_down" style="border: none;">
+
         </div>
 
       </div>
@@ -209,8 +212,8 @@ const loadProducts = () => {
         <div style="background: #b3c5ef;height: 100%;">${data.ordenNum}</div>
         <div><strong>${data.id}</strong></div>
         <div><strong>${data.nombre}</strong></div> 
-        <div>${data.detalles}</div> 
-                <div style="flex-direction: column;min-width: 80px;padding: 0px 20px;">Valor Neto:<br><strong>RD$${valorTotalNeto.toFixed(2)}</strong></div> <!-- Nueva columna -->
+        <div id="lista-detalles">${data.detalles}</div> 
+                <div id="lista-valorNeto" style="flex-direction: column;min-width: 80px;padding: 0px 20px;">Valor Neto:<br><strong>RD$${valorTotalNeto.toFixed(2)}</strong></div> <!-- Nueva columna -->
         <div style="flex-direction: column;">Precio:<br><strong>RD$${data.precio.toFixed(2)}</strong></div>
         <div style="flex-direction: column;">Stock:<br><strong style="color: ${data.cantidad < 20 ? 'red' : 'black'};">${data.cantidad}</strong></div>
         <div><button onclick="openEditModal('${doc.id}', '${data.id}', '${data.nombre}', '${data.detalles}', ${data.precio}, ${data.cantidad})">Editar</button></div>
@@ -445,108 +448,142 @@ const loadProducts = () => {
     };
 
     // Ver historial de inventario
-    const viewHistory = () => {
-      historyList.innerHTML = ""; // Limpiar la lista antes de cargar
-      db.collection("historialInventario").orderBy("date", "desc").onSnapshot((snapshot) => {
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const historyItem = document.createElement("div");
-          historyItem.classList.add("history-item");
+    let loadedTransactions = 0; // Número de transacciones cargadas
+const transactionsPerLoad = 10; // Número de transacciones a cargar por cada clic
+let lastVisible = null; // Para almacenar el último documento visible
 
-          // Cambiar el color de fondo y agregar sombra según la acción
-          switch (data.action) {
-            case "actualización":
-              historyItem.style.backgroundColor = "#e6f3ff"; // Azul para actualizaciones
-              historyItem.style.boxShadow = "0px 0px 0px 1px #bad8f3"; // Sombra azul
-              break;
-            case "entrada":
-              historyItem.style.backgroundColor = "#05e10530"; // Verde para entradas
-              historyItem.style.boxShadow = "0px 0px 0px 1px rgb(0 255 0 / 71%)"; // Sombra verde
-              break;
-            case "eliminación":
-              historyItem.style.backgroundColor = "#ff000017"; // Rojo para eliminaciones
-              historyItem.style.boxShadow = "0px 0px 0px 1px rgba(255, 0, 0, 0.5)"; // Sombra roja
-              break;
-            default:
-              historyItem.style.backgroundColor = "#fff"; // Blanco por defecto
-              historyItem.style.boxShadow = "none"; // Sin sombra por defecto
-          }
+// Ver historial de inventario
+const viewHistory = () => {
+  historyList.innerHTML = ""; // Limpiar la lista antes de cargar
+  loadedTransactions = 0; // Reiniciar el contador de transacciones cargadas
+  lastVisible = null; // Reiniciar el último documento visible
+  loadHistory(); // Cargar el historial inicial
+  historyModal.style.display = "block"; // Mostrar el modal del historial
+};
 
-          let changesDescription = `<strong>ID:</strong> ${data.id}<br><strong>Acción:</strong> ${data.action}<br><strong>Fecha:</strong> ${data.date.toDate().toLocaleString()}`;
+const loadHistory = () => {
+  let query = db.collection("historialInventario")
+    .orderBy("date", "desc")
+    .limit(transactionsPerLoad);
 
-          // Mostrar información completa si la acción es "entrada" o "eliminación"
-          if (data.action === "entrada" || data.action === "eliminación") {
-            changesDescription += `<br><strong>Nombre:</strong> ${data.nombre}<br><strong>Detalles:</strong> ${data.detalles}<br><strong>Precio:</strong> RD$${data.precio}<br><strong>Cantidad:</strong> ${data.cantidad}`;
-          } else if (data.action === "actualización") {
-            // Mostrar solo los cambios relevantes para actualizaciones
-            if (data.nombreAnterior) {
-              changesDescription += `<br><strong>Cambio de nombre:</strong> "${data.nombreAnterior}" a "${data.nombreNuevo}"`;
-            }
-            if (data.detallesAnterior) {
-              changesDescription += `<br><strong>Cambio de detalles:</strong> "${data.detallesAnterior}" a "${data.detallesNuevo}"`;
-            }
-            if (data.precioAnterior) {
-              changesDescription += `<br><strong>Cambio de precio:</strong> RD$${data.precioAnterior} a RD$${data.precioNuevo}`;
-            }
-            if (data.cantidadAnterior) {
-              changesDescription += `<br><strong>Cambio de cantidad:</strong> ${data.cantidadAnterior} a ${data.cantidadNuevo}`;
-            }
-          }
+  // Si hay un último documento visible, usarlo para cargar más
+  if (lastVisible) {
+    query = query.startAfter(lastVisible);
+  }
 
-          historyItem.innerHTML = `<div>${changesDescription}</div>`;
-          historyList.appendChild(historyItem);
-        });
-      });
-      historyModal.style.display = "block"; // Mostrar el modal del historial
-    };
+  query.get().then((snapshot) => {
+    if (snapshot.empty) {
+      // Si no hay más documentos, mostrar mensaje
+      document.getElementById("loadMoreButton").style.display = "none";
+      document.getElementById("noMoreRecords").style.display = "block";
+      return;
+    }
 
-    // Evento para abrir el modal de agregar producto
-    document.getElementById("addProductButton").addEventListener("click", () => {
-      addProductModal.style.display = "block";
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const historyItem = document.createElement("div");
+      historyItem.classList.add("history-item");
+
+      // Cambiar el color de fondo y agregar sombra según la acción
+      switch (data.action) {
+        case "actualización":
+          historyItem.style.backgroundColor = "#e6f3ff"; // Azul para actualizaciones
+          historyItem.style.boxShadow = "0px 0px 0px 1px #bad8f3"; // Sombra azul
+          break;
+        case "entrada":
+          historyItem.style.backgroundColor = "#05e10530"; // Verde para entradas
+          historyItem.style.boxShadow = "0px 0px 0px 1px rgb(0 255 0 / 71%)"; // Sombra verde
+          break;
+        case "eliminación":
+          historyItem.style.backgroundColor = "#ff000017"; // Rojo para eliminaciones
+          historyItem.style.boxShadow = "0px 0px 0px 1px rgba(255, 0, 0, 0.5)"; // Sombra roja
+          break;
+        default:
+          historyItem.style.backgroundColor = "#fff"; // Blanco por defecto
+          historyItem.style.boxShadow = "none"; // Sin sombra por defecto
+      }
+
+      let changesDescription = `<strong>ID:</strong> ${data.id}<br><strong>Acción:</strong> ${data.action}<br><strong>Fecha:</strong> ${data.date.toDate().toLocaleString()}`;
+
+      // Mostrar información completa si la acción es "entrada" o "eliminación"
+      if (data.action === "entrada" || data.action === "eliminación") {
+        changesDescription += `<br><strong>Nombre:</strong> ${data.nombre}<br><strong>Detalles:</strong> ${data.detalles}<br><strong>Precio:</strong> RD$${data.precio}<br><strong>Cantidad:</strong> ${data.cantidad}`;
+      } else if (data.action === "actualización") {
+        // Mostrar solo los cambios relevantes para actualizaciones
+        if (data.nombreAnterior) {
+          changesDescription += `<br><strong>Cambio de nombre:</strong> "${data.nombreAnterior}" a "${data.nombreNuevo}"`;
+        }
+        if (data.detallesAnterior) {
+          changesDescription += `<br><strong>Cambio de detalles:</strong> "${data.detallesAnterior}" a "${data.detallesNuevo}"`;
+        }
+        if (data.precioAnterior) {
+          changesDescription += `<br><strong>Cambio de precio:</strong> RD$${data.precioAnterior} a RD$${data.precioNuevo}`;
+        }
+        if (data.cantidadAnterior) {
+          changesDescription += `<br><strong>Cambio de cantidad:</strong> ${data.cantidadAnterior} a ${data.cantidadNuevo}`;
+        }
+      }
+
+      historyItem.innerHTML = `<div>${changesDescription}</div>`;
+      historyList.appendChild(historyItem);
     });
 
-    // Evento para ver el historial de inventario
-    document.getElementById("viewHistoryButton").addEventListener("click", viewHistory);
+    loadedTransactions += snapshot.size; // Actualizar el número de transacciones cargadas
+    lastVisible = snapshot.docs[snapshot.docs.length - 1]; // Actualizar el último documento visible
 
-    // Evento para cerrar el modal de agregar producto
-    closeModal.addEventListener("click", () => {
-      addProductModal.style.display = "none";
-      clearModalFields(); // Limpiar campos al cerrar
-    });
+    // Manejar la visibilidad del botón y el mensaje
+    const loadMoreButton = document.getElementById("loadMoreButton");
+    const noMoreRecords = document.getElementById("noMoreRecords");
 
-    // Evento para agregar el producto desde el modal
-    submitProductButton.addEventListener("click", addProduct);
+    if (loadedTransactions < transactionsPerLoad) {
+      loadMoreButton.style.display = "none"; // Ocultar botón "Cargar más"
+      noMoreRecords.style.display = "block"; // Mostrar mensaje "No hay más registros"
+    } else {
+      loadMoreButton.style.display = "block"; // Mostrar botón "Cargar más"
+      noMoreRecords.style.display = "none"; // Ocultar mensaje "No hay más registros"
+    }
+  });
+};
 
-    // Evento para cerrar el modal de editar producto
-    closeEditModal.addEventListener("click", () => {
-      editProductModal.style.display = "none";
-    });
+// Evento para abrir el modal de agregar producto
+document.getElementById("addProductButton").addEventListener("click", () => {
+  addProductModal.style.display = "block";
+});
 
-    // Evento para actualizar el producto desde el modal
-    updateProductButton.addEventListener("click", updateProduct);
+// Evento para ver el historial de inventario
+document.getElementById("viewHistoryButton").addEventListener("click", viewHistory);
 
-    // Evento para cerrar el modal de historial
-    closeHistoryModal.addEventListener("click", () => {
-      historyModal.style.display = "none";
-    });
+// Evento para cerrar el modal de agregar producto
+closeModal.addEventListener("click", () => {
+  addProductModal.style.display = "none";
+  clearModalFields(); // Limpiar campos al cerrar
+});
 
-    // Cargar productos al iniciar
-    loadProducts();
+// Evento para agregar el producto desde el modal
+submitProductButton.addEventListener("click", addProduct);
 
-    // Cerrar el modal si se hace clic fuera de él
-    // window.onclick = function (event) {
-    //    if (event.target === addProductModal) {
-    //     addProductModal.style.display = "none";
-    //     clearModalFields(); // Limpiar campos al cerrar
-    //    } else if (event.target === editProductModal) {
-    //      editProductModal.style.display = "none";
-    //  } else if (event.target === historyModal) {
-    //    historyModal.style.display = "none";
-    //   }
-    //  };
+// Evento para cerrar el modal de editar producto
+closeEditModal.addEventListener("click", () => {
+  editProductModal.style.display = "none";
+});
+
+// Evento para actualizar el producto desde el modal
+updateProductButton.addEventListener("click", updateProduct);
+
+// Evento para cerrar el modal de historial
+closeHistoryModal.addEventListener("click", () => {
+  historyModal.style.display = "none";
+});
+
+// Evento para cargar más transacciones
+document.getElementById("loadMoreButton").addEventListener("click", loadHistory);
+
+// Cargar productos al iniciar
+loadProducts();
+
+
   </script>
 
-  <script src="./js/fecha-hora.js"></script>
 </body>
 
 </html>
