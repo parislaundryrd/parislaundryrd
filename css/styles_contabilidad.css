@@ -306,7 +306,7 @@ input[type="date" i] {
 
 #addTransactionButton {
   background: #4fffaf;
-  color: #3b3b3b;
+  color: #000000;
   border: none;
   border-radius: 11px;
   font-weight: bold;
@@ -318,12 +318,17 @@ input[type="date" i] {
   gap: 5px;
   transition: 0.3s;
   cursor: pointer;
-  margin-right: 10px;
+  margin: 0px 10px;
 }
 
 #addTransactionButton img {
   position: relative;
   height: 32px;
+}
+
+#addTransactionButton:hover {
+  background: #3fe99c;
+  transition: 0.3s;
 }
 
 /* Top -Container FIN */
