@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard de Contabilidad - Paris Laundry</title>
+  <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
   <link rel="stylesheet" href="./css/styles_contabilidad.css">
   <link rel="stylesheet" href="./css/styles_menu.css">
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
@@ -115,8 +116,23 @@
         <h2 style="text-align: center;margin-block-start: 5px;margin-block-end: 7px;">Transacciones</h2>
 
         <div class="Top-Container">
+
+          <!-- Boton Añadir Transaccion -->
+          <div class="button-list">
+            <button id="addTransactionButton"><img src="./img/icon/mas.png">Añadir Transacción</button>
+          </div>
+          <!-- Boton Añadir Transaccion FIN -->
+
+          <!-- Barra de busqueda -->
+          <div class="search-bar">
+            <input type="text" id="searchInput"
+              placeholder="Buscar por ID, detalles, nombre del cliente, número del cliente, empleado o monto">
+            <div class="cantidad-img"><img src="./img/icon/buscar2.png"></div>
+          </div>
+          <!-- Barra de busqueda FIN -->
+
           <div
-            style="display: inline-flex;flex-direction: column;justify-content: space-evenly;margin-left: 14px;font-weight: bold;color: #252525;">
+            style="display: inline-flex;flex-direction: column;justify-content: space-evenly;margin: 0px 14px;font-weight: bold;color: #252525;">
 
             <!-- transacciones Visibles -->
             <div id="visibleTransactionCount">Transacciones visibles: 0</div>
@@ -134,19 +150,7 @@
 
 
           </div>
-          <!-- Barra de busqueda -->
-          <div class="search-bar">
-            <input type="text" id="searchInput"
-              placeholder="Buscar por ID, detalles, nombre del cliente, número del cliente, empleado o monto">
-            <div class="cantidad-img"><img src="./img/icon/buscar2.png"></div>
-          </div>
-          <!-- Barra de busqueda FIN -->
 
-          <!-- Boton Añadir Transaccion -->
-          <div class="button-list">
-            <button id="addTransactionButton"><img src="./img/icon/mas.png">Añadir Transacción</button>
-          </div>
-          <!-- Boton Añadir Transaccion FIN -->
         </div>
 
         <!-- Tabla de Transacciones -->
@@ -441,8 +445,8 @@
 
         <!-- modal-content-down -->
         <div class="modal-content-down">
-          <button id="saveTransactionButton">Guardar Cambios</button>
           <button id="deleteTransactionButton" style="background: #f59696;">Eliminar Transacción</button>
+          <button id="saveTransactionButton">Guardar Cambios</button>
         </div>
         <!-- modal-content-down FIN -->
       </div>
@@ -482,15 +486,15 @@
           <input type="text" id="editDeliveryName" placeholder="Nombre de la Opción de Entrega">
           <br>
           <label for="editDeliveryPrice">Precio de la Entrega:</label>
-          <input type="number" id="editDeliveryPrice" placeholder="Precio" step="0.01">
+          <input type="text" id="editDeliveryPrice" placeholder="Precio" value="0.00"> <!-- Cambiado a tipo text -->
 
         </div>
         <!-- modal-content-body FIN -->
 
         <!-- modal-content-down -->
         <div class="modal-content-down">
-          <button id="saveInvoiceButton">Guardar Cambios</button>
           <button id="deleteInvoiceButton" style="background: #f59696;">Eliminar Factura</button>
+          <button id="saveInvoiceButton">Guardar Cambios</button>
         </div>
         <!-- modal-content-down FIN -->
       </div>
@@ -666,8 +670,8 @@
 
         <!-- modal-content-down -->
         <div class="modal-content-down">
-          <button id="saveEmployeePaymentButton">Guardar Cambios</button>
           <button id="deleteEmployeePaymentButton" style="background: #f59696;">Eliminar Pago de Empleado</button>
+          <button id="saveEmployeePaymentButton">Guardar Cambios</button>
         </div>
         <!-- modal-content-down FIN -->
       </div>
@@ -689,6 +693,24 @@
       // Inicializar Firebase
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
+
+
+
+      // Al inicio de tu script, antes de las funciones
+      window.combinedTransactions = []; // Lista global de transacciones
+
+      // Reemplaza la llamada a loadTransactions() al final del script con:
+      document.addEventListener('DOMContentLoaded', () => {
+        setupRealTimeListeners();
+
+        // Configurar eventos de filtrado para que actualicen la UI
+        document.getElementById("filterButton").addEventListener("click", updateTransactionListUI);
+        document.getElementById("resetFilterButton").addEventListener("click", updateTransactionListUI);
+        document.getElementById("transactionTypeFilter").addEventListener("change", updateTransactionListUI);
+        document.getElementById("searchInput").addEventListener("input", searchTransactions);
+      });
+
+
 
       const addTransactionModal = document.getElementById("addTransactionModal");
       const closeModal = document.getElementById("closeModal");
@@ -721,198 +743,344 @@
 
 
 
-      // Cargar transacciones
-   // Cargar transacciones
-const loadTransactions = () => {
-    const combinedTransactions = [];
-    const startDate = document.getElementById("startDate").value ? new Date(document.getElementById("startDate").value) : null;
-    const endDate = document.getElementById("endDate").value ? new Date(document.getElementById("endDate").value) : null;
 
-    // Asegúrate de que la fecha de fin incluya todo el día
-    if (endDate) {
-        endDate.setHours(23, 59, 59, 999); // Establecer la hora al final del día
-        endDate.setDate(endDate.getDate() + 1); // Sumar un día a endDate para que el filtro de fecha funcione bien
-    }
+      // Mantenemos la función original loadTransactions para cargas iniciales
+      const loadTransactions = () => {
+        const combinedTransactions = [];
+        const startDate = document.getElementById("startDate").value ? new Date(document.getElementById("startDate").value) : null;
+        const endDate = document.getElementById("endDate").value ? new Date(document.getElementById("endDate").value) : null;
 
-    // Asegurarse de que la fecha de inicio incluya el inicio del día
-    if (startDate) {
-        startDate.setHours(0, 0, 0, 0); // Establecer la hora al inicio del día
-        startDate.setDate(startDate.getDate() + 1); // Sumar un día a startDate para que el filtro de fecha funcione bien
-    }
+        // Asegúrate de que la fecha de fin incluya todo el día
+        if (endDate) {
+          endDate.setHours(23, 59, 59, 999);
+          endDate.setDate(endDate.getDate() + 1);
+        }
 
-    let totalIncome = 0;
-    let totalExpenses = 0;
+        // Asegurarse de que la fecha de inicio incluya el inicio del día
+        if (startDate) {
+          startDate.setHours(0, 0, 0, 0);
+          startDate.setDate(startDate.getDate() + 1);
+        }
 
-    // Cargar transacciones de la colección "transacciones"
-    let transactionsQuery = db.collection("transacciones").orderBy("timestamp", "desc");
+        let totalIncome = 0;
+        let totalExpenses = 0;
 
-    // Filtrar transacciones según las fechas seleccionadas
-    if (startDate && endDate) {
-        transactionsQuery = transactionsQuery.where("timestamp", ">=", startDate).where("timestamp", "<=", endDate);
-    }
+        // Cargar transacciones de la colección "transacciones"
+        let transactionsQuery = db.collection("transacciones").orderBy("timestamp", "desc");
 
-    transactionsQuery.get()
-        .then((snapshot) => {
+        // Filtrar transacciones según las fechas seleccionadas
+        if (startDate && endDate) {
+          transactionsQuery = transactionsQuery.where("timestamp", ">=", startDate).where("timestamp", "<=", endDate);
+        }
+
+        transactionsQuery.get()
+          .then((snapshot) => {
             snapshot.forEach((doc) => {
-                const data = doc.data();
-                const transactionDate = data.timestamp ? data.timestamp.toDate() : null;
+              const data = doc.data();
+              const transactionDate = data.timestamp ? data.timestamp.toDate() : null;
 
-                combinedTransactions.push({
-                    id: data.id,
-                    type: data.type,
-                    amount: data.amount,
-                    date: transactionDate,
-                    details: data.details || "Sin detalles"
-                });
+              combinedTransactions.push({
+                id: data.id,
+                type: data.type,
+                amount: data.amount,
+                date: transactionDate,
+                details: data.details || "Sin detalles"
+              });
 
-                // Sumar a los totales
-                if (data.type === "income") {
-                    totalIncome += data.amount;
-                } else {
-                    totalExpenses += data.amount;
-                }
+              // Sumar a los totales
+              if (data.type === "income") {
+                totalIncome += data.amount;
+              } else {
+                totalExpenses += data.amount;
+              }
             });
 
             // Cargar pagos de empleados
             return db.collection("PagoEmpleado").orderBy("timestamp", "desc").get();
-        })
-        .then((snapshot) => {
+          })
+          .then((snapshot) => {
             snapshot.forEach((doc) => {
-                const data = doc.data();
-                const employeePaymentDate = data.timestamp ? data.timestamp.toDate() : null;
+              const data = doc.data();
+              const employeePaymentDate = data.timestamp ? data.timestamp.toDate() : null;
 
-                // Filtrar pagos de empleados según las fechas
-                if ((!startDate || employeePaymentDate >= startDate) &&
-                    (!endDate || employeePaymentDate <= endDate)) {
-                    combinedTransactions.push({
-                        id: data.id,
-                        type: "expense", // Asegúrate de que el tipo sea "expense"
-                        amount: data.total,
-                        date: employeePaymentDate,
-                        details: `Pago de empleado: ${data.employeeName}`
-                    });
-                    totalExpenses += data.total; // Sumar al total de gastos
-                }
+              // Filtrar pagos de empleados según las fechas
+              if ((!startDate || employeePaymentDate >= startDate) &&
+                (!endDate || employeePaymentDate <= endDate)) {
+                combinedTransactions.push({
+                  id: data.id,
+                  type: "expense",
+                  amount: data.total,
+                  date: employeePaymentDate,
+                  details: `Pago de empleado: ${data.employeeName}`
+                });
+                totalExpenses += data.total;
+              }
             });
 
             // Cargar facturas
             return db.collection("facturas").orderBy("timestamp", "desc").get();
-        })
-        .then((snapshot) => {
+          })
+          .then((snapshot) => {
             snapshot.forEach((doc) => {
-                const data = doc.data();
-                const invoiceDate = data.timestamp ? data.timestamp.toDate() : null;
+              const data = doc.data();
+              const invoiceDate = data.timestamp ? data.timestamp.toDate() : null;
 
-                // Filtrar facturas según las fechas
-                if ((!startDate || invoiceDate >= startDate) &&
-                    (!endDate || invoiceDate <= endDate)) {
-                    combinedTransactions.push({
-                        id: data.id,
-                        type: "income", // Para la visualización, se considera como ingreso
-                        amount: data.total,
-                        date: invoiceDate,
-                        details: `Factura | Cliente: ${data.clientName} | Número: ${data.clientPhone}`,
-                        clientName: data.clientName, // Asegúrate de incluir estos campos
-                        clientPhone: data.clientPhone,
-                        clientAddress: data.clientAddress,
-                        employeeName: data.employeeName,
-                        deliveryOption: data.deliveryOption // Asegúrate de que esto esté bien estructurado
-                    });
-                    totalIncome += data.total; // Sumar al total de ingresos
-                }
+              // Filtrar facturas según las fechas
+              if ((!startDate || invoiceDate >= startDate) &&
+                (!endDate || invoiceDate <= endDate)) {
+                combinedTransactions.push({
+                  id: data.id,
+                  type: "income",
+                  amount: data.total,
+                  date: invoiceDate,
+                  details: `Factura | Cliente: ${data.clientName} | Núm.: ${data.clientPhone} | ${data.NombreEmpleado}`,
+                  clientName: data.clientName,
+                  clientPhone: data.clientPhone,
+                  clientAddress: data.clientAddress,
+                  NombreEmpleado: data.NombreEmpleado,
+                  deliveryOption: data.deliveryOption
+                });
+                totalIncome += data.total;
+              }
             });
 
             // Ordenar las transacciones combinadas por fecha
             combinedTransactions.sort((a, b) => b.date - a.date);
 
-            // Limpiar la lista antes de cargar
-            const combinedTransactionList = document.getElementById("combinedTransactionList");
-            combinedTransactionList.innerHTML = "";
+            // Actualizar la lista global de transacciones
+            window.combinedTransactions = combinedTransactions;
 
-            // Mostrar transacciones combinadas
-            combinedTransactions.forEach(item => {
-                const transactionItem = document.createElement("tr");
-                transactionItem.innerHTML = `
-                    <td><input type="checkbox" class="transaction-checkbox" checked></td>
-                    <td>${item.id}</td>
-                    <td>${item.type === "income" ? "Ingreso" : "Gasto"}</td>
-                    <td>${item.details || "Sin detalles"}</td>
-                    <td>RD$${item.amount.toFixed(2)}</td>
-                    <td>${item.date ? item.date.toLocaleDateString() : "Fecha no válida"}</td>
-                `;
-
-                // Evento para cambiar el fondo de la fila según el estado del checkbox
-                const checkbox = transactionItem.querySelector(".transaction-checkbox");
-                checkbox.addEventListener("change", () => {
-                    if (checkbox.checked) {
-                        transactionItem.style.backgroundColor = ""; // Color original
-                    } else {
-                        transactionItem.style.backgroundColor = "lightgray"; // Color gris
-                    }
-                    countVisibleTransactionsAndUpdateSummary(); // Actualizar resumen
-                });
-
-                // Evento para abrir el modal de edición solo si se hace clic en la fila, no en el checkbox
-                transactionItem.addEventListener("click", (event) => {
-                    if (event.target !== checkbox) { // Verifica que el clic no sea en el checkbox
-                        if (item.type === "income" && item.details.includes("Factura")) { // Asegúrate de que el tipo sea "income" y que sea una factura
-                            openEditInvoiceModal(item); // Abrir modal de edición de factura
-                        } else if (item.type === "expense" && item.details.includes("Pago de empleado")) {
-                            loadEmployeePaymentData(item.id); // Cargar datos del pago de empleado
-                        } else {
-                            openEditTransactionModal(item); // Abrir modal de edición de transacción
-                        }
-                    }
-                });
-
-                combinedTransactionList.appendChild(transactionItem);
-            });
+            // Renderizar la lista
+            renderTransactionList();
 
             // Actualizar resumen
             updateSummary(totalIncome, totalExpenses);
-            // Contar las transacciones visibles
-            countVisibleTransactions(); // Llama a la función para contar las transacciones visibles
-        })
-        .catch((error) => {
+            countVisibleTransactions();
+          })
+          .catch((error) => {
             console.error("Error al cargar transacciones:", error);
-        });
-};
+          });
+      };
 
-      // Actualizar el resumen
-      // Función para actualizar el resumen
+      // Nueva función para renderizar la lista de transacciones
+      const renderTransactionList = () => {
+        const combinedTransactionList = document.getElementById("combinedTransactionList");
+        combinedTransactionList.innerHTML = "";
+
+        // Aplicar filtros
+        const startDate = document.getElementById("startDate").value ? new Date(document.getElementById("startDate").value) : null;
+        const endDate = document.getElementById("endDate").value ? new Date(document.getElementById("endDate").value) : null;
+        const typeFilter = document.getElementById("transactionTypeFilter").value;
+
+        if (endDate) endDate.setHours(23, 59, 59, 999);
+        if (startDate) startDate.setHours(0, 0, 0, 0);
+
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        window.combinedTransactions.forEach(item => {
+          if ((!startDate || item.date >= startDate) &&
+            (!endDate || item.date <= endDate) &&
+            (typeFilter === "all" || item.type === typeFilter)) {
+
+            const transactionItem = document.createElement("tr");
+            transactionItem.innerHTML = `
+        <td><input type="checkbox" class="transaction-checkbox" checked></td>
+        <td>${item.id}</td>
+        <td>${item.type === "income" ? "Ingreso" : "Gasto"}</td>
+        <td>${item.details || "Sin detalles"}</td>
+        <td>RD$${item.amount.toFixed(2)}</td>
+        <td>${item.date ? `${item.date.toLocaleDateString()} ${formatTime(item.date)}` : "Fecha no válida"}</td>
+      `;
+
+            const checkbox = transactionItem.querySelector(".transaction-checkbox");
+            checkbox.addEventListener("change", () => {
+              transactionItem.style.backgroundColor = checkbox.checked ? "" : "lightgray";
+              countVisibleTransactionsAndUpdateSummary();
+            });
+
+            transactionItem.addEventListener("click", (event) => {
+              if (event.target !== checkbox) {
+                if (item.type === "income" && item.details.includes("Factura")) {
+                  openEditInvoiceModal(item);
+                } else if (item.type === "expense" && item.details.includes("Pago de empleado")) {
+                  loadEmployeePaymentData(item.id);
+                } else {
+                  openEditTransactionModal(item);
+                }
+              }
+            });
+
+            combinedTransactionList.appendChild(transactionItem);
+
+            if (item.type === "income") {
+              totalIncome += item.amount;
+            } else {
+              totalExpenses += item.amount;
+            }
+          }
+        });
+
+        updateSummary(totalIncome, totalExpenses);
+        countVisibleTransactions();
+      };
+
+      // Función para formatear la hora (la mantenemos igual)
+      function formatTime(date) {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+        return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+      }
+
+      // Configuramos los listeners en tiempo real
+      const setupRealTimeListeners = () => {
+        // Limpiar listeners anteriores si existen
+        if (window.transactionsListener) window.transactionsListener();
+        if (window.employeePaymentsListener) window.employeePaymentsListener();
+        if (window.invoicesListener) window.invoicesListener();
+
+        // Inicializar la lista global si no existe
+        window.combinedTransactions = window.combinedTransactions || [];
+
+        // Listener para transacciones normales
+        window.transactionsListener = db.collection("transacciones")
+          .orderBy("timestamp", "desc")
+          .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+              const data = change.doc.data();
+              const transaction = {
+                id: data.id,
+                type: data.type,
+                amount: data.amount,
+                date: data.timestamp.toDate(),
+                details: data.details || "Sin detalles"
+              };
+
+              if (change.type === "added" || change.type === "modified") {
+                const index = window.combinedTransactions.findIndex(t => t.id === transaction.id);
+                if (index >= 0) {
+                  window.combinedTransactions[index] = transaction;
+                } else {
+                  window.combinedTransactions.push(transaction);
+                }
+              } else if (change.type === "removed") {
+                window.combinedTransactions = window.combinedTransactions.filter(t => t.id !== transaction.id);
+              }
+            });
+
+            window.combinedTransactions.sort((a, b) => b.date - a.date);
+            renderTransactionList();
+          });
+
+        // Listener para pagos de empleados
+        window.employeePaymentsListener = db.collection("PagoEmpleado")
+          .orderBy("timestamp", "desc")
+          .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+              const data = change.doc.data();
+              const transaction = {
+                id: data.id,
+                type: "expense",
+                amount: data.total,
+                date: data.timestamp.toDate(),
+                details: `Pago de empleado: ${data.employeeName}`
+              };
+
+              if (change.type === "added" || change.type === "modified") {
+                const index = window.combinedTransactions.findIndex(t => t.id === transaction.id);
+                if (index >= 0) {
+                  window.combinedTransactions[index] = transaction;
+                } else {
+                  window.combinedTransactions.push(transaction);
+                }
+              } else if (change.type === "removed") {
+                window.combinedTransactions = window.combinedTransactions.filter(t => t.id !== transaction.id);
+              }
+            });
+
+            window.combinedTransactions.sort((a, b) => b.date - a.date);
+            renderTransactionList();
+          });
+
+        // Listener para facturas
+        window.invoicesListener = db.collection("facturas")
+          .orderBy("timestamp", "desc")
+          .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+              const data = change.doc.data();
+              const transaction = {
+                id: data.id,
+                type: "income",
+                amount: data.total,
+                date: data.timestamp.toDate(),
+                details: `Factura | Cliente: ${data.clientName} | Núm.: ${data.clientPhone} | ${data.NombreEmpleado}`,
+                clientName: data.clientName,
+                clientPhone: data.clientPhone,
+                clientAddress: data.clientAddress,
+                NombreEmpleado: data.NombreEmpleado,
+                deliveryOption: data.deliveryOption
+              };
+
+              if (change.type === "added" || change.type === "modified") {
+                const index = window.combinedTransactions.findIndex(t => t.id === transaction.id);
+                if (index >= 0) {
+                  window.combinedTransactions[index] = transaction;
+                } else {
+                  window.combinedTransactions.push(transaction);
+                }
+              } else if (change.type === "removed") {
+                window.combinedTransactions = window.combinedTransactions.filter(t => t.id !== transaction.id);
+              }
+            });
+
+            window.combinedTransactions.sort((a, b) => b.date - a.date);
+            renderTransactionList();
+          });
+      };
+
+      // Mantenemos la función updateSummary sin cambios
       const updateSummary = (totalIncome, totalExpenses) => {
         totalIncomeElement.textContent = totalIncome.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
         totalExpensesElement.textContent = totalExpenses.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
         balanceElement.textContent = (totalIncome - totalExpenses).toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
       };
 
+      // Al cargar la página, configuramos los listeners y cargamos los datos iniciales
+      document.addEventListener('DOMContentLoaded', () => {
+        // Primero cargamos los datos iniciales
+        loadTransactions();
+
+        // Luego configuramos los listeners para cambios en tiempo real
+        setupRealTimeListeners();
+
+        // Configuramos los eventos de los filtros para que llamen a renderTransactionList
+        document.getElementById("filterButton").addEventListener("click", renderTransactionList);
+        document.getElementById("resetFilterButton").addEventListener("click", renderTransactionList);
+        document.getElementById("transactionTypeFilter").addEventListener("change", renderTransactionList);
+        document.getElementById("searchInput").addEventListener("input", searchTransactions);
+      });
 
 
-      // Función para obtener el siguiente ID único para PagoEmpleado
-      const getNextEmployeePaymentId = async () => {
-        const prefix = "pe"; // Prefijo para el ID
-        const paymentsSnapshot = await db.collection("PagoEmpleado")
-          .orderBy("id", "desc") // Ordenar por ID de forma descendente
-          .limit(1) // Limitar a 1 resultado (el último)
-          .get();
 
-        let lastId = `${prefix}0000`; // Valor por defecto si no hay pagos
+      // Función para generar un ID basado en el timestamp actual
+      const generateTimestampId = (prefix) => {
+        const now = new Date();
 
-        if (!paymentsSnapshot.empty) {
-          const lastPayment = paymentsSnapshot.docs[0].data();
-          lastId = lastPayment.id; // Obtener el último ID
-        }
+        // Obtener componentes de fecha y hora
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = String(now.getFullYear()).slice(-2);
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
 
-        // Extraer el número del ID y convertirlo a un número
-        const lastIdNumber = parseInt(lastId.substring(2)); // Obtener el número del ID (sin "pe")
-        const newIdNumber = lastIdNumber + 1; // Incrementar el número
-        const newId = `${prefix}${String(newIdNumber).padStart(4, '0')}`; // Formatear el nuevo ID
-
-        return newId;
+        // Formato: prefijo + ddmmyy-hhmmss
+        return `${prefix}${day}${month}${year}-${hours}${minutes}${seconds}`;
       };
 
-
-      // Función para agregar una transacción (modificada para incluir el ID único en PagoEmpleado)
+      // Modificar la función addTransaction para usar generateTimestampId
       const addTransaction = async () => {
         const type = document.getElementById("transactionType").value;
         const dateInput = document.getElementById("transactionDate").value;
@@ -949,16 +1117,16 @@ const loadTransactions = () => {
           // Crear el objeto Date para el pago de empleado
           const [year, month, day] = employeePaymentDate.split('-');
           const [hours, minutes] = employeePaymentTime.split(':');
-          const paymentDate = new Date(year, month - 1, day, hours, minutes); // Sin UTC
+          const paymentDate = new Date(year, month - 1, day, hours, minutes);
 
-          // Obtener el siguiente ID único
-          const newId = await getNextEmployeePaymentId();
+          // Generar ID único basado en timestamp con prefijo 'pe'
+          const newId = generateTimestampId('pe');
 
-          // Agregar el pago de empleado con el campo ID único
+          // Agregar el pago de empleado con el nuevo ID
           db.collection("PagoEmpleado").add({
-            id: newId, // Guardar el ID único
+            id: newId,
             type: "expense",
-            timestamp: paymentDate, // Guardar la fecha sin ajustes
+            timestamp: paymentDate,
             employeeName,
             salaryPayment,
             holidayPayment,
@@ -973,6 +1141,7 @@ const loadTransactions = () => {
             total
           }).then(() => {
             alert("Pago de empleado agregado correctamente.");
+            resetForm(); // Llamar a la función para reiniciar el formulario
             closeModal.click();
             loadTransactions();
           }).catch((error) => {
@@ -988,23 +1157,28 @@ const loadTransactions = () => {
           if (!isNaN(amount) && dateInput && timeInput && details) {
             const [year, month, day] = dateInput.split('-');
             const [hours, minutes] = timeInput.split(':');
-            const timestamp = new Date(year, month - 1, day, hours, minutes); // Crear objeto Date
+            const timestamp = new Date(year, month - 1, day, hours, minutes);
 
-            getNextTransactionId(type).then(newId => {
-              db.collection("transacciones").add({
-                id: newId,
-                type,
-                amount,
-                timestamp, // Cambiar 'date' a 'timestamp'
-                details
-              }).then(() => {
-                alert("Transacción agregada correctamente.");
-                closeModal.click();
-                loadTransactions();
-              }).catch((error) => {
-                console.error("Error al agregar la transacción: ", error);
-                alert("Hubo un problema al agregar la transacción.");
-              });
+            // Determinar el prefijo según el tipo de transacción
+            const prefix = type === "expense" ? "tg" : "ti";
+
+            // Generar ID único basado en timestamp
+            const newId = generateTimestampId(prefix);
+
+            db.collection("transacciones").add({
+              id: newId,
+              type,
+              amount,
+              timestamp,
+              details
+            }).then(() => {
+              alert("Transacción agregada correctamente.");
+              resetForm(); // Llamar a la función para reiniciar el formulario
+              closeModal.click();
+              loadTransactions
+            }).catch((error) => {
+              console.error("Error al agregar la transacción: ", error);
+              alert("Hubo un problema al agregar la transacción.");
             });
           } else {
             alert("Por favor, completa todos los campos correctamente.");
@@ -1012,31 +1186,29 @@ const loadTransactions = () => {
         }
       };
 
-      const getNextTransactionId = async (type) => {
-        const prefix = type === "expense" ? "tg" : "ti"; // Determinar el prefijo según el tipo
-        const transactionsSnapshot = await db.collection("transacciones")
-          .where("id", ">=", prefix) // Filtrar por el prefijo
-          .orderBy("id", "asc") // Ordenar de forma ascendente para obtener el último ID
-          .get();
-
-        let lastId = `${prefix}0000`; // Valor por defecto si no hay transacciones
-
-        // Filtrar solo los IDs que comienzan con el prefijo correspondiente
-        const filteredIds = transactionsSnapshot.docs
-          .map(doc => doc.data().id)
-          .filter(id => id.startsWith(prefix));
-
-        if (filteredIds.length > 0) {
-          lastId = filteredIds[filteredIds.length - 1]; // Obtener el último ID del tipo correspondiente
-        }
-
-        // Extraer el número del ID y convertirlo a un número
-        const lastIdNumber = parseInt(lastId.substring(2)); // Obtener el número del ID (sin "tg" o "ti")
-        const newIdNumber = lastIdNumber + 1; // Incrementar el número
-        const newId = `${prefix}${String(newIdNumber).padStart(4, '0')}`; // Formatear el nuevo ID
-
-        return newId;
+      // Función para reiniciar el formulario
+      const resetForm = () => {
+        document.getElementById("transactionType").value = "expense"; // Restablecer tipo a gasto
+        document.getElementById("transactionDate").value = ""; // Limpiar fecha
+        document.getElementById("transactionTime").value = ""; // Limpiar hora
+        document.getElementById("transactionAmount").value = ""; // Limpiar monto
+        document.getElementById("transactionDetails").value = ""; // Limpiar detalles
+        document.getElementById("employeeName").value = ""; // Limpiar nombre de empleado
+        document.getElementById("salaryPayment").value = ""; // Limpiar pago de sueldo
+        document.getElementById("holidayPayment").value = ""; // Limpiar pago de día feriado
+        document.getElementById("overtimePayment").value = ""; // Limpiar pago hora extra
+        document.getElementById("vacationPayment").value = ""; // Limpiar pago de vacaciones
+        document.getElementById("christmasPayment").value = ""; // Limpiar pago de navidad
+        document.getElementById("productSale").value = ""; // Limpiar venta de producto
+        document.getElementById("productionIncentive").value = ""; // Limpiar producción
+        document.getElementById("punctualityIncentive").value = ""; // Limpiar puntualidad
+        document.getElementById("licenseDay").value = ""; // Limpiar día de licencia
+        document.getElementById("insurance").value = ""; // Limpiar seguro
+        document.getElementById("employeePaymentDate").value = ""; // Limpiar fecha de pago
+        document.getElementById("employeePaymentTime").value = ""; // Limpiar hora de pago
+        document.getElementById("totalAmount").value = ""; // Limpiar total
       };
+
 
 
 
@@ -1101,23 +1273,23 @@ const loadTransactions = () => {
 
       // Función para abrir el modal de edición de facturas
       const openEditInvoiceModal = (invoice) => {
-    document.getElementById("editInvoiceId").value = invoice.id; // Asegúrate de que 'id' esté presente
-    document.getElementById("editClientName").value = invoice.clientName || ''; // Usa un valor por defecto si es undefined
-    document.getElementById("editClientPhone").value = invoice.clientPhone || '';
-    document.getElementById("editClientAddress").value = invoice.clientAddress || '';
-    document.getElementById("editEmployeeName").value = invoice.employeeName || '';
+        document.getElementById("editInvoiceId").value = invoice.id; // Asegúrate de que 'id' esté presente
+        document.getElementById("editClientName").value = invoice.clientName || ''; // Usa un valor por defecto si es undefined
+        document.getElementById("editClientPhone").value = invoice.clientPhone || '';
+        document.getElementById("editClientAddress").value = invoice.clientAddress || '';
+        document.getElementById("editEmployeeName").value = invoice.NombreEmpleado || '';
 
-    // Asegúrate de que deliveryOption esté correctamente estructurado
-    if (invoice.deliveryOption && invoice.deliveryOption.length > 0) {
-        document.getElementById("editDeliveryName").value = invoice.deliveryOption[0].name || '';
-        document.getElementById("editDeliveryPrice").value = invoice.deliveryOption[0].price || '';
-    } else {
-        document.getElementById("editDeliveryName").value = '';
-        document.getElementById("editDeliveryPrice").value = '';
-    }
+        // Asegúrate de que deliveryOption esté correctamente estructurado
+        if (invoice.deliveryOption && invoice.deliveryOption.length > 0) {
+          document.getElementById("editDeliveryName").value = invoice.deliveryOption[0].name || '';
+          document.getElementById("editDeliveryPrice").value = invoice.deliveryOption[0].price || '';
+        } else {
+          document.getElementById("editDeliveryName").value = '';
+          document.getElementById("editDeliveryPrice").value = '';
+        }
 
-    editInvoiceModal.style.display = "block"; // Mostrar el modal
-};
+        editInvoiceModal.style.display = "block"; // Mostrar el modal
+      };
 
       document.getElementById("closeInvoiceModal").addEventListener("click", () => {
         editInvoiceModal.style.display = "none";
@@ -1131,7 +1303,7 @@ const loadTransactions = () => {
         const clientAddress = document.getElementById("editClientAddress").value;
         const employeeName = document.getElementById("editEmployeeName").value;
         const deliveryName = document.getElementById("editDeliveryName").value;
-        const deliveryPrice = parseFloat(document.getElementById("editDeliveryPrice").value);
+        const deliveryPrice = document.getElementById("editDeliveryPrice").value; // Se mantiene como cadena
 
         // Actualizar la factura en Firestore
         db.collection("facturas").where("id", "==", id).get()
@@ -1142,8 +1314,8 @@ const loadTransactions = () => {
                 clientName,
                 clientPhone,
                 clientAddress,
-                employeeName,
-                deliveryOption: [{ name: deliveryName, price: deliveryPrice }]
+                NombreEmpleado: employeeName,
+                deliveryOption: [{ name: deliveryName, price: deliveryPrice }] // Se envía como cadena
               });
             } else {
               throw new Error("No se encontró la factura con el ID proporcionado.");
@@ -1644,4 +1816,4 @@ const loadTransactions = () => {
 
 </html>
 
-<!-- 5  -->
+<!-- 10  -->
