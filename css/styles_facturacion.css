@@ -323,8 +323,28 @@ button {
     align-items: center;
     justify-content: center;
     height: 100%;
-    padding: 0px 150px;
+    padding: 0px 140px;
 }
+
+#limpiarFactura2,
+#añadirFactura2 {
+    display: none;
+}
+
+#limpiarFactura1 {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    border-radius: 12px 5px 5px 5px;
+}
+
+#añadirFactura1 {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    border-radius: 5px 12px 5px 5px;
+}
+
 
 .panelfacturacion_down {
     width: 100%;
@@ -1089,6 +1109,34 @@ input[type="text"] {
 
     .panelfacturacion_tittle h2 {
         font-size: 18px;
+    }
+
+}
+
+@media screen and (max-width: 780px) {
+
+    #limpiarFactura1,
+    #añadirFactura1 {
+        display: none;
+    }
+
+    #limpiarFactura2,
+    #añadirFactura2 {
+        display: inline-flex;
+    }
+
+    #limpiarFactura2 {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        border-radius: 12px 5px 5px 5px;
+    }
+
+    #añadirFactura2 {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        border-radius: 5px 12px 5px 5px;
     }
 
 }
