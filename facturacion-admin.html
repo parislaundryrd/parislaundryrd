@@ -78,7 +78,9 @@
       <!-- Panel Facturacion -->
       <div class="container_formfactura">
         <div class="panelfacturacion_tittle">
-          <h2>Panel de Facturación</h2>
+          <h2>Panel de Facturación</h2> 
+          <a href="javascript:void(0)" onclick="confirmarLimpiarFactura()" style="position: absolute; top: 0px; left: 0px;    border-radius: 12px 5px 5px 5px;"><img src="./img/icon/refrescar1.png">Limpiar Factura</a>
+          <a href="javascript:void(0)" onclick="window.open(window.location.href, '_blank');" style="position: absolute; top: 0px; right: 0px;    border-radius: 5px 12px 5px 5px;"><img src="./img/icon/mas2.png">Nueva Factura</a>
         </div>
 
         <div class="panelfacturacion_body">
@@ -212,7 +214,7 @@
 
             <div class="Cube_button_pagado">
               <!-- <button id="printInvoice">Imprimir Factura</button> -->
-              <button id="pendingPayment" class="disabled"><img src="./img/icon/atencion1.png">Pago Pendiente</button>
+              <button id="pendingPayment"><img src="./img/icon/atencion1.png">Pago Pendiente</button>
               <button id="paid" class="disabled"><img src="./img/icon/check1.png">Pago Recibido</button>
             </div>
           </div>
@@ -293,7 +295,12 @@
     let otrosServicios = [];
 
 
-    
+    function confirmarLimpiarFactura() {
+    if (confirm("¿Seguro que deseas limpiar esta factura?")) {
+        location.reload(); // Refresca la página
+    }
+}
+
     // Cargar servicios, productos y empleados
     const loadServices = () => {
       db.collection("servicio").onSnapshot((snapshot) => {
@@ -928,19 +935,22 @@ ${asumirPor !== "desactivado" ? `
       document.getElementById("changeAmount").textContent = `RD$${changeAmount}`;
     });
 
-    document.getElementById("pendingPayment").addEventListener("click", async () => {
-      await processInvoice("pago pendiente");
-    });
+    document.getElementById("pendingPayment").addEventListener("click", () => {
+    const confirmation = confirm("¿Seguro que quieres asignar esta factura como pago pendiente?");
+    if (confirmation) {
+        processInvoice("pago pendiente");
+    }
+});
 
     document.getElementById("paid").addEventListener("click", async () => {
       await processInvoice("pagado");
     });
 
 
-
-    
     const processInvoice = async (status) => {
-  const paymentMethod = document.querySelector(".payment-button.active").value;
+  // Si el estado es "pago pendiente", no se necesita un método de pago
+  let paymentMethod = status === "pago pendiente" ? "Pago Pendiente" : document.querySelector(".payment-button.active").value;
+  
   const deliveryOption = deliverySelection.querySelector("button.active");
   const deliveryPrice = deliveryOption ? deliveryOption.dataset.value : "0";
 
@@ -959,14 +969,13 @@ ${asumirPor !== "desactivado" ? `
     subtotal += count * item.price; // Sumar al subtotal
   });
 
-    // Calcular el total de productos adicionales
-    const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+  // Calcular el total de productos adicionales
+  const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
   selectedProducts.forEach(product => {
     const quantity = parseInt(product.value) || 0;
     const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
     subtotal += quantity * productPrice; // Sumar al subtotal
   });
-
 
   // Obtener el precio del delivery
   const selectedDelivery = deliverySelection.querySelector("button.active");
@@ -1034,47 +1043,47 @@ ${asumirPor !== "desactivado" ? `
 
     // Actualizar inventario de productos adicionales basado en el array "consumo" de los hampers
     for (const hamper of hampers) {
-      for (const item of hamper.consumo) {
-        const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-        if (!productDoc.empty) {
-          const productRef = productDoc.docs[0].ref;
-          const productData = productDoc.docs[0].data();
-          const newQuantity = productData.cantidad - item.cantidad;
-          await productRef.update({ cantidad: newQuantity });
+        for (const item of hamper.consumo) {
+            const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+            if (!productDoc.empty) {
+                const productRef = productDoc.docs[0].ref;
+                const productData = productDoc.docs[0].data();
+                const newQuantity = productData.cantidad - item.cantidad;
+                await productRef.update({ cantidad: newQuantity });
+            }
         }
-      }
     }
 
     // Actualizar inventario de productos adicionales basado en el array "consumo" de los "otroservicio"
     for (const servicio of otrosServicios) {
-      const cantidadServicio = parseInt(servicio.input.value) || 0;
-      if (cantidadServicio > 0) {
-        for (const item of servicio.consumo) {
-          const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-          if (!productDoc.empty) {
-            const productRef = productDoc.docs[0].ref;
-            const productData = productDoc.docs[0].data();
-            const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
-            await productRef.update({ cantidad: newQuantity });
-          }
+        const cantidadServicio = parseInt(servicio.input.value) || 0;
+        if (cantidadServicio > 0) {
+            for (const item of servicio.consumo) {
+                const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+                if (!productDoc.empty) {
+                    const productRef = productDoc.docs[0].ref;
+                    const productData = productDoc.docs[0].data();
+                    const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
+                    await productRef.update({ cantidad: newQuantity });
+                }
+            }
         }
-      }
     }
 
     // Actualizar inventario de productos seleccionados manualmente
     const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
     for (const product of selectedProducts) {
-      const quantity = parseInt(product.value) || 0;
-      if (quantity > 0) {
-        const productName = product.closest('.product-item').querySelector('div').textContent;
-        const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
-        if (!productDoc.empty) {
-          const productRef = productDoc.docs[0].ref;
-          const productData = productDoc.docs[0].data();
-          const newQuantity = productData.cantidad - quantity;
-          await productRef.update({ cantidad: newQuantity });
+        const quantity = parseInt(product.value) || 0;
+        if (quantity > 0) {
+            const productName = product.closest('.product-item').querySelector('div').textContent;
+            const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
+            if (!productDoc.empty) {
+                const productRef = productDoc.docs[0].ref;
+                const productData = productDoc.docs[0].data();
+                const newQuantity = productData.cantidad - quantity;
+                await productRef.update({ cantidad: newQuantity });
+            }
         }
-      }
     }
 
     // Deshabilitar los botones de pago después de procesar la factura
@@ -1083,6 +1092,15 @@ ${asumirPor !== "desactivado" ? `
     // Ocultar las opciones de pago en Efectivo
     document.getElementById("cashPaymentOptions").classList.add("hidden");
 
+    // Mostrar el modal de factura exitosa
+    showProcessedInvoiceModal(
+        document.getElementById("modalInvoiceDetails").innerHTML,
+        paymentMethod,
+        amountReceived,
+        changeAmount,
+        status
+    );
+
     clearSelections();
     document.getElementById("billingForm").reset();
     document.getElementById("amountReceived").value = "";
@@ -1090,14 +1108,13 @@ ${asumirPor !== "desactivado" ? `
     document.getElementById("empleado").selectedIndex = 0;
     updateInvoicePreview();
 
-  } catch (error) {
+} catch (error) {
     console.error("Error al guardar la factura: ", error);
     alert("Hubo un problema al procesar la factura. Inténtalo de nuevo.");
-  }
+}
 
-  document.getElementById("confirmationModal").classList.add("hidden");
+document.getElementById("confirmationModal").classList.add("hidden");
 };
-
 
 
     
@@ -1413,4 +1430,4 @@ ${asumirPor !== "desactivado" ? `
 
 </html>
 
-<!-- 9 -->
+<!-- 12 -->
