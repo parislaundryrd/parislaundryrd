@@ -36,7 +36,7 @@
           <button id="viewHistoryButton"><img src="./img/icon/historial1.png">Historial de Inventario</button>
         </div>
 
-        <div id="totalValue" style="margin-top: 20px; font-size: 20px; font-weight: bold;">
+        <div id="totalValue">
           Total Valor Neto: RD$<span id="totalAmount">0.00</span>
         </div>
 
@@ -216,7 +216,7 @@ const loadProducts = () => {
                 <div id="lista-valorNeto" style="flex-direction: column;min-width: 80px;padding: 0px 20px;">Valor Neto:<br><strong>RD$${valorTotalNeto.toFixed(2)}</strong></div> <!-- Nueva columna -->
         <div style="flex-direction: column;">Precio:<br><strong>RD$${data.precio.toFixed(2)}</strong></div>
         <div style="flex-direction: column;">Stock:<br><strong style="color: ${data.cantidad < 20 ? 'red' : 'black'};">${data.cantidad}</strong></div>
-        <div><button onclick="openEditModal('${doc.id}', '${data.id}', '${data.nombre}', '${data.detalles}', ${data.precio}, ${data.cantidad})">Editar</button></div>
+        <div id="lista-editar"><button onclick="openEditModal('${doc.id}', '${data.id}', '${data.nombre}', '${data.detalles}', ${data.precio}, ${data.cantidad})">Editar</button></div>
         <div><button id="btnEliminarProduct" onclick="deleteProduct('${doc.id}')">X</button></div>
       `;
       productList.appendChild(productItem);
@@ -466,14 +466,12 @@ const loadHistory = () => {
     .orderBy("date", "desc")
     .limit(transactionsPerLoad);
 
-  // Si hay un último documento visible, usarlo para cargar más
   if (lastVisible) {
     query = query.startAfter(lastVisible);
   }
 
   query.get().then((snapshot) => {
     if (snapshot.empty) {
-      // Si no hay más documentos, mostrar mensaje
       document.getElementById("loadMoreButton").style.display = "none";
       document.getElementById("noMoreRecords").style.display = "block";
       return;
@@ -503,7 +501,17 @@ const loadHistory = () => {
           historyItem.style.boxShadow = "none"; // Sin sombra por defecto
       }
 
-      let changesDescription = `<strong>ID:</strong> ${data.id}<br><strong>Acción:</strong> ${data.action}<br><strong>Fecha:</strong> ${data.date.toDate().toLocaleString()}`;
+      // Formatear la fecha en formato de 12 horas
+      const formattedDate = data.date.toDate().toLocaleString("es-DO", {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true // Esto asegura que se use el formato de 12 horas
+      });
+
+      let changesDescription = `<strong>ID:</strong> ${data.id}<br><strong>Acción:</strong> ${data.action}<br><strong>Fecha:</strong> ${formattedDate}`;
 
       // Mostrar información completa si la acción es "entrada" o "eliminación"
       if (data.action === "entrada" || data.action === "eliminación") {
