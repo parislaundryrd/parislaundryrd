@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="./css/styles_menu.css">
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
-  <script src="./js/menu.js" defer></script>
+  <script src="./js/menu - empleados.js" defer></script>
 </head>
 
 
@@ -855,34 +855,40 @@ ${asumirPor !== "desactivado" ? `
 
 
     document.getElementById("processInvoice").addEventListener("click", () => {
-      const clientName = document.getElementById("clientName").value.trim();
-      const clientPhone = document.getElementById("clientPhone").value.replace(/-/g, ''); // Eliminar guiones
-      const empleadoSelect = document.getElementById("empleado");
+  const clientName = document.getElementById("clientName").value.trim();
+  const clientPhone = document.getElementById("clientPhone").value.replace(/-/g, ''); // Eliminar guiones
+  const empleadoSelect = document.getElementById("empleado");
 
-      // Validación del número de teléfono
-      if (clientPhone.length < 10) {
-        alert("El número de teléfono debe tener al menos 10 caracteres.");
-        return;
-      }
+  // Validación del número de teléfono
+  if (clientPhone.length < 10) {
+    alert("El número de teléfono debe tener al menos 10 caracteres.");
+    return;
+  }
 
-      if (!empleadoSelect.value) {
-        alert("Por favor, selecciona un empleado.");
-        return;
-      }
+  if (!empleadoSelect.value) {
+    alert("Por favor, selecciona un empleado.");
+    return;
+  }
 
-      if (!clientName || !clientPhone) {
-        alert("Por favor, completa el nombre y Teléfono del cliente.");
-        return;
-      }
+  if (!clientName || !clientPhone) {
+    alert("Por favor, completa el nombre del cliente.");
+    return;
+  }
 
-      const invoiceDetails = document.getElementById("invoiceDetails").innerHTML;
-      document.getElementById("modalInvoiceDetails").innerHTML = invoiceDetails;
+  // Validación del nombre del cliente
+  if (!clientName.includes(" ") || clientName.split(" ")[1].length < 1) {
+    alert("Debes colocar el apellido del cliente");
+    return;
+  }
 
-      const total = calculateTotal();
-      document.getElementById("totalToPay").textContent = `RD$${total.toFixed(2)}`;
+  const invoiceDetails = document.getElementById("invoiceDetails").innerHTML;
+  document.getElementById("modalInvoiceDetails").innerHTML = invoiceDetails;
 
-      document.getElementById("confirmationModal").classList.remove("hidden");
-    });
+  const total = calculateTotal();
+  document.getElementById("totalToPay").textContent = `RD$${total.toFixed(2)}`;
+
+  document.getElementById("confirmationModal").classList.remove("hidden");
+});
 
     document.querySelector(".close-button").addEventListener("click", () => {
       document.getElementById("confirmationModal").classList.add("hidden");
@@ -928,23 +934,63 @@ ${asumirPor !== "desactivado" ? `
       });
     });
 
-    document.getElementById("amountReceived").addEventListener("input", () => {
-      const total = calculateTotal();
-      const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
-      const changeAmount = amountReceived - total;
-      document.getElementById("changeAmount").textContent = `RD$${changeAmount}`;
-    });
 
-    document.getElementById("pendingPayment").addEventListener("click", () => {
-    const confirmation = confirm("¿Seguro que quieres asignar esta factura como pago pendiente?");
-    if (confirmation) {
-        processInvoice("pago pendiente");
-    }
+
+
+// Función para validar el botón "Pago Recibido"
+function validatePaidButton() {
+  const paymentMethod = document.querySelector(".payment-button.active")?.value;
+  const total = calculateTotal();
+  const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+  const paidButton = document.getElementById("paid");
+  
+  paidButton.classList.toggle("disabled", paymentMethod === "Efectivo" && amountReceived < total);
+}
+
+// Eventos de entrada de monto y métodos de pago
+document.getElementById("amountReceived").addEventListener("input", () => {
+  const total = calculateTotal();
+  const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+  document.getElementById("changeAmount").textContent = `RD$${(amountReceived - total).toFixed(2)}`;
+  validatePaidButton();
 });
 
-    document.getElementById("paid").addEventListener("click", async () => {
+document.querySelectorAll(".payment-button").forEach(button => {
+  button.addEventListener("click", (e) => {
+    document.querySelectorAll(".payment-button").forEach(btn => btn.classList.remove("active"));
+    e.target.classList.add("active");
+    document.getElementById("cashPaymentOptions").classList.toggle("hidden", e.target.value !== "Efectivo");
+    validatePaidButton();
+  });
+});
+
+// Eventos de los botones de pago
+document.getElementById("pendingPayment").addEventListener("click", () => {
+  if (confirm("¿Seguro que quieres asignar esta factura como pago pendiente?")) {
+    processInvoice("pago pendiente");
+  }
+});
+
+document.getElementById("paid").addEventListener("click", async () => {
+  const paymentMethod = document.querySelector(".payment-button.active")?.value;
+  const total = calculateTotal();
+  const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+  
+  if (!(paymentMethod === "Efectivo" && amountReceived < total)) {
+    try {
       await processInvoice("pagado");
-    });
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error al procesar el pago");
+    }
+  }
+});
+
+// Inicialización
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("paid").classList.add("disabled");
+});
+    
 
 
     const processInvoice = async (status) => {
@@ -1430,4 +1476,4 @@ document.getElementById("confirmationModal").classList.add("hidden");
 
 </html>
 
-<!-- 12 -->
+<!-- 14 -->
