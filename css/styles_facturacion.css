@@ -301,6 +301,13 @@ button {
     padding: 6px 5px;
     border-radius: 9px;
     margin: 5px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.panelfacturacion_tittle a:hover {
+background: #f1d6ef;
+transition: 0.3s;
 }
 
 .panelfacturacion_tittle img {
