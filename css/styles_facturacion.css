@@ -306,8 +306,8 @@ button {
 }
 
 .panelfacturacion_tittle a:hover {
-background: #f1d6ef;
-transition: 0.3s;
+    background: #f1d6ef;
+    transition: 0.3s;
 }
 
 .panelfacturacion_tittle img {
@@ -323,6 +323,7 @@ transition: 0.3s;
     align-items: center;
     justify-content: center;
     height: 100%;
+    padding: 0px 150px;
 }
 
 .panelfacturacion_down {
@@ -1085,6 +1086,11 @@ input[type="text"] {
     .button-list button {
         flex: 1 1 calc(50% - 10px) !important;
     }
+
+    .panelfacturacion_tittle h2 {
+        font-size: 18px;
+    }
+
 }
 
 
@@ -1092,6 +1098,10 @@ input[type="text"] {
     .MasterBox {
         display: flex;
         flex-direction: column-reverse;
+    }
+
+    .panelfacturacion_tittle h2 {
+        font-size: 17px;
     }
 
     .container_previewfactura {
