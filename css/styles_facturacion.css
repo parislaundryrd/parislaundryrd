@@ -292,19 +292,19 @@ button {
 }
 
 .panelfacturacion_tittle a {
-    background: #2497ed;
+    background: #e1e1e1;
     display: inline-flex;
-    color: white;
+    color: #0077de;
     text-decoration: none;
     align-items: center;
     gap: 5px;
-    padding: 4px 5px;
+    padding: 6px 5px;
     border-radius: 9px;
-    margin: 4px;
+    margin: 5px;
 }
 
 .panelfacturacion_tittle img {
-    height: 24px;
+    height: 16px;
 }
 
 .panelfacturacion_tittle h2 {
