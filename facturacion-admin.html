@@ -78,9 +78,7 @@
       <!-- Panel Facturacion -->
       <div class="container_formfactura">
         <div class="panelfacturacion_tittle">
-          <h2>Panel de Facturación</h2> 
-          <a href="javascript:void(0)" onclick="confirmarLimpiarFactura()" style="position: absolute; top: 0px; left: 0px;    border-radius: 12px 5px 5px 5px;"><img src="./img/icon/refrescar1.png">Limpiar Factura</a>
-          <a href="javascript:void(0)" onclick="window.open(window.location.href, '_blank');" style="position: absolute; top: 0px; right: 0px;    border-radius: 5px 12px 5px 5px;"><img src="./img/icon/mas2.png">Nueva Factura</a>
+          <h2>Panel de Facturación</h2>
         </div>
 
         <div class="panelfacturacion_body">
@@ -295,12 +293,7 @@
     let otrosServicios = [];
 
 
-    function confirmarLimpiarFactura() {
-    if (confirm("¿Seguro que deseas limpiar esta factura?")) {
-        location.reload(); // Refresca la página
-    }
-}
-
+    
     // Cargar servicios, productos y empleados
     const loadServices = () => {
       db.collection("servicio").onSnapshot((snapshot) => {
