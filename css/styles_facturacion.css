@@ -156,6 +156,7 @@ button {
 .button-list button img {
     width: 56px;
     height: 56px;
+    border-radius: 10px;
 }
 
 .button-list button.active {
@@ -288,6 +289,22 @@ button {
     min-height: 40px;
     background: #ffffff00;
     border-bottom: 1px solid rgb(221 221 221);
+}
+
+.panelfacturacion_tittle a {
+    background: #2497ed;
+    display: inline-flex;
+    color: white;
+    text-decoration: none;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 5px;
+    border-radius: 9px;
+    margin: 4px;
+}
+
+.panelfacturacion_tittle img {
+    height: 24px;
 }
 
 .panelfacturacion_tittle h2 {
