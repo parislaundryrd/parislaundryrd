@@ -180,39 +180,74 @@
     let currentInvoiceData = null;
     let invoices = [];
 
-    const loadInvoices = (status) => {
-    invoicesBody.innerHTML = "";
-    db.collection("facturas")
-        .get()
-        .then((snapshot) => {
+// Reemplaza la función loadInvoices con esta versión mejorada
+const loadInvoices = (status) => {
+    currentStatus = status; // Guardamos el estado actual
+    
+    // Si ya hay un listener activo, lo cancelamos primero
+    if (unsubscribe) {
+        unsubscribe();
+    }
+    
+    // Establecemos el nuevo listener en tiempo real
+    unsubscribe = db.collection("facturas")
+        .where("status", "==", status)
+        .onSnapshot((snapshot) => {
             invoices = [];
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                invoices.push({ id: doc.id, ...data });
+                if (data.timestamp instanceof firebase.firestore.Timestamp) {
+                    invoices.push({ id: doc.id, ...data });
+                }
             });
 
-            const filteredInvoices = invoices.filter(invoice =>
-                invoice.status === status &&
-                invoice.timestamp instanceof firebase.firestore.Timestamp
-            );
-
-            filteredInvoices.sort((a, b) => new Date(b.timestamp.toDate()) - new Date(a.timestamp.toDate()));
-
-            if (filteredInvoices.length === 0) {
-                document.getElementById("noInvoicesMessage").classList.remove("hidden");
-            } else {
-                document.getElementById("noInvoicesMessage").classList.add("hidden");
-                filteredInvoices.forEach((invoice) => {
-                    addInvoiceRow(invoice);
-                });
-            }
-
+            invoices.sort((a, b) => new Date(b.timestamp.toDate()) - new Date(a.timestamp.toDate()));
+            filterAndDisplayInvoices();
             updateTitleAndBackground(status);
-        })
-        .catch((error) => {
-            console.error("Error al cargar las facturas:", error);
+        }, (error) => {
+            console.error("Error en el listener en tiempo real:", error);
         });
 };
+
+// Añade esta nueva función para manejar el filtrado
+const filterAndDisplayInvoices = () => {
+    invoicesBody.innerHTML = "";
+    const searchTerm = searchInput.value.toLowerCase();
+    
+    let filteredInvoices = [...invoices];
+    
+    if (searchTerm) {
+        filteredInvoices = filteredInvoices.filter(invoice => 
+            invoice.id.toLowerCase().includes(searchTerm) ||
+            invoice.clientName.toLowerCase().includes(searchTerm) ||
+            invoice.clientPhone.toLowerCase().includes(searchTerm) ||
+            `RD$${invoice.total.toFixed(2)}`.includes(searchTerm)
+        );
+    }
+
+    if (filteredInvoices.length === 0) {
+        document.getElementById("noInvoicesMessage").classList.remove("hidden");
+    } else {
+        document.getElementById("noInvoicesMessage").classList.add("hidden");
+        filteredInvoices.forEach((invoice) => {
+            addInvoiceRow(invoice);
+        });
+    }
+};
+
+// Añade esta variable al inicio con las demás declaraciones
+let unsubscribe = null;
+let currentStatus = "pago pendiente";
+
+// Modifica el event listener del searchInput para usar la nueva función
+searchInput.addEventListener("input", filterAndDisplayInvoices);
+
+// Añade esto al final del script para limpiar el listener al salir
+window.addEventListener("beforeunload", () => {
+    if (unsubscribe) {
+        unsubscribe();
+    }
+});
 
     const addInvoiceRow = (invoice) => {
     const row = document.createElement("tr");
@@ -552,3 +587,5 @@
 </body>
 
 </html>
+
+<!-- 2 -->
