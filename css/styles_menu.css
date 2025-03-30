@@ -312,6 +312,71 @@
     cursor: pointer;
 }
 
+.btn_count_box {
+    position: relative;
+    height: 42px;
+    display: inline-flex;
+}
+
+.facturas-count-box {
+    position: absolute;
+    margin: 0px;
+    display: inline-flex;
+    right: 2px;
+    top: -2px;
+    pointer-events: none;
+}
+
+.facturas-count {
+    margin: 0px;
+    font-size: 13px;
+    font-weight: bold;
+    background: #bbbbbb;
+    display: none;
+    border-radius: 30px;
+    padding: 1px 6px;
+    text-align: center;
+    font-family: sans-serif;
+    font-weight: normal;
+    position: relative;
+}
+
+#facturasCountPendiente {
+    background: #feffc9;
+    box-shadow: 0px 0px 0px 1px #ffdc00 inset;
+}
+
+#facturasCountPagado {
+    background: #ffdbb5;
+    box-shadow: 0px 0px 0px 1px #ffb745 inset;
+}
+
+#facturasCountPagadoListo {
+    background-color: #b5ffb5;
+    box-shadow: 0px 0px 0px 1px #36ff00 inset;
+}
+
+
+#facturasCountPendienteDup,
+#facturasCountPagadoDup,
+#facturasCountPagadoListoDup {
+    font-size: 16px;
+    border-radius: 6px;
+    background: #ffeb71;
+    box-shadow: 0px 0px 0px 1px #dfc10000 inset;
+}
+
+#facturasCountPendienteDup {
+    background: #ffdd0077;
+}
+
+#facturasCountPagadoDup {
+    background: #ffb84577;
+}
+
+#facturasCountPagadoListoDup {
+    background: #00e78369;
+}
 
 
 @media screen and (max-width: 900px) {
@@ -377,8 +442,6 @@
         /* esto es para que la pagina de atras no haga scroll si se desplaza el menu */
         overflow: hidden;
     }
-
-    
 }
 
 
@@ -403,27 +466,27 @@
     }
 }
 
-    /* Animaciones para el contenido del modal */
-    @keyframes contentFadeIn {
-        from {
-            transform: translateX(100%);
-        }
-    
-        to {
-            transform: translateX(0);
-        }
+/* Animaciones para el contenido del modal */
+@keyframes contentFadeIn {
+    from {
+        transform: translateX(100%);
     }
 
-    @keyframes contentFadeOut {
-        from {
-            transform: translateX(0);
-            /* Comienza en su posición original */
-        }
-    
-        to {
-            transform: translateX(100%);
-        }
+    to {
+        transform: translateX(0);
     }
+}
+
+@keyframes contentFadeOut {
+    from {
+        transform: translateX(0);
+        /* Comienza en su posición original */
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
 
 
 /* MENU FIN */
