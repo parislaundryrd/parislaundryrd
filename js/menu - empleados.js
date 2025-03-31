@@ -4,6 +4,7 @@ class LaundryMenu extends HTMLElement {
         this.innerHTML = `
             <style>
                 /* Aquí puedes agregar estilos si es necesario */
+
             </style>
 
             <div class="BarraMenu">
@@ -17,7 +18,18 @@ class LaundryMenu extends HTMLElement {
 
                 <div class="box_btns">
                     <button><a href="facturacion.html">Facturación</a></button>
-                    <button><a href="facturas-generadas.html">Facturas Generadas</a></button>
+  
+                    <div class="btn_count_box">
+                        <button><a href="facturas-generadas.html">Facturas Generadas</a></button>
+                        <div class="facturas-count-box">
+                            <div class="facturas-count" id="facturasCountPendiente">0</div>
+                            <div class="facturas-count" id="facturasCountPagado">0</div>
+                            <div class="facturas-count" id="facturasCountPagadoListo">0</div>
+                            <!-- Duplicados -->
+
+                        </div>
+                    </div>
+
                     <button><a href="caja.html">Caja/Cuadre</a></button>
                 </div>
 
@@ -66,6 +78,61 @@ class LaundryMenu extends HTMLElement {
         this.initModal();
         this.resaltarEnlaceActivo();
         this.startDateTimeUpdate(); // Iniciar la actualización de fecha y hora
+        this.loadFacturasCount(); // Cargar el conteo de facturas
+    }
+
+    loadFacturasCount() {
+        // Inicializa Firebase (asegúrate de que ya has configurado Firebase en tu proyecto)
+        const db = firebase.firestore();
+
+        // Escuchar cambios en tiempo real para "pago pendiente"
+        this.unsubscribePendiente = db.collection('facturas')
+            .where('status', '==', 'pago pendiente')
+            .onSnapshot((snapshot) => {
+                const count = snapshot.size; // Obtiene el número de documentos que cumplen con la condición
+                this.updateDisplay('facturasCountPendiente', count);
+                this.updateDisplay('facturasCountPendienteDup', count); // Actualiza el duplicado
+            }, (error) => {
+                console.error("Error al obtener las facturas en 'pago pendiente': ", error);
+                document.getElementById('facturasCountPendiente').textContent = `Error al cargar facturas`;
+                document.getElementById('facturasCountPendienteDup').textContent = `Error al cargar facturas`; // Error en duplicado
+            });
+
+        // Escuchar cambios en tiempo real para "pagado"
+        this.unsubscribePagado = db.collection('facturas')
+            .where('status', '==', 'pagado')
+            .onSnapshot((snapshot) => {
+                const count = snapshot.size; // Obtiene el número de documentos que cumplen con la condición
+                this.updateDisplay('facturasCountPagado', count);
+                this.updateDisplay('facturasCountPagadoDup', count); // Actualiza el duplicado
+            }, (error) => {
+                console.error("Error al obtener las facturas en 'pagado': ", error);
+                document.getElementById('facturasCountPagado').textContent = `Error al cargar facturas`;
+                document.getElementById('facturasCountPagadoDup').textContent = `Error al cargar facturas`; // Error en duplicado
+            });
+
+        // Escuchar cambios en tiempo real para "pagado listo"
+        this.unsubscribePagadoListo = db.collection('facturas')
+            .where('status', '==', 'pagado listo')
+            .onSnapshot((snapshot) => {
+                const count = snapshot.size; // Obtiene el número de documentos que cumplen con la condición
+                this.updateDisplay('facturasCountPagadoListo', count);
+                this.updateDisplay('facturasCountPagadoListoDup', count); // Actualiza el duplicado
+            }, (error) => {
+                console.error("Error al obtener las facturas en 'pagado listo': ", error);
+                document.getElementById('facturasCountPagadoListo').textContent = `Error al cargar facturas`;
+                document.getElementById('facturasCountPagadoListoDup').textContent = `Error al cargar facturas`; // Error en duplicado
+            });
+    }
+
+    updateDisplay(elementId, count) {
+        const element = document.getElementById(elementId);
+        element.textContent = count; // Solo mostrar el número
+        if (count > 0) {
+            element.style.display = 'block'; // Mostrar el div si el conteo es mayor que 0
+        } else {
+            element.style.display = 'none'; // Ocultar el div si el conteo es 0
+        }
     }
 
     initModal() {
@@ -142,17 +209,28 @@ class LaundryMenu extends HTMLElement {
         setInterval(updateDateTime, 1000);
         updateDateTime(); // Llamada inicial
     }
+
+    disconnectedCallback() {
+        // Desuscribirse de los listeners cuando el componente se destruye
+        if (this.unsubscribePendiente) {
+            this.unsubscribePendiente();
+        }
+        if (this.unsubscribePagado) {
+            this.unsubscribePagado();
+        }
+        if (this.unsubscribePagadoListo) {
+            this.unsubscribePagadoListo();
+        }
+    }
 }
 
 customElements.define('laundry-menu', LaundryMenu);
-
 
 class FooterContent extends HTMLElement {
     constructor() {
         super();
         this.innerHTML = `
             <style>
-
                 #creditos {
                    width: 100%;
                 }
