@@ -164,9 +164,10 @@ tr:hover {
     border: none;
     border-radius: 10px;
     background: #ffffff;
-    font-size: 12px;
+    font-size: 15px;
     box-shadow: 0px 0px 0px 1px rgb(163 163 163);
 }
+
 
 .search-container input:focus {
     outline: none;
@@ -805,6 +806,7 @@ li {
     .search-container input {
         width: calc(100% - 45px);
         padding: 0px 0px 0px 45px;
+        font-size: 12px;
     }
     
     th, td {
