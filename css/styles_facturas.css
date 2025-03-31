@@ -191,24 +191,24 @@ th {
 
 .hidden {
     display: none !important;
-  }
-  
-  .input-container {
+}
+
+.input-container {
     display: flex;
     align-items: center;
-  }
-  
-  .prefix {
+}
+
+.prefix {
     margin-right: 5px;
     font-weight: bold;
-  }
-  
-  .button-metodo-pago {
+}
+
+.button-metodo-pago {
     display: flex;
     justify-content: center;
     gap: 10px;
     margin-bottom: 15px;
-  }
+}
 
 .modal {
     display: none;
@@ -235,9 +235,10 @@ th {
     display: inline-flex;
     flex-direction: column;
     max-height: calc(100% - 50px);
+    overflow: auto;
 }
 
-.modal-content button{
+.modal-content button {
     cursor: pointer;
     transition: 0.3s;
 }
@@ -284,7 +285,7 @@ th {
 .modal_preview_factura_body {
     overflow: auto;
     flex: 1;
-    padding: 20px 30px 60px 30px;
+    padding: 20px 30px 20px 30px;
     width: 100%;
     max-width: 470px;
     background: #ffffff;
@@ -297,7 +298,89 @@ th {
     background: #ffffff;
     border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
     border-radius: 0px 0px 12px 12px;
-    min-height: 24px;
+}
+
+
+
+#modal_historial {
+    margin: 0px;
+    max-width: none;
+    padding: 5px 30px;
+    box-sizing: border-box;
+    border-radius: 0px;
+}
+
+
+ul {
+    list-style-type: none;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    padding-inline-start: 0px;
+}
+
+li {
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: rgb(230 242 247);
+    box-shadow: rgb(169 226 249) 0px 0px 0px 1px;
+}
+
+
+
+.employee-selection {
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.employee-select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    background-color: #f9f9f9;
+}
+
+.employee-select:focus {
+    outline: none;
+    border-color: #189dff;
+}
+
+.Cube_button_pagado {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+
+.status-pago-pendiente {
+    padding: 1px 6px;
+    border-radius: 4px;
+    background-color: #feffc9;
+    box-shadow: rgb(255 220 0) 0px 0px 0px 1px;
+}
+
+.status-pagado {
+    padding: 1px 6px;
+    border-radius: 4px;
+    background-color: #ffdbb5;
+    box-shadow: rgb(255 183 69) 0px 0px 0px 1px;
+}
+
+.status-pagado-listo {
+    padding: 1px 6px;
+    border-radius: 4px;
+    background-color: #b5ffb5;
+    box-shadow: rgb(54 255 0) 0px 0px 0px 1px;
+}
+
+.status-pagado-entregado {
+    padding: 1px 6px;
+    border-radius: 4px;
+    background-color: #b5e7ff;
+    box-shadow: rgb(0 187 255) 0px 0px 0px 1px;
 }
 
 
@@ -305,7 +388,6 @@ th {
 .Cube_button_pagado {
     display: flex;
     justify-content: center;
-    margin-top: 15px;
 }
 
 #markAsPaidButton.disabled {
@@ -369,10 +451,10 @@ th {
     border-radius: 10px;
 }
 
-#markAsDeliveredButton:hover{
+#markAsDeliveredButton:hover {
     background: #7ad4fd;
     box-shadow: 0px 0px 0px 1px rgb(0 187 255) inset;
-transition: 0.3s;
+    transition: 0.3s;
 }
 
 .payment-button {
@@ -410,8 +492,7 @@ transition: 0.3s;
     font-size: 26px;
     font-family: sans-serif;
     max-width: 470px;
-    margin: 12px auto;
-    margin-bottom: 17px;
+    margin: 0px auto;
     background: #bac5d59e;
     padding: 10px 24px 10px 24px;
     border-radius: 7px;
@@ -547,4 +628,34 @@ transition: 0.3s;
     text-align: center;
     margin-top: 24px;
     color: #7d0707;
+}
+
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00000041;
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0000005b;
+    border-radius: 2px;
+}
+
+
+@media screen and (max-width: 700px) {
+    .modal-content {
+        width: 100%;
+        max-height: calc(100% - 0px);
+        border-radius: 0px;
+    }
+
+    #modal_historial {
+        padding: 5px 15px;
+    }
+
 }
