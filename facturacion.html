@@ -905,7 +905,6 @@ ${asumirPor !== "desactivado" ? `
 
     // Función para habilitar los botones de estado
     const enablePaymentButtons = () => {
-      pendingPaymentButton.classList.remove("disabled");
       paidButton.classList.remove("disabled");
     };
 
@@ -1169,9 +1168,8 @@ document.getElementById("confirmationModal").classList.add("hidden");
     
     // Función para deshabilitar los botones de pago
     const disablePaymentButtons = () => {
-      const pendingPaymentButton = document.getElementById("pendingPayment");
+
       const paidButton = document.getElementById("paid");
-      pendingPaymentButton.classList.add("disabled");
       paidButton.classList.add("disabled");
     };
 
