@@ -120,6 +120,7 @@
         <table id="facturasTable">
           <thead>
             <tr>
+              <th id="NumeroTabla">No.</th>
               <th>ID</th>
               <th>Nombre del Cliente</th>
               <th>Teléfono del Cliente</th>
@@ -127,7 +128,7 @@
               <th>Monto Recibido</th>
               <th>Cambio</th>
               <th>Total</th>
-              <th>Timestamp</th>
+              <th>Fecha y Hora</th>
             </tr>
           </thead>
           <tbody>
@@ -135,6 +136,28 @@
           </tbody>
         </table>
         <!-- Tabla para mostrar las facturas FIN -->
+
+
+
+        <!-- Nueva tabla para otras facturas -->
+<h2>Otras facturas del día (no afectan la caja):</h2>
+<table id="otrasFacturasTable">
+  <thead>
+    <tr>
+      <th id="NumeroTabla">No.</th>
+      <th>ID</th>
+      <th>Nombre del Cliente</th>
+      <th>Teléfono del Cliente</th>
+      <th>Método de Pago</th>
+      <th>Total</th>
+      <th>Fecha y Hora</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Las filas de las otras facturas se agregarán aquí -->
+  </tbody>
+</table>
+<!-- Nueva tabla para otras facturas FIN -->
 
 
 
@@ -1525,42 +1548,43 @@
 
     // Modificar la función updateTotals para incluir el gasto del empleado
     const updateTotals = async () => {
-      try {
-        // Obtener el total en caja desde la base de datos
-        const cajaSnapshot = await db.collection("caja").get();
-        let totalEnCaja = 0;
-        let gastoEmpleado = 0;
+  try {
+    // Obtener el total en caja desde la base de datos
+    const cajaSnapshot = await db.collection("caja").get();
+    let totalEnCaja = 0;
+    let gastoEmpleado = 0;
 
-        if (!cajaSnapshot.empty) {
-          const cajaDoc = cajaSnapshot.docs[0].data();
-          totalEnCaja = cajaDoc.totalEnCaja || 0;
-          gastoEmpleado = cajaDoc.GastoEmpleado || 0;
-        }
+    if (!cajaSnapshot.empty) {
+      const cajaDoc = cajaSnapshot.docs[0].data();
+      totalEnCaja = cajaDoc.totalEnCaja || 0;
+      gastoEmpleado = cajaDoc.GastoEmpleado || 0;
+    }
 
-        let totalRecibido = 0;
-        let totalCambio = 0;
+    let totalRecibido = 0;
+    let totalCambio = 0;
 
-        // Obtener las facturas
-        const facturas = document.querySelectorAll('#facturasTable tbody tr');
-        facturas.forEach(factura => {
-          const montoRecibido = parseInt(factura.cells[4].innerText) || 0;
-          const cambio = parseInt(factura.cells[5].innerText) || 0;
-          totalRecibido += montoRecibido;
-          totalCambio += cambio;
-        });
+    // Obtener las facturas
+    const facturas = document.querySelectorAll('#facturasTable tbody tr');
+    facturas.forEach(factura => {
+      // Cambiar los índices de 4,5 a 5,6 por la nueva columna No.
+      const montoRecibido = parseInt(factura.cells[5].innerText) || 0; // Ahora es columna 5 (antes 4)
+      const cambio = parseInt(factura.cells[6].innerText) || 0;        // Ahora es columna 6 (antes 5)
+      totalRecibido += montoRecibido;
+      totalCambio += cambio;
+    });
 
-        const totalDeberia = totalEnCaja + totalRecibido - totalCambio - gastoEmpleado;
+    const totalDeberia = totalEnCaja + totalRecibido - totalCambio - gastoEmpleado;
 
-        // Actualizar los totales en el HTML
-        document.getElementById('totalEnCaja').innerText = `RD$${totalEnCaja}`;
-        document.getElementById('totalRecibido').innerText = `Total Recibido: RD$${totalRecibido}`;
-        document.getElementById('totalCambio').innerText = `Total Cambio: RD$${totalCambio}`;
-        document.getElementById('totalGastado').innerText = `RD$${gastoEmpleado}`;
-        document.getElementById('totalDeberia').innerText = `RD$${totalDeberia}`;
-      } catch (error) {
-        console.error("Error al actualizar los totales:", error);
-      }
-    };
+    // Actualizar los totales en el HTML
+    document.getElementById('totalEnCaja').innerText = `RD$${totalEnCaja}`;
+    document.getElementById('totalRecibido').innerText = `Total Recibido: RD$${totalRecibido}`;
+    document.getElementById('totalCambio').innerText = `Total Cambio: RD$${totalCambio}`;
+    document.getElementById('totalGastado').innerText = `RD$${gastoEmpleado}`;
+    document.getElementById('totalDeberia').innerText = `RD$${totalDeberia}`;
+  } catch (error) {
+    console.error("Error al actualizar los totales:", error);
+  }
+};
 
     // Agregar eventos de entrada a cada campo editable
     document.querySelectorAll('#editForm input[type="number"]').forEach(input => {
@@ -1711,49 +1735,79 @@
       }
     };
 
-    // Cargar las facturas en tiempo real
-    const loadFacturasRealTime = async () => {
-      try {
-        // Obtener el timestamp de la colección "caja"
-        const cajaSnapshot = await db.collection("caja").get();
-        if (!cajaSnapshot.empty) {
-          const cajaDoc = cajaSnapshot.docs[0].data();
-          const cajaTimestamp = cajaDoc.timestamp.toDate(); // Convertir a objeto Date
+  // Cargar las facturas en tiempo real
+// Cargar las facturas en tiempo real
+const loadFacturasRealTime = async () => {
+  try {
+    // Obtener el timestamp de la colección "caja"
+    const cajaSnapshot = await db.collection("caja").get();
+    if (!cajaSnapshot.empty) {
+      const cajaDoc = cajaSnapshot.docs[0].data();
+      const cajaTimestamp = cajaDoc.timestamp.toDate(); // Convertir a objeto Date
 
-          // Obtener las facturas generadas después del timestamp de la caja
-          db.collection("facturas")
-            .where("timestamp", ">", cajaTimestamp)
-            .orderBy("timestamp") // Asegúrate de que los documentos estén ordenados por timestamp
-            .onSnapshot((snapshot) => {
-              const facturasTableBody = document.getElementById("facturasTable").getElementsByTagName("tbody")[0];
-              facturasTableBody.innerHTML = ""; // Limpiar la tabla antes de agregar nuevas filas
+      // Obtener las facturas generadas después del timestamp de la caja
+      db.collection("facturas")
+        .where("timestamp", ">", cajaTimestamp)
+        .orderBy("timestamp") // Asegúrate de que los documentos estén ordenados por timestamp
+        .onSnapshot((snapshot) => {
+          const facturasTableBody = document.getElementById("facturasTable").getElementsByTagName("tbody")[0];
+          const otrasFacturasTableBody = document.getElementById("otrasFacturasTable").getElementsByTagName("tbody")[0];
+          
+          // Limpiar las tablas antes de agregar nuevas filas
+          facturasTableBody.innerHTML = "";
+          otrasFacturasTableBody.innerHTML = "";
 
-              snapshot.forEach(doc => {
-                const factura = doc.data();
-                if (factura.paymentMethod === "Efectivo") { // Filtrar por método de pago
-                  const row = facturasTableBody.insertRow();
-                  row.insertCell(0).innerText = factura.id; // ID del campo "id"
-                  row.insertCell(1).innerText = factura.clientName;
-                  row.insertCell(2).innerText = factura.clientPhone;
-                  row.insertCell(3).innerText = factura.paymentMethod; // Agregar el método de pago
-                  row.insertCell(4).innerText = factura.amountReceived; // Agregar el monto recibido
-                  row.insertCell(5).innerText = factura.changeAmount; // Agregar el cambio
-                  row.insertCell(6).innerText = factura.total;
+          let contadorEfectivo = 1;
+          let contadorOtras = 1;
 
-                  // Formatear el timestamp en formato de 12 horas
-                  const fecha = factura.timestamp.toDate();
-                  const options = { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' };
-                  const fechaFormateada = fecha.toLocaleString('es-ES', options);
-                  row.insertCell(7).innerText = fechaFormateada; // Mostrar la fecha y hora formateada
-                }
-              });
-              updateTotals(); // Llamar a la función para actualizar los totales
-            });
-        }
-      } catch (error) {
-        console.error("Error al cargar las facturas:", error);
-      }
-    };
+          snapshot.forEach(doc => {
+            const factura = doc.data();
+            const rowData = {
+              id: factura.id,
+              clientName: factura.clientName,
+              clientPhone: factura.clientPhone,
+              paymentMethod: factura.paymentMethod,
+              amountReceived: factura.amountReceived || 0,
+              changeAmount: factura.changeAmount || 0,
+              total: factura.total,
+              timestamp: factura.timestamp.toDate()
+            };
+
+            // Formatear el timestamp en formato de 12 horas
+            const options = { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' };
+            const fechaFormateada = rowData.timestamp.toLocaleString('es-ES', options);
+
+            if (factura.paymentMethod === "Efectivo") {
+              // Agregar a la tabla de facturas en efectivo
+              const row = facturasTableBody.insertRow();
+              row.insertCell(0).innerText = contadorEfectivo++;
+              row.insertCell(1).innerText = rowData.id;
+              row.insertCell(2).innerText = rowData.clientName;
+              row.insertCell(3).innerText = rowData.clientPhone;
+              row.insertCell(4).innerText = rowData.paymentMethod;
+              row.insertCell(5).innerText = rowData.amountReceived;
+              row.insertCell(6).innerText = rowData.changeAmount;
+              row.insertCell(7).innerText = rowData.total;
+              row.insertCell(8).innerText = fechaFormateada;
+            } else if (factura.paymentMethod === "Transferencia" || factura.paymentMethod === "Tarjeta de Crédito") {
+              // Agregar a la tabla de otras facturas
+              const row = otrasFacturasTableBody.insertRow();
+              row.insertCell(0).innerText = contadorOtras++;
+              row.insertCell(1).innerText = rowData.id;
+              row.insertCell(2).innerText = rowData.clientName;
+              row.insertCell(3).innerText = rowData.clientPhone;
+              row.insertCell(4).innerText = rowData.paymentMethod;
+              row.insertCell(5).innerText = rowData.total;
+              row.insertCell(6).innerText = fechaFormateada;
+            }
+          });
+          updateTotals(); // Llamar a la función para actualizar los totales
+        });
+    }
+  } catch (error) {
+    console.error("Error al cargar las facturas:", error);
+  }
+};
 
     // Cargar los datos de la caja y las facturas al inicio
     loadCashData();
@@ -2772,3 +2826,5 @@
 </body>
 
 </html>
+
+<!-- 20 -->
