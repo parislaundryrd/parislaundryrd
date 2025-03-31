@@ -23,6 +23,7 @@
 
       <div class="panelFacturas_tittle">
         <h2>Lista de Facturas</h2>
+        <button class="button" id="historyButton"><img src="./img/icon/historial1.png">Historial</button>
       </div>
 
       <div class="panelFacturas_body">
@@ -32,9 +33,6 @@
           <button class="button" id="paidInvoicesButton"><img src="./img/icon/lavando2.gif">Facturas - En Proceso de Lavado <div class="facturas-count" id="facturasCountPagadoDup">0</div></button>
           <button class="button" id="readyInvoicesButton"><img src="./img/icon/check1.png">Facturas Pagadas - Listo <div class="facturas-count" id="facturasCountPagadoListoDup">0</div></button>
           <button class="button" id="deliveredInvoicesButton"><img src="./img/icon/hamper_color.png">Facturas Entregadas</button> <!-- Nuevo botón -->
-
-          <button class="button" id="historyButton">Historial</button>
-
 
         </div>
 
@@ -167,6 +165,10 @@
             <ul id="historyList">
                 <!-- Los elementos de historial se llenarán dinámicamente -->
             </ul>
+            <div class="load-more-container">
+              <button id="loadMoreBtn" class="load-more-btn">Cargar más</button>
+              <div class="no-more-records" id="noMoreRecords">No hay más registros</div>
+          </div>
         </div>
     </div>
 </div>
@@ -698,112 +700,159 @@ markAsDeliveredButton.onclick = async () => {
 
 
 
-const historyButton = document.getElementById("historyButton");
-const historyModal = document.getElementById("historyModal");
-const closeHistoryModal = document.getElementById("closeHistoryModal");
-const historyList = document.getElementById("historyList");
+// Variables para la paginación del historial
+let lastHistoryDoc = null;
+    let historyData = [];
+    const historyList = document.getElementById("historyList");
+    const loadMoreBtn = document.getElementById("loadMoreBtn");
+    const noMoreRecords = document.getElementById("noMoreRecords");
 
-const loadHistory = async () => {
-    historyList.innerHTML = "";
-    const snapshot = await db.collection("historialFacturasGeneradas").get();
+    const loadHistory = async (loadMore = false) => {
+        try {
+            if (!loadMore) {
+                // Si es la primera carga, reiniciamos todo
+                historyList.innerHTML = "";
+                lastHistoryDoc = null;
+                historyData = [];
+                loadMoreBtn.style.display = "block";
+                noMoreRecords.style.display = "none";
+            }
 
-    // Crear un array para almacenar los datos del historial
-    const historyData = [];
+            let query = db.collection("historialFacturasGeneradas")
+                         .orderBy("fecha", "desc")
+                         .limit(10);
 
-    snapshot.forEach(doc => {
-        const data = doc.data();
-        historyData.push({ id: doc.id, ...data });
-    });
+            if (lastHistoryDoc) {
+                query = query.startAfter(lastHistoryDoc);
+            }
 
-    // Ordenar el historial por fecha (timestamp) de reciente a antiguo
-    historyData.sort((a, b) => b.fecha.toDate() - a.fecha.toDate());
+            const snapshot = await query.get();
 
-    // Agregar los elementos ordenados al historial
-    historyData.forEach(data => {
-        const listItem = document.createElement("li");
+            if (snapshot.empty) {
+                if (loadMore) {
+                    // No hay más registros para cargar
+                    loadMoreBtn.style.display = "none";
+                    noMoreRecords.style.display = "block";
+                } else {
+                    // No hay registros en absoluto
+                    historyList.innerHTML = "<li>No hay registros de historial</li>";
+                    loadMoreBtn.style.display = "none";
+                }
+                return;
+            }
 
-        // Formatear el monto
-        const formattedAmount = `RD$${formatNumberWithCommas(data.monto.toFixed(2))}`;
+            // Guardamos el último documento para la paginación
+            lastHistoryDoc = snapshot.docs[snapshot.docs.length - 1];
 
-        // Crear spans para el estado anterior y el nuevo estado
-        let previousStatusSpan = document.createElement("span");
-        let newStatusSpan = document.createElement("span");
-        let previousStatusText = "";
-        let newStatusText = "";
-        let previousStatusClass = "";
-        let newStatusClass = "";
+            // Procesamos los nuevos documentos
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                historyData.push({ id: doc.id, ...data });
+            });
 
-        switch (data.cambioStatus) {
-            case "Pago Pendiente a Pagado":
-                previousStatusText = "Pago Pendiente";
-                previousStatusClass = "status-pago-pendiente";
-                newStatusText = "Pagado";
-                newStatusClass = "status-pagado";
-                break;
-            case "Pagado a Pagado Listo":
-                previousStatusText = "Pagado";
-                previousStatusClass = "status-pagado";
-                newStatusText = "Pagado Listo";
-                newStatusClass = "status-pagado-listo";
-                break;
-            case "Pagado Listo a Pagado Entregado":
-                previousStatusText = "Pagado Listo";
-                previousStatusClass = "status-pagado-listo";
-                newStatusText = "Pagado Entregado";
-                newStatusClass = "status-pagado-entregado";
-                break;
-            default:
-                previousStatusText = "Estado Desconocido"; // Para manejar cualquier otro caso
-                previousStatusClass = ""; // Sin clase
-                newStatusText = "Estado Desconocido"; // Para manejar cualquier otro caso
-                newStatusClass = ""; // Sin clase
-                break;
+            // Renderizamos todos los registros acumulados
+            renderHistoryItems();
+            
+        } catch (error) {
+            console.error("Error al cargar el historial:", error);
+            alert("Error al cargar el historial. Intente nuevamente.");
+        }
+    };
+
+    const renderHistoryItems = () => {
+        // Limpiamos la lista solo si no estamos cargando más
+        if (historyData.length <= 10) {
+            historyList.innerHTML = "";
         }
 
-        // Asignar texto y clase a los spans
-        previousStatusSpan.textContent = previousStatusText;
-        previousStatusSpan.className = previousStatusClass;
+        historyData.forEach(data => {
+            const listItem = document.createElement("li");
 
-        newStatusSpan.textContent = newStatusText;
-        newStatusSpan.className = newStatusClass;
+            // Formatear el monto
+            const formattedAmount = `RD$${formatNumberWithCommas(data.monto.toFixed(2))}`;
 
-        // Formatear la fecha y hora en formato de 12 horas
-        const formattedDate = data.fecha.toDate().toLocaleString('es-ES', {
-            timeZone: 'America/Santo_Domingo',
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true // Asegúrate de que esto esté en true para el formato de 12 horas
+            // Crear spans para el estado anterior y el nuevo estado
+            let previousStatusSpan = document.createElement("span");
+            let newStatusSpan = document.createElement("span");
+            let previousStatusText = "";
+            let newStatusText = "";
+            let previousStatusClass = "";
+            let newStatusClass = "";
+
+            switch (data.cambioStatus) {
+                case "Pago Pendiente a Pagado":
+                    previousStatusText = "Pago Pendiente";
+                    previousStatusClass = "status-pago-pendiente";
+                    newStatusText = "Pagado";
+                    newStatusClass = "status-pagado";
+                    break;
+                case "Pagado a Pagado Listo":
+                    previousStatusText = "Pagado";
+                    previousStatusClass = "status-pagado";
+                    newStatusText = "Pagado Listo";
+                    newStatusClass = "status-pagado-listo";
+                    break;
+                case "Pagado Listo a Pagado Entregado":
+                    previousStatusText = "Pagado Listo";
+                    previousStatusClass = "status-pagado-listo";
+                    newStatusText = "Pagado Entregado";
+                    newStatusClass = "status-pagado-entregado";
+                    break;
+                default:
+                    previousStatusText = "Estado Desconocido";
+                    previousStatusClass = "";
+                    newStatusText = "Estado Desconocido";
+                    newStatusClass = "";
+                    break;
+            }
+
+            // Asignar texto y clase a los spans
+            previousStatusSpan.textContent = previousStatusText;
+            previousStatusSpan.className = previousStatusClass;
+
+            newStatusSpan.textContent = newStatusText;
+            newStatusSpan.className = newStatusClass;
+
+            // Formatear la fecha y hora en formato de 12 horas
+            const formattedDate = data.fecha.toDate().toLocaleString('es-ES', {
+                timeZone: 'America/Santo_Domingo',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+
+            listItem.innerHTML = `
+                <strong>Empleado que realizó el cambio:</strong> ${data.empleado}<br>
+                <strong>ID de Factura:</strong> ${data.id}<br>
+                <strong>Cliente:</strong> ${data.nombreCliente}<br>
+                <strong>Teléfono:</strong> ${data.numeroTelefono}<br>
+                <strong>Total:</strong> ${formattedAmount}<br>
+                <strong>Fecha y hora del cambio:</strong> ${formattedDate}<br>
+                <strong>Cambio de Estado:</strong>
+            `;
+
+            // Añadir los spans al texto del elemento de la lista
+            listItem.appendChild(previousStatusSpan);
+            listItem.appendChild(document.createTextNode(" a "));
+            listItem.appendChild(newStatusSpan);
+            
+            historyList.appendChild(listItem);
         });
+    };
 
-        listItem.innerHTML = `
-            <strong>Empleado que realizó el cambio:</strong> ${data.empleado}<br>
-            <strong>ID de Factura:</strong> ${data.id}<br>
-            <strong>Cliente:</strong> ${data.nombreCliente}<br>
-            <strong>Teléfono:</strong> ${data.numeroTelefono}<br>
-            <strong>Total:</strong> ${formattedAmount}<br>
-            <strong>Fecha y hora del cambio:</strong> ${formattedDate}<br>
-            <strong>Cambio de Estado:</strong>
-        `;
-
-        // Añadir los spans al texto del elemento de la lista
-        listItem.appendChild(previousStatusSpan);
-        listItem.appendChild(document.createTextNode(" a ")); // Añadir " a " entre los estados
-        listItem.appendChild(newStatusSpan);
-        
-        historyList.appendChild(listItem);
+    // Evento para el botón "Cargar más"
+    loadMoreBtn.addEventListener("click", () => {
+        loadHistory(true); // Cargar más registros
     });
-};
 
-
-
-// Evento para abrir el modal de historial
-historyButton.onclick = () => {
-    loadHistory(); // Cargar el historial al abrir el modal
-    historyModal.style.display = "block"; // Mostrar el modal
-};
+    // Evento para abrir el modal de historial
+    historyButton.onclick = () => {
+        loadHistory(); // Cargar el historial al abrir el modal (primera carga)
+        historyModal.style.display = "block";
+    };
 
 // Evento para cerrar el modal
 closeHistoryModal.onclick = () => {
@@ -819,4 +868,4 @@ closeHistoryModal.onclick = () => {
 
 </html>
 
-<!-- 77 -->
+<!-- 777 -->
