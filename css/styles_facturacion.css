@@ -986,6 +986,27 @@ input[type="text"] {
     transition: 0.3S;
 }
 
+#partialPayment {
+    background: #ff9b0036;
+    box-shadow: 0px 0px 0px 1px #ff6700b3 inset;
+    transition: 0.3S;
+}
+
+#partialPayment:hover {
+    background: #ff9b0061;
+    transition: 0.3S;
+}
+
+#partialAmount {
+    border: 1px solid #ff3800;
+    border-radius: 4px;
+    width: 100px;
+    font-size: 20px;
+    height: 25px;
+    padding: 0px 7px;
+}
+
+
 .disabled {
     filter: grayscale(1);
     pointer-events: none;

@@ -126,8 +126,7 @@ tr:hover {
     color: #000000;
     height: 100%;
     padding: 0px 0px;
-    display: flex
-;
+    display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 10px 0px 0px 10px;
@@ -710,8 +709,8 @@ li {
 .title {
     text-align: center;
     margin: 0px;
-    font-size: 24px;
-    padding: 10px;
+    font-size: 22px;
+    padding: 8px;
     border-radius: 12px 12px 0px 0px;
 }
 
@@ -740,6 +739,143 @@ li {
     margin: 10px 0px;
     color: #7d0707;
     font-style: italic;
+}
+
+#payDepositButton {
+    background-color: #f96dd3;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+#payDepositButton:hover {
+    background-color: #e65bc1;
+}
+
+#payDepositButton {
+    display: none;
+    /* Oculto por defecto */
+    background-color: #f96dd3;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+
+/* Estilos para el método de pago de abono */
+#abonoPaymentMethodContainer {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+}
+
+#abonoPaymentMethodContainer h2 {
+    color: #ff6b6b;
+}
+
+#saldoPendiente {
+    color: #ff6b6b !important;
+}
+
+#nuevoSaldo {
+    color: #51cf66 !important;
+}
+
+
+#payAbonoButton {
+    background-color: #ff6b6b;
+    color: white;
+}
+
+#payAbonoButton:hover {
+    background-color: #ff5252;
+}
+
+#payAbonoButton:disabled,
+#payAbonoButton.disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+
+/* Estilos adicionales para el abono */
+.abono-pendiente {
+    font-size: 25px;
+    font-family: sans-serif;
+    text-align: center;
+    max-width: 425px;
+    margin: 12px auto;
+    margin-bottom: 17px;
+    background: #bac5d59e;
+    padding: 10px 24px 10px 24px;
+    border-radius: 7px;
+}
+
+.btn-pagar-abono {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 0px;
+}
+
+.btn-pagar-abono:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.payment-method-abono {
+    padding-top: 15px;
+}
+
+.payment-method-abono h3 {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.payment-method-abono input {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000000;
+    width: 100px;
+    border-radius: 10px;
+    border: none;
+    background: #ff840030;
+    padding: 4px 2px 2px 10px;
+    box-shadow: 0px 0px 0px 1px rgb(255 126 68) inset;
+    transition: 0.3s;
+}
+
+.payment-options-abono {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+.payment-option-abono {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.payment-option-abono.selected {
+    background-color: #189dff;
+    color: white;
+    border-color: #189dff;
 }
 
 
@@ -798,7 +934,7 @@ li {
     .search-container {
         height: 30px;
     }
-    
+
     .cantidad-img img {
         height: 18px;
     }
@@ -808,8 +944,9 @@ li {
         padding: 0px 0px 0px 45px;
         font-size: 12px;
     }
-    
-    th, td {
+
+    th,
+    td {
         padding: 4px;
     }
 }
