@@ -1766,8 +1766,8 @@ const loadFacturasRealTime = async () => {
             // Determinar los valores a mostrar basados en abonoFact
             let total, montoRecibido, cambio;
             
-            if (factura.paymentMethod === "Efectivo" && factura.abonoFact === "no") {
-              // Usar los valores de abono para facturas con abonoFact = "no"
+            if (factura.paymentMethod === "Efectivo" && factura.abonoFact2do === "yes") {
+              // Usar los valores de abono para facturas con abonoFact = "pago2"
               total = factura.remainingBalance || 0;
               montoRecibido = factura.amountReceivedAbonoFire || 0;
               cambio = factura.changeAmountAbonoFire || 0;

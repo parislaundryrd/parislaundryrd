@@ -960,110 +960,116 @@
     });
 
     function validateAbonoPayment() {
-      if (selectedPaymentMethodAbono === "efectivo") {
-        const amountReceived = parseFloat(amountReceivedAbono.value) || 0;
-        const change = amountReceived - currentPendingAmount;
+  if (selectedPaymentMethodAbono === "efectivo") {
+    const amountReceived = parseFloat(amountReceivedAbono.value) || 0;
+    const change = amountReceived - currentPendingAmount;
 
-        if (amountReceived > 0) {
-          changeAmountAbono.innerHTML = `<strong>Cambio:</strong> RD$${change.toFixed(2)}`;
-          pagarAbonoBtn.disabled = amountReceived < currentPendingAmount;
-        } else {
-          changeAmountAbono.innerHTML = "";
-          pagarAbonoBtn.disabled = true;
-        }
-      } else {
-        pagarAbonoBtn.disabled = false;
-      }
+    if (amountReceived > 0) {
+      changeAmountAbono.innerHTML = `<strong>Cambio:</strong> RD$${change.toFixed(2)}`;
+      pagarAbonoBtn.disabled = amountReceived < currentPendingAmount;
+    } else {
+      changeAmountAbono.innerHTML = "";
+      pagarAbonoBtn.disabled = true;
     }
+  } else {
+    pagarAbonoBtn.disabled = false;
+  }
+}
 
 
     // Agregar evento de clic al botón de "PAGAR ABONO"
     pagarAbonoBtn.addEventListener("click", async () => {
-      if (currentInvoiceId) {
-        const selectedEmployee = document.getElementById("employeeSelect").value;
+  if (currentInvoiceId) {
+    const selectedEmployee = document.getElementById("employeeSelect").value;
 
-        if (!selectedEmployee) {
-          alert("Por favor seleccione un empleado.");
+    if (!selectedEmployee) {
+      alert("Por favor seleccione un empleado.");
+      return;
+    }
+
+    try {
+      const selectedPaymentMethod = selectedPaymentMethodAbono;
+
+      if (!selectedPaymentMethod) {
+        alert("Por favor seleccione un método de pago");
+        return;
+      }
+
+      let amountReceived = 0;
+      let changeAmount = 0;
+
+      if (selectedPaymentMethod === "efectivo") {
+        amountReceived = parseFloat(amountReceivedAbono.value) || 0;
+        const total = parseFloat(currentPendingAmount);
+        changeAmount = amountReceived - total;
+
+        if (amountReceived < total) {
+          alert("El monto recibido debe ser mayor o igual al monto pendiente");
           return;
         }
-
-        try {
-          const selectedPaymentMethod = selectedPaymentMethodAbono;
-
-          if (!selectedPaymentMethod) {
-            alert("Por favor seleccione un método de pago");
-            return;
-          }
-
-          let amountReceived = 0;
-          let changeAmount = 0;
-
-          if (selectedPaymentMethod === "efectivo") {
-            amountReceived = parseFloat(amountReceivedAbono.value) || 0;
-            const total = parseFloat(currentPendingAmount);
-            changeAmount = amountReceived - total;
-
-            if (amountReceived < total) {
-              alert("El monto recibido debe ser mayor o igual al monto pendiente");
-              return;
-            }
-          }
-
-          const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            const originalTimestamp = doc.data().timestamp.toDate();
-            const currentTimestamp = new Date();
-            const isDifferentDay = originalTimestamp.toDateString() !== currentTimestamp.toDateString();
-
-            const updateData = {
-              abonoFact: "no",
-              paymentMethod: getFullPaymentMethodName(selectedPaymentMethod),
-              amountReceivedAbonoFire: amountReceived,
-              changeAmountAbonoFire: changeAmount,
-              amountReceived: firebase.firestore.FieldValue.increment(amountReceived),
-              changeAmount: firebase.firestore.FieldValue.increment(changeAmount),
-            };
-
-            if (isDifferentDay) {
-              updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
-            }
-
-            await doc.ref.update(updateData);
-
-            await db.collection("historialFacturasGeneradas").add({
-              empleado: selectedEmployee,
-              id: currentInvoiceId,
-              nombreCliente: currentInvoiceData.clientName,
-              numeroTelefono: currentInvoiceData.clientPhone,
-              monto: currentInvoiceData.total,
-              fecha: new Date(),
-              cambioStatus: "Abono Pagado"
-            });
-
-            // Obtener los datos actualizados de la factura
-            const updatedDoc = await doc.ref.get();
-            currentInvoiceData = updatedDoc.data();
-
-            // Actualizar la vista del modal con los nuevos datos
-            showInvoiceDetails(currentInvoiceData);
-
-            // Mostrar mensaje de éxito sin cerrar el modal
-            alert("Abono pagado completamente. La factura ha sido actualizada.");
-
-            // Actualizar la tabla de facturas sin recargar la página
-            loadInvoices(currentStatus);
-
-          } else {
-            console.error("No existe el documento con el campo 'id':", currentInvoiceId);
-            alert("No se pudo encontrar la factura para actualizar.");
-          }
-        } catch (error) {
-          console.error("Error al actualizar el estado:", error);
-          alert("No se pudo marcar el abono como pagado. Intenta nuevamente.");
-        }
       }
-    });
+
+      const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        const invoiceData = doc.data();
+        
+        // Obtener la fecha original y la fecha actual
+        const originalTimestamp = invoiceData.timestamp.toDate();
+        const currentTimestamp = new Date();
+        const isDifferentDay = originalTimestamp.toDateString() !== currentTimestamp.toDateString();
+
+        // Preparar los datos a actualizar
+        const updateData = {
+          abonoFact: "no", // Cambiamos el abonoFact a "no" porque ya se pagó completo
+          paymentMethod: getFullPaymentMethodName(selectedPaymentMethod),
+          amountReceivedAbonoFire: amountReceived,
+          changeAmountAbonoFire: changeAmount,
+          amountReceived: firebase.firestore.FieldValue.increment(amountReceived),
+          changeAmount: firebase.firestore.FieldValue.increment(changeAmount),
+        };
+
+        // Si es un día diferente, actualizar timestamp y agregar campo abonoFact2do
+        if (isDifferentDay) {
+          updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+          updateData.abonoFact2do = "yes"; // Agregamos el nuevo campo
+        }
+
+        await doc.ref.update(updateData);
+
+        await db.collection("historialFacturasGeneradas").add({
+          empleado: selectedEmployee,
+          id: currentInvoiceId,
+          nombreCliente: currentInvoiceData.clientName,
+          numeroTelefono: currentInvoiceData.clientPhone,
+          monto: currentInvoiceData.total,
+          fecha: new Date(),
+          cambioStatus: "Abono Pagado"
+        });
+
+        // Obtener los datos actualizados de la factura
+        const updatedDoc = await doc.ref.get();
+        currentInvoiceData = updatedDoc.data();
+
+        // Actualizar la vista del modal con los nuevos datos
+        showInvoiceDetails(currentInvoiceData);
+
+        // Mostrar mensaje de éxito sin cerrar el modal
+        alert("Abono pagado completamente. La factura ha sido actualizada.");
+
+        // Actualizar la tabla de facturas sin recargar la página
+        loadInvoices(currentStatus);
+
+      } else {
+        console.error("No existe el documento con el campo 'id':", currentInvoiceId);
+        alert("No se pudo encontrar la factura para actualizar.");
+      }
+    } catch (error) {
+      console.error("Error al actualizar el estado:", error);
+      alert("No se pudo marcar el abono como pagado. Intenta nuevamente.");
+    }
+  }
+});
 
     // Función auxiliar para obtener el nombre completo del método de pago
     function getFullPaymentMethodName(method) {
