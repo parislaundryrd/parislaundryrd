@@ -101,6 +101,37 @@
       </div>
 
       <div class="modal_preview_factura_down">
+        <!-- Sección de Abono (se mostrará solo para facturas con abono) -->
+        <div id="abonoSection" style="display: none;">
+          <div class="payment-method-abono">
+            <h3>Pagar Abono</h3>
+
+
+            <div class="payment-options-abono">
+              <div class="payment-option-abono" data-method="efectivo">Efectivo</div>
+              <div class="payment-option-abono" data-method="transferencia">Transferencia</div>
+              <div class="payment-option-abono" data-method="tarjeta">Tarjeta de Crédito</div>
+            </div>
+
+            <div id="montoPendienteAbono" class="abono-pendiente"></div>
+
+            <div id="efectivoInputAbono" style="display: inline-flex;justify-content: space-evenly;width: 100%;box-sizing: border-box;padding: 0px 22px;font-size: 21px;">
+              <label>Monto Recibido:</label>
+              <div>
+                <div class="input-container">
+                  <span class="prefix">RD$</span>
+                  <input type="text" id="amountReceivedAbono" placeholder="0" maxlength="6"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);">
+                </div>
+                <div id="changeAmountAbono" style="margin-top: 5px;"></div>
+              </div>
+
+            </div>
+
+
+          </div>
+        </div>
+
         <div class="payment-method-container" id="paymentMethodContainer">
           <h2 style="text-align: center;margin-block-start: 5px;margin-block-end: 5px;">Método de Pago:</h2>
           <div class="button-metodo-pago">
@@ -150,22 +181,21 @@
         </div>
 
         <div class="Cube_button_pagado">
-
           <select id="employeeSelect" required>
             <option value="">Seleccionar Empleado</option>
             <!-- Las opciones de empleados se llenarán dinámicamente -->
           </select>
 
+          <button id="pagarAbonoBtn" class="btn-pagar-abono" disabled style="display: none;">PAGAR ABONO</button>
           <button id="markAsPaidButton" class="disabled" style="display: none;">Marcar Como Pagado</button>
           <button id="markAsReadyButton" style="display: none;">Marcar como Listo</button>
           <button id="markAsDeliveredButton" style="display: none;">Marcar como Entregado</button>
-
-
         </div>
       </div>
-
     </div>
   </div>
+
+  <!-- El resto del código HTML permanece igual -->
 
   <div id="historyModal" class="modal">
     <div class="modal-content">
@@ -219,6 +249,20 @@
     const loadMoreInvoicesBtn = document.getElementById("loadMoreInvoicesBtn");
     const noMoreInvoices = document.getElementById("noMoreInvoices");
     const loadMoreContainer = document.getElementById("loadMoreContainer");
+
+    // Obtener referencias a los nuevos elementos del abono
+    const abonoSection = document.getElementById("abonoSection");
+    const montoPendienteAbono = document.getElementById("montoPendienteAbono");
+    const pagarAbonoBtn = document.getElementById("pagarAbonoBtn");
+    const amountReceivedAbono = document.getElementById("amountReceivedAbono");
+    const changeAmountAbono = document.getElementById("changeAmountAbono");
+    const efectivoInputAbono = document.getElementById("efectivoInputAbono");
+    const paymentOptionsAbono = document.querySelectorAll(".payment-option-abono");
+
+    // Variables para controlar el método de pago seleccionado para el abono
+    let selectedPaymentMethodAbono = null;
+    let currentPendingAmount = 0;
+
 
     let currentInvoiceId = null;
     let currentInvoiceData = null;
@@ -322,6 +366,7 @@
       }
     };
 
+
     // Función para renderizar las facturas en la tabla
     const renderInvoices = () => {
       // Siempre limpiar el cuerpo de la tabla antes de renderizar
@@ -341,13 +386,16 @@
 
         const formattedTotal = `RD$${formatNumberWithCommas(invoice.total.toFixed(2))}`;
 
+        // Verificar si es un abono
+        const abonoText = invoice.abonoFact === "yes" ? '<span style="color: red; margin-left: 5px;">Abono</span>' : '';
+
         row.innerHTML = `
-            <td>${invoice.id}</td>
-            <td>${invoice.clientName}</td>
-            <td>${invoice.clientPhone}</td>
-            <td>${formattedTotal}</td>
-            <td>${formattedDate}</td>
-        `;
+                <td>${invoice.id}</td>
+                <td>${invoice.clientName}${abonoText}</td>
+                <td>${invoice.clientPhone}</td>
+                <td>${formattedTotal}</td>
+                <td>${formattedDate}</td>
+            `;
         row.addEventListener("click", () => {
           currentInvoiceId = invoice.id;
           currentInvoiceData = invoice;
@@ -384,14 +432,20 @@
     };
 
     const showInvoiceDetails = (data) => {
-  // Resetear el select de empleados
-  document.getElementById("employeeSelect").value = "";
-  const services = data.selectedServices.map(service => `<div>${service.name} (Peso: ${service.weight} lbs) - RD$${service.price}</div>`).join("");
+      // Resetear el select de empleados
+      document.getElementById("employeeSelect").value = "";
+      const services = data.selectedServices.map(service => `<div>${service.name} (Peso: ${service.weight} lbs) - RD$${service.price}</div>`).join("");
       const otherServices = data.otrosServicios.map(service => `<div>${service.name}: ${service.count} - RD$${(service.count * service.price).toFixed(2)}</div>`).join("");
       const products = data.selectedProducts.map(product => `<div>${product.name} (Cantidad: ${product.quantity}) - RD$${(product.quantity * product.price).toFixed(2)}</div>`).join("");
       const delivery = data.deliveryOption[0].name + " - RD$" + data.deliveryOption[0].price;
 
-      
+      // Verificar si es un abono (sin importar el status)
+      const isAbono = data.abonoFact === "yes";
+
+      // Calcular saldo pendiente si es abono
+      currentPendingAmount = isAbono && data.amountReceived
+        ? (data.total - data.amountReceived)
+        : 0;
 
       const formattedDate = data.timestamp.toDate().toLocaleString('es-ES', {
         year: 'numeric',
@@ -402,38 +456,80 @@
         hour12: true
       });
 
-      modalInvoiceDetails.innerHTML = `
-            <strong>ID:</strong> ${data.id}<br>
-            <strong>Fecha:</strong> ${formattedDate}</p>
-            <strong>Cliente:</strong> ${data.clientName}<br>
-            <strong>Número:</strong> ${data.clientPhone}<br>
-            <strong>Servicios de Hamper:</strong><br>${services || "Ninguno"}<br>
-            <strong>Otros Servicios:</strong><br>${otherServices || "Ninguno"}<br>
-            <strong>Productos Adicionales:</strong><br>${products || "Ninguno"}<br>
-            <strong>Opción de Delivery:</strong> ${delivery}<p>
-            <strong>Total:</strong> RD$${data.total.toFixed(2)}<br>
-            <strong>Estado:</strong> ${data.status}<br>
-            <strong>Método de Pago:</strong> ${data.paymentMethod || "No especificado"}<br>
-        `;
+      // Construir el HTML para los detalles del pago
+      let paymentDetailsHTML = '';
+      if (isAbono && data.amountReceived) {
+        paymentDetailsHTML = `
+          <strong>Total Factura:</strong> RD$${data.total.toFixed(2)}<br>
+          <strong>Abono Recibido:</strong> RD$${data.amountReceived.toFixed(2)}<br>
+          <strong>Saldo Pendiente:</strong> RD$${currentPendingAmount.toFixed(2)}<br>
+      `;
+      } else {
+        paymentDetailsHTML = `
+          <strong>Total:</strong> RD$${data.total.toFixed(2)}<br>
+      `;
+      }
 
+      modalInvoiceDetails.innerHTML = `
+      <strong>ID:</strong> ${data.id}<br>
+      <strong>Fecha:</strong> ${formattedDate}</p>
+      <strong>Cliente:</strong> ${data.clientName}${isAbono ? '<span style="color: red;"> (Abono)</span>' : ''}<br>
+      <strong>Número:</strong> ${data.clientPhone}<br>
+      <strong>Servicios de Hamper:</strong><br>${services || "Ninguno"}<br>
+      <strong>Otros Servicios:</strong><br>${otherServices || "Ninguno"}<br>
+      <strong>Productos Adicionales:</strong><br>${products || "Ninguno"}<br>
+      <strong>Opción de Delivery:</strong> ${delivery}<p>
+      ${paymentDetailsHTML}
+      <strong>Estado:</strong> ${data.status}<br>
+      <strong>Método de Pago:</strong> ${data.paymentMethod || "No especificado"}<br>
+  `;
+
+      // Mostrar sección de abono SOLO si abonoFact es "yes"
+      if (data.abonoFact === "yes") {
+        abonoSection.style.display = "block";
+        pagarAbonoBtn.style.display = "block"; // Mostrar
+        currentPendingAmount = data.amountReceived ?
+          (data.total - data.amountReceived) :
+          data.total;
+        montoPendienteAbono.textContent = `Monto pendiente: RD$${currentPendingAmount.toFixed(2)}`;
+
+        // Resetear la selección de método de pago del abono
+        paymentOptionsAbono.forEach(opt => opt.classList.remove("selected"));
+        selectedPaymentMethodAbono = null;
+        amountReceivedAbono.value = "";
+        changeAmountAbono.innerHTML = "";
+        pagarAbonoBtn.disabled = true;
+        efectivoInputAbono.style.display = "none";
+      } else {
+        abonoSection.style.display = "none";
+        pagarAbonoBtn.style.display = "none"; // Ocultar botón si no es abono
+
+      }
+
+      // Resto del código (manejo de estados y botones)...
       if (data.paymentMethod === "Efectivo" && data.amountReceived) {
-        amountReceivedDisplay.textContent = `RD$${data.amountReceived.toFixed(2)}`;
-        const change = data.amountReceived - data.total;
-        changeDisplay.textContent = `RD$${change.toFixed(2)}`;
-        paymentDetails.style.display = "block";
+        if (!isAbono) {
+          amountReceivedDisplay.textContent = `RD$${data.amountReceived.toFixed(2)}`;
+          const change = data.amountReceived - data.total;
+          changeDisplay.textContent = `RD$${change.toFixed(2)}`;
+          paymentDetails.style.display = "block";
+        } else {
+          paymentDetails.style.display = "none";
+        }
       } else {
         paymentDetails.style.display = "none";
       }
 
       totalToPay.textContent = `RD$${data.total.toFixed(2)}`;
 
+      // Resto de la lógica de estados (pago pendiente, pagado, listo, entregado)...
       if (data.status === "pago pendiente") {
         document.querySelector(".modal_preview_factura_down").style.display = "block";
         markAsPaidButton.style.display = "block";
         markAsReadyButton.style.display = "none";
         markAsDeliveredButton.style.display = "none";
         resetPaymentModal();
-        document.getElementById("paymentMethodContainer").style.display = "block";
+        document.getElementById("paymentMethodContainer").style.display = isAbono ? "none" : "block";
       } else if (data.status === "pagado") {
         document.querySelector(".modal_preview_factura_down").style.display = "block";
         markAsPaidButton.style.display = "none";
@@ -445,6 +541,20 @@
         markAsPaidButton.style.display = "none";
         markAsReadyButton.style.display = "none";
         markAsDeliveredButton.style.display = "block";
+
+        // Disable the button if it's an abono invoice
+        if (data.abonoFact === "yes") {
+          markAsDeliveredButton.disabled = true;
+          markAsDeliveredButton.title = "No se puede entregar sin pagar el abono restante";
+          markAsDeliveredButton.style.opacity = "0.5";
+          markAsDeliveredButton.style.cursor = "not-allowed";
+        } else {
+          markAsDeliveredButton.disabled = false;
+          markAsDeliveredButton.title = "";
+          markAsDeliveredButton.style.opacity = "1";
+          markAsDeliveredButton.style.cursor = "pointer";
+        }
+
         document.getElementById("paymentMethodContainer").style.display = "none";
       } else {
         document.querySelector(".modal_preview_factura_down").style.display = "none";
@@ -499,10 +609,10 @@
     });
 
     closeModal.onclick = () => {
-  // Resetear el select de empleados al cerrar el modal
-  document.getElementById("employeeSelect").value = "";
-  invoiceModal.style.display = "none";
-};
+      // Resetear el select de empleados al cerrar el modal
+      document.getElementById("employeeSelect").value = "";
+      invoiceModal.style.display = "none";
+    };
 
     markAsPaidButton.onclick = async () => {
       if (currentInvoiceId) {
@@ -615,6 +725,12 @@
 
     markAsDeliveredButton.onclick = async () => {
       if (currentInvoiceId) {
+        // Check if it's an abono invoice in "pagado listo" status
+        if (currentInvoiceData.abonoFact === "yes" && currentInvoiceData.status === "pagado listo") {
+          alert("No se puede entregar una ropa sin antes pagar el ABONO RESTANTE");
+          return;
+        }
+
         const selectedEmployee = document.getElementById("employeeSelect").value;
 
         if (!selectedEmployee) {
@@ -813,6 +929,152 @@
       });
     };
 
+
+
+
+    // Event listeners para los métodos de pago del abono
+    paymentOptionsAbono.forEach(option => {
+      option.addEventListener("click", () => {
+        paymentOptionsAbono.forEach(opt => opt.classList.remove("selected"));
+        option.classList.add("selected");
+        selectedPaymentMethodAbono = option.getAttribute("data-method");
+
+        if (selectedPaymentMethodAbono === "efectivo") {
+          efectivoInputAbono.style.display = "inline-flex";
+          validateAbonoPayment();
+        } else {
+          efectivoInputAbono.style.display = "none";
+          pagarAbonoBtn.disabled = false;
+        }
+      });
+    });
+
+    // Validar el monto ingresado para el abono en efectivo
+    amountReceivedAbono.addEventListener("input", validateAbonoPayment);
+
+
+
+    // Validar el monto ingresado para el abono en efectivo
+    amountReceivedAbono.addEventListener("input", () => {
+      validateAbonoPayment();
+    });
+
+    function validateAbonoPayment() {
+      if (selectedPaymentMethodAbono === "efectivo") {
+        const amountReceived = parseFloat(amountReceivedAbono.value) || 0;
+        const change = amountReceived - currentPendingAmount;
+
+        if (amountReceived > 0) {
+          changeAmountAbono.innerHTML = `<strong>Cambio:</strong> RD$${change.toFixed(2)}`;
+          pagarAbonoBtn.disabled = amountReceived < currentPendingAmount;
+        } else {
+          changeAmountAbono.innerHTML = "";
+          pagarAbonoBtn.disabled = true;
+        }
+      } else {
+        pagarAbonoBtn.disabled = false;
+      }
+    }
+
+
+    // Agregar evento de clic al botón de "PAGAR ABONO"
+    pagarAbonoBtn.addEventListener("click", async () => {
+      if (currentInvoiceId) {
+        const selectedEmployee = document.getElementById("employeeSelect").value;
+
+        if (!selectedEmployee) {
+          alert("Por favor seleccione un empleado.");
+          return;
+        }
+
+        try {
+          const selectedPaymentMethod = selectedPaymentMethodAbono;
+
+          if (!selectedPaymentMethod) {
+            alert("Por favor seleccione un método de pago");
+            return;
+          }
+
+          let amountReceived = 0;
+          let changeAmount = 0;
+
+          if (selectedPaymentMethod === "efectivo") {
+            amountReceived = parseFloat(amountReceivedAbono.value) || 0;
+            const total = parseFloat(currentPendingAmount);
+            changeAmount = amountReceived - total;
+
+            if (amountReceived < total) {
+              alert("El monto recibido debe ser mayor o igual al monto pendiente");
+              return;
+            }
+          }
+
+          const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
+          if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            const originalTimestamp = doc.data().timestamp.toDate();
+            const currentTimestamp = new Date();
+            const isDifferentDay = originalTimestamp.toDateString() !== currentTimestamp.toDateString();
+
+            const updateData = {
+              abonoFact: "no",
+              paymentMethod: getFullPaymentMethodName(selectedPaymentMethod),
+              amountReceivedAbonoFire: amountReceived,
+              changeAmountAbonoFire: changeAmount,
+              amountReceived: firebase.firestore.FieldValue.increment(amountReceived),
+              changeAmount: firebase.firestore.FieldValue.increment(changeAmount),
+            };
+
+            if (isDifferentDay) {
+              updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+            }
+
+            await doc.ref.update(updateData);
+
+            await db.collection("historialFacturasGeneradas").add({
+              empleado: selectedEmployee,
+              id: currentInvoiceId,
+              nombreCliente: currentInvoiceData.clientName,
+              numeroTelefono: currentInvoiceData.clientPhone,
+              monto: currentInvoiceData.total,
+              fecha: new Date(),
+              cambioStatus: "Abono Pagado"
+            });
+
+            // Obtener los datos actualizados de la factura
+            const updatedDoc = await doc.ref.get();
+            currentInvoiceData = updatedDoc.data();
+
+            // Actualizar la vista del modal con los nuevos datos
+            showInvoiceDetails(currentInvoiceData);
+
+            // Mostrar mensaje de éxito sin cerrar el modal
+            alert("Abono pagado completamente. La factura ha sido actualizada.");
+
+            // Actualizar la tabla de facturas sin recargar la página
+            loadInvoices(currentStatus);
+
+          } else {
+            console.error("No existe el documento con el campo 'id':", currentInvoiceId);
+            alert("No se pudo encontrar la factura para actualizar.");
+          }
+        } catch (error) {
+          console.error("Error al actualizar el estado:", error);
+          alert("No se pudo marcar el abono como pagado. Intenta nuevamente.");
+        }
+      }
+    });
+
+    // Función auxiliar para obtener el nombre completo del método de pago
+    function getFullPaymentMethodName(method) {
+      switch (method) {
+        case "efectivo": return "Efectivo";
+        case "transferencia": return "Transferencia";
+        case "tarjeta": return "Tarjeta de Crédito";
+        default: return method;
+      }
+    }
+
     loadMoreBtn.addEventListener("click", () => {
       loadHistory(true);
     });
@@ -850,6 +1112,10 @@
         }
         return;
       }
+
+
+
+
 
       const filteredInvoices = invoices.filter(invoice =>
         invoice.id.toLowerCase().includes(searchTerm) ||
@@ -916,4 +1182,4 @@
 
 </html>
 
-<!-- 5 -->
+<!-- 77 -->

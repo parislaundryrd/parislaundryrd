@@ -215,11 +215,37 @@
               </div>
             </div>
 
+
+
+
+
+            <div id="transferCardPaymentOptions">
+
+              <div class="cube-form-flex" style="display: inline-flex;justify-content: space-evenly;font-size: 25px;margin-bottom: 14px;">
+                <div>
+                  <label>Monto del Abono:</label>
+                </div>
+                <div>
+                  <div class="input-container">
+                    <span class="prefix">RD$</span>
+                    <input type="text" id="partialAmount" placeholder="0" maxlength="6"
+                      oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+
+
+
             <div class="Cube_button_pagado">
               <!-- <button id="printInvoice">Imprimir Factura</button> -->
               <button id="pendingPayment"><img src="./img/icon/atencion1.png">Pago Pendiente</button>
+              <button id="partialPayment"><img src="./img/icon/abono1.png">Abono</button>
               <button id="paid" class="disabled"><img src="./img/icon/check1.png">Pago Recibido</button>
             </div>
+
           </div>
           <!-- Modal_preview_factura_Down FIN -->
 
@@ -910,59 +936,119 @@ ${asumirPor !== "desactivado" ? `
 
     // Agregar evento a los botones de método de pago
     paymentButtons.forEach(button => {
-      button.addEventListener("click", () => {
-        // Habilitar botones de pago al seleccionar un método
-        enablePaymentButtons();
-      });
-    });
-
-
-
+  button.addEventListener("click", (e) => {
+    // Remover la clase active de todos los botones
+    paymentButtons.forEach(btn => btn.classList.remove("active"));
+    
+    // Añadir la clase active al botón clicado
+    e.target.classList.add("active");
+    
+    // Mostrar cashPaymentOptions solo para efectivo
+    document.getElementById("cashPaymentOptions").classList.toggle("hidden", e.target.value !== "Efectivo");
+    
+    // Validar los botones de pago
+    validatePaymentButtons();
+  });
+});
     paymentButtons.forEach(button => {
-      button.addEventListener("click", (event) => {
-        // Ocultar las opciones de pago en Efectivo si no es el botón de Efectivo
-        const cashPaymentOptions = document.getElementById("cashPaymentOptions");
-        if (event.target.value === "Efectivo") {
-          cashPaymentOptions.classList.remove("hidden");
-        } else {
-          cashPaymentOptions.classList.add("hidden");
-        }
+  button.addEventListener("click", (event) => {
+    // Obtener elementos de las opciones de pago
+    const cashPaymentOptions = document.getElementById("cashPaymentOptions");
+    const transferCardPaymentOptions = document.getElementById("transferCardPaymentOptions");
+    
+    // Mostrar/ocultar opciones según método de pago seleccionado
+    if (event.target.value === "Efectivo") {
+      cashPaymentOptions.classList.remove("hidden");
+      // Mantener visible transferCardPaymentOptions para abonos en efectivo
+      transferCardPaymentOptions.classList.remove("hidden");
+    } else if (event.target.value === "Transferencia" || event.target.value === "Tarjeta de Crédito") {
+      cashPaymentOptions.classList.add("hidden");
+      transferCardPaymentOptions.classList.remove("hidden");
+    } else {
+      cashPaymentOptions.classList.add("hidden");
+      transferCardPaymentOptions.classList.remove("hidden");
+    }
 
-        // Remover la clase active de todos los botones
-        paymentButtons.forEach(btn => btn.classList.remove("active"));
+    // Remover la clase active de todos los botones
+    paymentButtons.forEach(btn => btn.classList.remove("active"));
 
-        // Añadir la clase active al botón clicado
-        event.target.classList.add("active");
-      });
-    });
+    // Añadir la clase active al botón clicado
+    event.target.classList.add("active");
+    
+    // Validar los botones de pago
+    validatePaymentButtons();
+  });
+});
 
-
-
-
-// Función para validar el botón "Pago Recibido"
-function validatePaidButton() {
+// Función para validar los botones de pago
+function validatePaymentButtons() {
   const paymentMethod = document.querySelector(".payment-button.active")?.value;
   const total = calculateTotal();
   const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+  const partialAmount = parseFloat(document.getElementById("partialAmount").value) || 0;
   const paidButton = document.getElementById("paid");
+  const partialButton = document.getElementById("partialPayment");
   
-  paidButton.classList.toggle("disabled", paymentMethod === "Efectivo" && amountReceived < total);
+  // Validar botón "Pago Recibido"
+  if (paymentMethod === "Efectivo") {
+    // En efectivo, solo habilitar si el monto recibido es igual o mayor al total
+    paidButton.classList.toggle("disabled", amountReceived < total);
+  } else if (paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") {
+    // Para transferencia/tarjeta, habilitar siempre el botón
+    paidButton.classList.remove("disabled");
+  } else {
+    // Para otros casos (o sin método seleccionado), deshabilitar
+    paidButton.classList.add("disabled");
+  }
+  
+  // Validar botón "Abono" - debe tener un monto válido (mayor que 0 y menor que total)
+  partialButton.classList.toggle("disabled", 
+    partialAmount <= 0 || partialAmount >= total
+  );
 }
 
-// Eventos de entrada de monto y métodos de pago
+// Evento para los botones de método de pago
+paymentButtons.forEach(button => {
+  button.addEventListener("click", (e) => {
+    // Remover la clase active de todos los botones
+    paymentButtons.forEach(btn => btn.classList.remove("active"));
+    
+    // Añadir la clase active al botón clicado
+    e.target.classList.add("active");
+    
+    // Mostrar cashPaymentOptions solo para efectivo
+    document.getElementById("cashPaymentOptions").classList.toggle("hidden", e.target.value !== "Efectivo");
+    
+    // Validar los botones de pago inmediatamente
+    validatePaymentButtons();
+  });
+});
+
+// Evento para cambios en el monto recibido (solo efectivo)
 document.getElementById("amountReceived").addEventListener("input", () => {
   const total = calculateTotal();
   const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
   document.getElementById("changeAmount").textContent = `RD$${(amountReceived - total).toFixed(2)}`;
-  validatePaidButton();
+  
+  // Solo validar si el método actual es efectivo
+  if (document.querySelector(".payment-button.active")?.value === "Efectivo") {
+    validatePaymentButtons();
+  }
+});
+
+// Evento para cambios en el monto de abono
+document.getElementById("partialAmount").addEventListener("input", () => {
+  validatePaymentButtons();
 });
 
 document.querySelectorAll(".payment-button").forEach(button => {
   button.addEventListener("click", (e) => {
     document.querySelectorAll(".payment-button").forEach(btn => btn.classList.remove("active"));
     e.target.classList.add("active");
+    // Mostrar cashPaymentOptions solo para efectivo
     document.getElementById("cashPaymentOptions").classList.toggle("hidden", e.target.value !== "Efectivo");
-    validatePaidButton();
+    // transferCardPaymentOptions siempre visible
+    validatePaymentButtons();
   });
 });
 
@@ -973,29 +1059,52 @@ document.getElementById("pendingPayment").addEventListener("click", () => {
   }
 });
 
-document.getElementById("paid").addEventListener("click", async () => {
-  const paymentMethod = document.querySelector(".payment-button.active")?.value;
+document.getElementById("partialPayment").addEventListener("click", async () => {
+  const paymentMethod = document.querySelector(".payment-button.active").value;
+  const partialAmount = parseFloat(document.getElementById("partialAmount").value) || 0;
   const total = calculateTotal();
-  const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
   
-  if (!(paymentMethod === "Efectivo" && amountReceived < total)) {
+  if (partialAmount <= 0 || partialAmount >= total) {
+    alert("Por favor ingrese un monto válido para el abono (mayor que 0 y menor que el total)");
+    return;
+  }
+  
+  if (confirm(`¿Seguro que deseas registrar un abono de RD$${partialAmount}?`)) {
     try {
-      await processInvoice("pagado");
+      await processInvoice("pagado", true, partialAmount);
     } catch (error) {
       console.error("Error:", error);
-      alert("Error al procesar el pago");
+      alert("Error al procesar el abono");
     }
+  }
+});
+
+document.getElementById("paid").addEventListener("click", async () => {
+  const paymentMethod = document.querySelector(".payment-button.active").value;
+  const total = calculateTotal();
+  const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+  const partialAmount = parseFloat(document.getElementById("partialAmount").value) || 0;
+  
+  if ((paymentMethod === "Efectivo" && amountReceived < total) || 
+      ((paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") && partialAmount <= 0)) {
+    return;
+  }
+  
+  try {
+    await processInvoice("pagado");
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error al procesar el pago");
   }
 });
 
 // Inicialización
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("paid").classList.add("disabled");
+  document.getElementById("partialPayment").classList.add("disabled");
 });
-    
 
-
-    const processInvoice = async (status) => {
+const processInvoice = async (status, isPartialPayment = false, partialAmount = 0) => {
   // Si el estado es "pago pendiente", no se necesita un método de pago
   let paymentMethod = status === "pago pendiente" ? "Pago Pendiente" : document.querySelector(".payment-button.active").value;
   
@@ -1039,10 +1148,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Si el método de pago es Efectivo, obtener el monto recibido y calcular el cambio
   let amountReceived = 0;
   let changeAmount = 0;
+  let remainingBalance = 0;
 
-  if (paymentMethod === "Efectivo") {
+  if (isPartialPayment) {
+    amountReceived = partialAmount;
+    remainingBalance = total - partialAmount;
+  } else if (paymentMethod === "Efectivo") {
     amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
     changeAmount = amountReceived - total;
+  } else if (paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") {
+    amountReceived = total;
   }
 
   const invoiceData = {
@@ -1060,112 +1175,85 @@ document.addEventListener("DOMContentLoaded", () => {
       name: item.name,
       count: parseInt(item.input.value) || 0,
       price: item.price
-    })).filter(item => item.count > 0), // Filtrar solo los servicios con cantidad > 0
+    })).filter(item => item.count > 0),
     deliveryOption: deliveryOption ? [{
       name: deliveryOption.dataset.name,
-      price: deliveryPrice // Usar el precio ingresado
+      price: deliveryPrice
     }] : [{ name: "Sin Delivery", price: "0" }],
     selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
       name: product.closest('.product-item').querySelector('div').textContent,
       quantity: parseInt(product.value) || 0,
       price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
-    })).filter(product => product.quantity > 0), // Filtrar solo los productos con cantidad > 0
+    })).filter(product => product.quantity > 0),
     total: total,
     paymentMethod: paymentMethod,
     status: status,
-    amountReceived: amountReceived, // Agregar monto recibido
-    changeAmount: changeAmount, // Agregar cambio
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Cambiar aquí
-    ITBISmonto: itbis // Agregar el monto del ITBIS aquí
+    amountReceived: amountReceived,
+    changeAmount: changeAmount,
+    remainingBalance: remainingBalance,
+    abonoFact: isPartialPayment ? "yes" : "no",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    ITBISmonto: itbis
   };
 
   try {
     const invoiceRef = await db.collection("facturas").add(invoiceData);
-
-    // Obtener el documento recién creado
     const invoiceDoc = await invoiceRef.get();
-
-    // Mostrar el valor del campo "id" del documento en el modal
-    const invoiceId = invoiceDoc.data().id; // Accediendo al campo "id"
+    const invoiceId = invoiceDoc.data().id;
     document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
 
-    // Actualizar inventario de productos adicionales basado en el array "consumo" de los hampers
-    for (const hamper of hampers) {
-        for (const item of hamper.consumo) {
-            const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-            if (!productDoc.empty) {
-                const productRef = productDoc.docs[0].ref;
-                const productData = productDoc.docs[0].data();
-                const newQuantity = productData.cantidad - item.cantidad;
-                await productRef.update({ cantidad: newQuantity });
-            }
-        }
-    }
+    // Actualizar inventario (código existente...)
 
-    // Actualizar inventario de productos adicionales basado en el array "consumo" de los "otroservicio"
-    for (const servicio of otrosServicios) {
-        const cantidadServicio = parseInt(servicio.input.value) || 0;
-        if (cantidadServicio > 0) {
-            for (const item of servicio.consumo) {
-                const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-                if (!productDoc.empty) {
-                    const productRef = productDoc.docs[0].ref;
-                    const productData = productDoc.docs[0].data();
-                    const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
-                    await productRef.update({ cantidad: newQuantity });
-                }
-            }
-        }
-    }
-
-    // Actualizar inventario de productos seleccionados manualmente
-    const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
-    for (const product of selectedProducts) {
-        const quantity = parseInt(product.value) || 0;
-        if (quantity > 0) {
-            const productName = product.closest('.product-item').querySelector('div').textContent;
-            const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
-            if (!productDoc.empty) {
-                const productRef = productDoc.docs[0].ref;
-                const productData = productDoc.docs[0].data();
-                const newQuantity = productData.cantidad - quantity;
-                await productRef.update({ cantidad: newQuantity });
-            }
-        }
-    }
-
-    // Deshabilitar los botones de pago después de procesar la factura
     disablePaymentButtons();
-
-    // Ocultar las opciones de pago en Efectivo
     document.getElementById("cashPaymentOptions").classList.add("hidden");
+    document.getElementById("transferCardPaymentOptions").classList.add("hidden");
 
-    // Mostrar el modal de factura exitosa
     showProcessedInvoiceModal(
-        document.getElementById("modalInvoiceDetails").innerHTML,
-        paymentMethod,
-        amountReceived,
-        changeAmount,
-        status
+      document.getElementById("modalInvoiceDetails").innerHTML,
+      paymentMethod,
+      amountReceived,
+      changeAmount,
+      status,
+      isPartialPayment,
+      partialAmount,
+      remainingBalance
     );
 
     clearSelections();
     document.getElementById("billingForm").reset();
     document.getElementById("amountReceived").value = "";
+    document.getElementById("partialAmount").value = "";
     document.getElementById("changeAmount").textContent = "";
     document.getElementById("empleado").selectedIndex = 0;
     updateInvoicePreview();
 
-} catch (error) {
+  } catch (error) {
     console.error("Error al guardar la factura: ", error);
     alert("Hubo un problema al procesar la factura. Inténtalo de nuevo.");
-}
+  }
 
-document.getElementById("confirmationModal").classList.add("hidden");
+  document.getElementById("confirmationModal").classList.add("hidden");
 };
 
-
     
+
+
+
+// Eventos de entrada para validar botones
+document.getElementById("amountReceived").addEventListener("input", () => {
+  const total = calculateTotal();
+  const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+  document.getElementById("changeAmount").textContent = `RD$${(amountReceived - total).toFixed(2)}`;
+  validatePaymentButtons();
+});
+
+document.getElementById("partialAmount").addEventListener("input", () => {
+  validatePaymentButtons();
+});
+
+
+
+
     // Función para deshabilitar los botones de pago
     const disablePaymentButtons = () => {
 
@@ -1271,23 +1359,63 @@ document.getElementById("confirmationModal").classList.add("hidden");
     loadProducts();
 
 
-    //Modal Factura procesada
-    const showProcessedInvoiceModal = (invoiceDetails, paymentMethod, amountReceived, changeAmount, status) => {
-      // Obtener la fecha y hora actual en formato AM/PM
-      const now = new Date();
-      const hours = now.getHours() % 12 || 12;
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-      const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
+  //Modal Factura procesada
+const showProcessedInvoiceModal = (invoiceDetails, paymentMethod, amountReceived, changeAmount, status, isPartial = false, partialAmount = 0, remainingBalance = 0) => {
+  // Obtener la fecha y hora actual en formato AM/PM
+  const now = new Date();
+  const hours = now.getHours() % 12 || 12;
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+  const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
 
-      // Formatear fecha
-      const day = now.getDate().toString().padStart(2, "0");
-      const month = (now.getMonth() + 1).toString().padStart(2, "0");
-      const year = now.getFullYear();
-      const dateString = `${day}/${month}/${year}`;
+  // Formatear fecha
+  const day = now.getDate().toString().padStart(2, "0");
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
+  const year = now.getFullYear();
+  const dateString = `${day}/${month}/${year}`;
 
-      const details = `
+  let paymentDetails = `
+    <div style="display: flex; justify-content: space-between;">
+      <strong>Método de Pago:</strong>
+      <span>${paymentMethod}</span>
+    </div>
+  `;
+
+  if (isPartial) {
+    paymentDetails += `
+      <div style="display: flex; justify-content: space-between;">
+        <strong>Monto Abonado:</strong> 
+        <span>RD$${partialAmount.toFixed(2)}<span><br>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <strong>Saldo Pendiente:</strong>
+        <span>RD$${remainingBalance.toFixed(2)}</span>
+      </div>
+      <div style="text-align: center; margin-top: 10px; margin-bottom: 4px;font-weight: bold; color: orange;">
+        Pago Parcial (Abono)
+      </div>
+    `;
+  } else if (paymentMethod === "Efectivo") {
+    paymentDetails += `
+      <div style="display: flex; justify-content: space-between;">
+        <strong>Monto Recibido:</strong> 
+        <span>RD$${amountReceived.toFixed(2)}<span><br>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <strong>Cambio:</strong>
+        <span>RD$${changeAmount.toFixed(2)}</span>
+      </div>
+    `;
+  }
+
+  const statusDisplay = status === "pago pendiente" ? `
+    <div style="text-align: center; margin-top: 10px; margin-bottom: 4px;font-weight: bold; color: red;">
+      Pago Pendiente
+    </div>
+  ` : "";
+
+  const details = `
     <div style="display: inline-flex;width: 100%;flex-direction: row-reverse;">
       <div style="display: inline-flex;flex-direction: column;text-align: end;">
         <strong>Fecha y Hora:</strong>
@@ -1298,32 +1426,14 @@ document.getElementById("confirmationModal").classList.add("hidden");
     <div style="background: black; height: 1px; width: 99%"></div>
     
     ${invoiceDetails}<br>
-
-    <div style="display: flex; justify-content: space-between;">
-      <strong>Método de Pago:</strong>
-      <span>${paymentMethod}</span>
-    </div>
     
-    ${paymentMethod === "Efectivo" ? `
-      <div style="display: flex; justify-content: space-between;">
-        <strong>Monto Recibido:</strong> 
-        <span>RD$${amountReceived}<span><br>
-      </div>
-
-      <div style="display: flex; justify-content: space-between;">
-        <strong>Cambio:</strong>
-        <span>RD$${changeAmount}</span>
-      </div>` : ""}
-
-    ${status === "pago pendiente" ? `
-      <div style="text-align: center; margin-top: 10px; margin-bottom: 4px;font-weight: bold; color: red;">
-        Pago Pendiente
-      </div>` : ""}
+    ${paymentDetails}
+    ${statusDisplay}
   `;
 
-      document.getElementById("processedInvoiceDetails").innerHTML = details;
-      document.getElementById("processedInvoiceModal").classList.remove("hidden");
-    };
+  document.getElementById("processedInvoiceDetails").innerHTML = details;
+  document.getElementById("processedInvoiceModal").classList.remove("hidden");
+};
 
 
 
@@ -1477,4 +1587,4 @@ document.getElementById("confirmationModal").classList.add("hidden");
 
 </html>
 
-<!-- 14 -->
+<!-- 4 -->

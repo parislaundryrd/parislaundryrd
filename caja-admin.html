@@ -1735,7 +1735,7 @@
       }
     };
 
-  // Cargar las facturas en tiempo real
+ // Cargar las facturas en tiempo real
 // Cargar las facturas en tiempo real
 const loadFacturasRealTime = async () => {
   try {
@@ -1762,14 +1762,34 @@ const loadFacturasRealTime = async () => {
 
           snapshot.forEach(doc => {
             const factura = doc.data();
+            
+            // Determinar los valores a mostrar basados en abonoFact
+            let total, montoRecibido, cambio;
+            
+            if (factura.paymentMethod === "Efectivo" && factura.abonoFact === "no") {
+              // Usar los valores de abono para facturas con abonoFact = "no"
+              total = factura.remainingBalance || 0;
+              montoRecibido = factura.amountReceivedAbonoFire || 0;
+              cambio = factura.changeAmountAbonoFire || 0;
+            } else {
+              // Usar los valores normales para otras facturas
+              total = factura.total || 0;
+              montoRecibido = factura.amountReceived || 0;
+              cambio = factura.changeAmount || 0;
+            }
+
+            // Agregar "Abono" en rojo si abonoFact es "no"
+            const abonoText = factura.abonoFact === "no" ? '<span style="color: red;">Pago Abono - </span>' : '';
+            const nombreCliente = abonoText + (factura.clientName || '');
+
             const rowData = {
               id: factura.id,
-              clientName: factura.clientName,
+              clientName: nombreCliente,
               clientPhone: factura.clientPhone,
               paymentMethod: factura.paymentMethod,
-              amountReceived: factura.amountReceived || 0,
-              changeAmount: factura.changeAmount || 0,
-              total: factura.total,
+              amountReceived: montoRecibido,
+              changeAmount: cambio,
+              total: total,
               timestamp: factura.timestamp.toDate()
             };
 
@@ -1782,7 +1802,7 @@ const loadFacturasRealTime = async () => {
               const row = facturasTableBody.insertRow();
               row.insertCell(0).innerText = contadorEfectivo++;
               row.insertCell(1).innerText = rowData.id;
-              row.insertCell(2).innerText = rowData.clientName;
+              row.insertCell(2).innerHTML = rowData.clientName; // Usar innerHTML para renderizar el span
               row.insertCell(3).innerText = rowData.clientPhone;
               row.insertCell(4).innerText = rowData.paymentMethod;
               row.insertCell(5).innerText = rowData.amountReceived;
@@ -1794,7 +1814,7 @@ const loadFacturasRealTime = async () => {
               const row = otrasFacturasTableBody.insertRow();
               row.insertCell(0).innerText = contadorOtras++;
               row.insertCell(1).innerText = rowData.id;
-              row.insertCell(2).innerText = rowData.clientName;
+              row.insertCell(2).innerHTML = rowData.clientName; // Usar innerHTML para consistencia
               row.insertCell(3).innerText = rowData.clientPhone;
               row.insertCell(4).innerText = rowData.paymentMethod;
               row.insertCell(5).innerText = rowData.total;
