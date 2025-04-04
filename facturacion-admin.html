@@ -1206,7 +1206,8 @@ const processInvoice = async (status, isPartialPayment = false, partialAmount = 
 
     disablePaymentButtons();
     document.getElementById("cashPaymentOptions").classList.add("hidden");
-    document.getElementById("transferCardPaymentOptions").classList.add("hidden");
+    // document.getElementById("transferCardPaymentOptions").classList.add("hidden");
+
 
     showProcessedInvoiceModal(
       document.getElementById("modalInvoiceDetails").innerHTML,
@@ -1441,6 +1442,7 @@ const showProcessedInvoiceModal = (invoiceDetails, paymentMethod, amountReceived
     const closeProcessedInvoiceModal = () => {
       // Cerrar el modal
       document.getElementById("processedInvoiceModal").classList.add("hidden");
+      document.getElementById("partialPayment").classList.add("disabled");
 
 
       // Reiniciar la opción de método de pago

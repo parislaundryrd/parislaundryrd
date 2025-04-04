@@ -977,8 +977,8 @@
 }
 
 
-    // Agregar evento de clic al botón de "PAGAR ABONO"
-    pagarAbonoBtn.addEventListener("click", async () => {
+ // Agregar evento de clic al botón de "PAGAR ABONO"
+pagarAbonoBtn.addEventListener("click", async () => {
   if (currentInvoiceId) {
     const selectedEmployee = document.getElementById("employeeSelect").value;
 
@@ -1014,7 +1014,15 @@
         const doc = querySnapshot.docs[0];
         const invoiceData = doc.data();
         
-        // Obtener la fecha original y la fecha actual
+        // Verificar si el método de pago original es Transferencia o Tarjeta de Crédito
+        const originalPaymentMethod = invoiceData.paymentMethod;
+        const isOriginalMethodCardOrTransfer = originalPaymentMethod === "Transferencia" || 
+                                             originalPaymentMethod === "Tarjeta de Crédito";
+        
+        // Verificar si el método de pago del abono es Efectivo
+        const isAbonoCash = selectedPaymentMethod === "efectivo";
+        
+        // Verificar si es un día diferente
         const originalTimestamp = invoiceData.timestamp.toDate();
         const currentTimestamp = new Date();
         const isDifferentDay = originalTimestamp.toDateString() !== currentTimestamp.toDateString();
@@ -1022,17 +1030,27 @@
         // Preparar los datos a actualizar
         const updateData = {
           abonoFact: "no", // Cambiamos el abonoFact a "no" porque ya se pagó completo
-          paymentMethod: getFullPaymentMethodName(selectedPaymentMethod),
           amountReceivedAbonoFire: amountReceived,
           changeAmountAbonoFire: changeAmount,
           amountReceived: firebase.firestore.FieldValue.increment(amountReceived),
           changeAmount: firebase.firestore.FieldValue.increment(changeAmount),
         };
 
-        // Si es un día diferente, actualizar timestamp y agregar campo abonoFact2do
-        if (isDifferentDay) {
-          updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
-          updateData.abonoFact2do = "yes"; // Agregamos el nuevo campo
+        // Solo actualizar paymentMethod si el método de pago es efectivo
+        // o si no hay un paymentMethod definido previamente
+        if (selectedPaymentMethod === "efectivo" || !invoiceData.paymentMethod) {
+          updateData.paymentMethod = getFullPaymentMethodName(selectedPaymentMethod);
+        }
+
+        // Condición 1: Si método original fue Transferencia/Tarjeta y el abono es en Efectivo
+        // O Condición 2: Si es un día diferente
+        if ((isOriginalMethodCardOrTransfer && isAbonoCash) || isDifferentDay) {
+          updateData.abonoFact2do = "yes";
+          
+          // Si es un día diferente, también actualizamos el timestamp
+          if (isDifferentDay) {
+            updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+          }
         }
 
         await doc.ref.update(updateData);
@@ -1187,5 +1205,3 @@
 </body>
 
 </html>
-
-<!-- 77 -->
