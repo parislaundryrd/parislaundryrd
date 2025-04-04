@@ -1017,6 +1017,8 @@ input[type="text"] {
 /* modal_preview_factura_tittle FIN */
 
 
+
+
 /* Modal factura procesada */
 
 .factura_processed_tittle {
@@ -1120,6 +1122,32 @@ input[type="text"] {
 .container_flex_factura_processed_down button img {
     height: 25px;
 }
+
+
+/* Añade esto a tu CSS */
+.abono-checkbox-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    margin: 15px 0;
+  }
+  
+  .abono-checkbox-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  
+  .abono-checkbox-container label {
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
 
 /* Modal factura procesada FIN */
 
