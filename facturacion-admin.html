@@ -216,7 +216,13 @@
             </div>
 
 
-
+<!-- Añade JUSTO DESPUÉS: -->
+<div style="text-align: center; margin: 10px 0;">
+  <label style="cursor: pointer;">
+    <input type="checkbox" id="pagarConAbonoCheckbox" style="margin-right: 5px;">
+    Pagar con Abono
+  </label>
+</div>
 
 
             <div id="transferCardPaymentOptions">
@@ -991,13 +997,11 @@ function validatePaymentButtons() {
   
   // Validar botón "Pago Recibido"
   if (paymentMethod === "Efectivo") {
-    // En efectivo, solo habilitar si el monto recibido es igual o mayor al total
     paidButton.classList.toggle("disabled", amountReceived < total);
   } else if (paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") {
     // Para transferencia/tarjeta, habilitar siempre el botón
     paidButton.classList.remove("disabled");
   } else {
-    // Para otros casos (o sin método seleccionado), deshabilitar
     paidButton.classList.add("disabled");
   }
   
@@ -1082,12 +1086,13 @@ document.getElementById("partialPayment").addEventListener("click", async () => 
 document.getElementById("paid").addEventListener("click", async () => {
   const paymentMethod = document.querySelector(".payment-button.active").value;
   const total = calculateTotal();
-  const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
-  const partialAmount = parseFloat(document.getElementById("partialAmount").value) || 0;
   
-  if ((paymentMethod === "Efectivo" && amountReceived < total) || 
-      ((paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") && partialAmount <= 0)) {
-    return;
+  if (paymentMethod === "Efectivo") {
+    const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+    if (amountReceived < total) {
+      alert("El monto recibido debe ser igual o mayor al total");
+      return;
+    }
   }
   
   try {
@@ -1157,13 +1162,14 @@ const processInvoice = async (status, isPartialPayment = false, partialAmount = 
     amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
     changeAmount = amountReceived - total;
   } else if (paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") {
+    // Para transferencia/tarjeta sin abono, el monto recibido es el total
     amountReceived = total;
   }
 
   const invoiceData = {
     id: generateNewInvoiceId(await getLastInvoiceId()),
     clientName: document.getElementById("clientName").value.trim(),
-    clientPhone: document.getElementById("clientPhone").value.replace(/-/g, ''), // Eliminar guiones
+    clientPhone: document.getElementById("clientPhone").value.replace(/-/g, ''),
     clientAddress: document.getElementById("clientAddress").value.trim(),
     NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
     selectedServices: hampers.map(hamper => ({
@@ -1191,7 +1197,7 @@ const processInvoice = async (status, isPartialPayment = false, partialAmount = 
     amountReceived: amountReceived,
     changeAmount: changeAmount,
     remainingBalance: remainingBalance,
-    abonoFact: isPartialPayment ? "yes" : "no",
+    abonoFact: isPartialPayment ? "yes" : "", // Cambiado a cadena vacía para no abonos
     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     ITBISmonto: itbis
   };
@@ -1582,6 +1588,29 @@ const showProcessedInvoiceModal = (invoiceDetails, paymentMethod, amountReceived
       printWindow.print();
       printWindow.close();
     };
+
+
+
+
+    // ===== [CONTROL DE ABONO SIMPLIFICADO] ===== //
+document.addEventListener('DOMContentLoaded', function() {
+  const abonoCheckbox = document.getElementById('pagarConAbonoCheckbox');
+  const opcionesAbono = document.getElementById('transferCardPaymentOptions');
+  
+  // 1. Ocultar al cargar
+  opcionesAbono.style.display = 'none';
+  
+  // 2. Mostrar/ocultar al hacer click
+  abonoCheckbox.addEventListener('click', function() {
+    opcionesAbono.style.display = this.checked ? 'block' : 'none';
+  });
+  
+  // 3. Ocultar siempre que se abra el modal (añade esto donde procesas la factura)
+  document.getElementById('processInvoice').addEventListener('click', function() {
+    abonoCheckbox.checked = false;
+    opcionesAbono.style.display = 'none';
+  });
+});
 
   </script>
 
