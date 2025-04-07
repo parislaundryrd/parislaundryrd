@@ -484,14 +484,14 @@
       <strong>Método de Pago:</strong> ${data.paymentMethod || "No especificado"}<br>
   `;
 
-      // Mostrar sección de abono SOLO si abonoFact es "yes"
-      if (data.abonoFact === "yes") {
-        abonoSection.style.display = "block";
-        pagarAbonoBtn.style.display = "block"; // Mostrar
-        currentPendingAmount = data.amountReceived ?
-          (data.total - data.amountReceived) :
-          data.total;
-        montoPendienteAbono.textContent = `Monto pendiente: RD$${currentPendingAmount.toFixed(2)}`;
+// En la función showInvoiceDetails
+if (data.abonoFact === "yes") {
+  abonoSection.style.display = "block";
+  pagarAbonoBtn.style.display = "block";
+  currentPendingAmount = data.amountReceived ? 
+                       (data.total - data.amountReceived) : 
+                       data.total;
+  montoPendienteAbono.textContent = `Monto pendiente: RD$${currentPendingAmount.toFixed(2)}`;
 
         // Resetear la selección de método de pago del abono
         paymentOptionsAbono.forEach(opt => opt.classList.remove("selected"));
@@ -853,81 +853,104 @@
     };
 
     const renderHistoryItems = () => {
-      if (historyData.length <= 10) {
-        historyList.innerHTML = "";
+  if (historyData.length <= 10) {
+    historyList.innerHTML = "";
+  }
+
+  historyData.forEach(data => {
+    const listItem = document.createElement("li");
+    const formattedAmount = `RD$${formatNumberWithCommas(data.monto.toFixed(2))}`;
+
+    // Verificar si es un pago de abono
+    const isAbonoPayment = data.cambioStatus === "Abono Pagado";
+
+    const formattedDate = data.fecha.toDate().toLocaleString('es-ES', {
+      timeZone: 'America/Santo_Domingo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    });
+
+    listItem.innerHTML = `
+      <strong>Empleado que realizó el cambio:</strong> ${data.empleado}<br>
+      <strong>ID de Factura:</strong> ${data.id}<br>
+      <strong>Cliente:</strong> ${data.nombreCliente}<br>
+      <strong>Teléfono:</strong> ${data.numeroTelefono}<br>
+      <strong>Total:</strong> ${formattedAmount}<br>
+      <strong>Fecha y hora del cambio:</strong> ${formattedDate}<br>
+      <strong>Cambio de Estado:</strong>
+    `;
+
+    if (isAbonoPayment) {
+      // Calcular el monto del abono (lo que realmente se pagó en este pago)
+      const montoAbonoPagado = data.amountReceivedAbonoFire || 
+                              (data.amountReceived - (data.monto - data.amountReceived));
+      
+      const metodoPago = data.paymentMethod || "Método no especificado";
+      const montoAbono = montoAbonoPagado ? 
+                        `RD$${montoAbonoPagado.toFixed(2)}` : 
+                        "Monto no especificado";
+      
+      const abonoStatusSpan = document.createElement("span");
+      abonoStatusSpan.textContent = `Abono Pagado, ${metodoPago}, ${montoAbono}`;
+      abonoStatusSpan.className = "status-pagado";
+      listItem.appendChild(abonoStatusSpan);
+    } else {
+      // Mantener el formato original para otros tipos de cambios
+      let previousStatusSpan = document.createElement("span");
+      let newStatusSpan = document.createElement("span");
+      let previousStatusText = "";
+      let newStatusText = "";
+      let previousStatusClass = "";
+      let newStatusClass = "";
+
+      switch (data.cambioStatus) {
+        case "Pago Pendiente a Pagado":
+          previousStatusText = "Pago Pendiente";
+          previousStatusClass = "status-pago-pendiente";
+          newStatusText = "Pagado";
+          newStatusClass = "status-pagado";
+          break;
+        case "Pagado a Pagado Listo":
+          previousStatusText = "Pagado";
+          previousStatusClass = "status-pagado";
+          newStatusText = "Pagado Listo";
+          newStatusClass = "status-pagado-listo";
+          break;
+        case "Pagado Listo a Pagado Entregado":
+          previousStatusText = "Pagado Listo";
+          previousStatusClass = "status-pagado-listo";
+          newStatusText = "Pagado Entregado";
+          newStatusClass = "status-pagado-entregado";
+          break;
+        default:
+          previousStatusText = data.cambioStatus || "Estado Desconocido";
+          previousStatusClass = "";
+          newStatusText = "";
+          newStatusClass = "";
+          break;
       }
 
-      historyData.forEach(data => {
-        const listItem = document.createElement("li");
-        const formattedAmount = `RD$${formatNumberWithCommas(data.monto.toFixed(2))}`;
-
-        let previousStatusSpan = document.createElement("span");
-        let newStatusSpan = document.createElement("span");
-        let previousStatusText = "";
-        let newStatusText = "";
-        let previousStatusClass = "";
-        let newStatusClass = "";
-
-        switch (data.cambioStatus) {
-          case "Pago Pendiente a Pagado":
-            previousStatusText = "Pago Pendiente";
-            previousStatusClass = "status-pago-pendiente";
-            newStatusText = "Pagado";
-            newStatusClass = "status-pagado";
-            break;
-          case "Pagado a Pagado Listo":
-            previousStatusText = "Pagado";
-            previousStatusClass = "status-pagado";
-            newStatusText = "Pagado Listo";
-            newStatusClass = "status-pagado-listo";
-            break;
-          case "Pagado Listo a Pagado Entregado":
-            previousStatusText = "Pagado Listo";
-            previousStatusClass = "status-pagado-listo";
-            newStatusText = "Pagado Entregado";
-            newStatusClass = "status-pagado-entregado";
-            break;
-          default:
-            previousStatusText = "Estado Desconocido";
-            previousStatusClass = "";
-            newStatusText = "Estado Desconocido";
-            newStatusClass = "";
-            break;
-        }
-
+      if (newStatusText) {
         previousStatusSpan.textContent = previousStatusText;
         previousStatusSpan.className = previousStatusClass;
-
         newStatusSpan.textContent = newStatusText;
         newStatusSpan.className = newStatusClass;
-
-        const formattedDate = data.fecha.toDate().toLocaleString('es-ES', {
-          timeZone: 'America/Santo_Domingo',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: 'numeric',
-          minute: 'numeric',
-          hour12: true
-        });
-
-        listItem.innerHTML = `
-                <strong>Empleado que realizó el cambio:</strong> ${data.empleado}<br>
-                <strong>ID de Factura:</strong> ${data.id}<br>
-                <strong>Cliente:</strong> ${data.nombreCliente}<br>
-                <strong>Teléfono:</strong> ${data.numeroTelefono}<br>
-                <strong>Total:</strong> ${formattedAmount}<br>
-                <strong>Fecha y hora del cambio:</strong> ${formattedDate}<br>
-                <strong>Cambio de Estado:</strong>
-            `;
 
         listItem.appendChild(previousStatusSpan);
         listItem.appendChild(document.createTextNode(" a "));
         listItem.appendChild(newStatusSpan);
+      } else {
+        listItem.appendChild(document.createTextNode(previousStatusText));
+      }
+    }
 
-        historyList.appendChild(listItem);
-      });
-    };
+    historyList.appendChild(listItem);
+  });
+};
 
 
 
@@ -978,7 +1001,7 @@
 
 
  // Agregar evento de clic al botón de "PAGAR ABONO"
-pagarAbonoBtn.addEventListener("click", async () => {
+ pagarAbonoBtn.addEventListener("click", async () => {
   if (currentInvoiceId) {
     const selectedEmployee = document.getElementById("employeeSelect").value;
 
@@ -1055,15 +1078,35 @@ pagarAbonoBtn.addEventListener("click", async () => {
 
         await doc.ref.update(updateData);
 
-        await db.collection("historialFacturasGeneradas").add({
-          empleado: selectedEmployee,
-          id: currentInvoiceId,
-          nombreCliente: currentInvoiceData.clientName,
-          numeroTelefono: currentInvoiceData.clientPhone,
-          monto: currentInvoiceData.total,
-          fecha: new Date(),
-          cambioStatus: "Abono Pagado"
-        });
+        // Crear el mensaje específico para el historial de abonos
+        const metodoPago = getFullPaymentMethodName(selectedPaymentMethod);
+        const mensajeAbono = `Pago de abono, ${metodoPago}, RD$${currentPendingAmount.toFixed(2)}`;
+
+// Dentro del evento click del botón "PAGAR ABONO"
+const montoAbonoPagado = currentPendingAmount; // Este es el monto que estaba pendiente
+
+await db.collection("historialFacturasGeneradas").add({
+  empleado: selectedEmployee,
+  id: currentInvoiceId,
+  nombreCliente: currentInvoiceData.clientName,
+  numeroTelefono: currentInvoiceData.clientPhone,
+  monto: currentInvoiceData.total,
+  fecha: new Date(),
+  cambioStatus: "Abono Pagado",
+  paymentMethod: getFullPaymentMethodName(selectedPaymentMethod),
+  amountReceivedAbonoFire: montoAbonoPagado // Guardamos el monto pendiente que se pagó
+});
+
+// Actualizar la factura principal
+await doc.ref.update({
+  abonoFact: "no",
+  amountReceivedAbonoFire: montoAbonoPagado,
+  amountReceived: firebase.firestore.FieldValue.increment(montoAbonoPagado),
+  changeAmount: firebase.firestore.FieldValue.increment(changeAmount),
+  paymentMethod: selectedPaymentMethod === "efectivo" ? 
+                getFullPaymentMethodName(selectedPaymentMethod) : 
+                invoiceData.paymentMethod
+});
 
         // Obtener los datos actualizados de la factura
         const updatedDoc = await doc.ref.get();
