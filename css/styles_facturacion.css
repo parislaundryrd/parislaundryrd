@@ -998,12 +998,19 @@ input[type="text"] {
 }
 
 #partialAmount {
-    border: 1px solid #ff3800;
-    border-radius: 4px;
-    width: 100px;
+    border: 1px solid #ff812b;
+    background: #ffeadb;
+    border-radius: 7px;
+    width: 90px;
     font-size: 20px;
-    height: 25px;
+    height: 28px;
     padding: 0px 7px;
+}
+
+#partialAmount:focus {
+    outline: none;
+    border: 1px solid #00000000;
+    box-shadow: 0px 0px 0px 2px rgb(255 162 99);
 }
 
 
@@ -1124,7 +1131,23 @@ input[type="text"] {
 }
 
 
-/* Añade esto a tu CSS */
+/* Abono */
+
+#abonobox_master {
+    font-size: 20px;
+    font-family: sans-serif;
+    max-width: 470px;
+    margin: 12px auto;
+    margin-bottom: 17px;
+    background: #bac5d59e;
+    padding: 10px 24px 10px 24px;
+    border-radius: 7px;
+    display: flex
+;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .abono-checkbox-container {
     display: flex;
     justify-content: center;
@@ -1147,6 +1170,9 @@ input[type="text"] {
     font-size: 16px;
     font-weight: 600;
   }
+
+/* Abono FIN */
+  
 
 
 /* Modal factura procesada FIN */
