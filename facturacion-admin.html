@@ -1214,7 +1214,51 @@ const processInvoice = async (status, isPartialPayment = false, partialAmount = 
     const invoiceId = invoiceDoc.data().id;
     document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
 
-    // Actualizar inventario (código existente...)
+
+    // Actualizar inventario de productos adicionales basado en el array "consumo" de los hampers
+    for (const hamper of hampers) {
+        for (const item of hamper.consumo) {
+            const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+            if (!productDoc.empty) {
+                const productRef = productDoc.docs[0].ref;
+                const productData = productDoc.docs[0].data();
+                const newQuantity = productData.cantidad - item.cantidad;
+                await productRef.update({ cantidad: newQuantity });
+            }
+        }
+    }
+
+    // Actualizar inventario de productos adicionales basado en el array "consumo" de los "otroservicio"
+    for (const servicio of otrosServicios) {
+        const cantidadServicio = parseInt(servicio.input.value) || 0;
+        if (cantidadServicio > 0) {
+            for (const item of servicio.consumo) {
+                const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+                if (!productDoc.empty) {
+                    const productRef = productDoc.docs[0].ref;
+                    const productData = productDoc.docs[0].data();
+                    const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
+                    await productRef.update({ cantidad: newQuantity });
+                }
+            }
+        }
+    }
+
+    // Actualizar inventario de productos seleccionados manualmente
+    const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+    for (const product of selectedProducts) {
+        const quantity = parseInt(product.value) || 0;
+        if (quantity > 0) {
+            const productName = product.closest('.product-item').querySelector('div').textContent;
+            const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
+            if (!productDoc.empty) {
+                const productRef = productDoc.docs[0].ref;
+                const productData = productDoc.docs[0].data();
+                const newQuantity = productData.cantidad - quantity;
+                await productRef.update({ cantidad: newQuantity });
+            }
+        }
+    }
 
     disablePaymentButtons();
     document.getElementById("cashPaymentOptions").classList.add("hidden");
