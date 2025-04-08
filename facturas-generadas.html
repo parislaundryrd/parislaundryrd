@@ -1000,8 +1000,7 @@ if (data.abonoFact === "yes") {
 }
 
 
- // Agregar evento de clic al botón de "PAGAR ABONO"
- pagarAbonoBtn.addEventListener("click", async () => {
+pagarAbonoBtn.addEventListener("click", async () => {
   if (currentInvoiceId) {
     const selectedEmployee = document.getElementById("employeeSelect").value;
 
@@ -1012,122 +1011,123 @@ if (data.abonoFact === "yes") {
 
     try {
       const selectedPaymentMethod = selectedPaymentMethodAbono;
-
       if (!selectedPaymentMethod) {
         alert("Por favor seleccione un método de pago");
         return;
       }
 
-      let amountReceived = 0;
-      let changeAmount = 0;
+      let montoAbono = 0;
+      let cambioAbono = 0;
 
       if (selectedPaymentMethod === "efectivo") {
-        amountReceived = parseFloat(amountReceivedAbono.value) || 0;
-        const total = parseFloat(currentPendingAmount);
-        changeAmount = amountReceived - total;
+        montoAbono = parseFloat(document.getElementById("amountReceivedAbono").value) || 0;
+        cambioAbono = montoAbono - currentPendingAmount;
 
-        if (amountReceived < total) {
-          alert("El monto recibido debe ser mayor o igual al monto pendiente");
+        if (montoAbono <= 0) {
+          alert("El monto recibido debe ser mayor que cero");
           return;
         }
+        
+        if (cambioAbono < 0) {
+          alert(`El monto recibido (RD$${montoAbono.toFixed(2)}) no cubre el abono pendiente (RD$${currentPendingAmount.toFixed(2)})`);
+          return;
+        }
+      } else {
+        montoAbono = currentPendingAmount;
       }
 
       const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
         const invoiceData = doc.data();
-        
-        // Verificar si el método de pago original es Transferencia o Tarjeta de Crédito
-        const originalPaymentMethod = invoiceData.paymentMethod;
-        const isOriginalMethodCardOrTransfer = originalPaymentMethod === "Transferencia" || 
-                                             originalPaymentMethod === "Tarjeta de Crédito";
-        
-        // Verificar si el método de pago del abono es Efectivo
-        const isAbonoCash = selectedPaymentMethod === "efectivo";
-        
-        // Verificar si es un día diferente
-        const originalTimestamp = invoiceData.timestamp.toDate();
-        const currentTimestamp = new Date();
-        const isDifferentDay = originalTimestamp.toDateString() !== currentTimestamp.toDateString();
 
-        // Preparar los datos a actualizar
+        // Verificar si es un día diferente
+        const originalDate = invoiceData.timestamp.toDate();
+        const currentDate = new Date();
+        const isDifferentDay = !(
+          originalDate.getDate() === currentDate.getDate() &&
+          originalDate.getMonth() === currentDate.getMonth() &&
+          originalDate.getFullYear() === currentDate.getFullYear()
+        );
+
+        // Calcular nuevo estado
+        const newTotalReceived = (invoiceData.amountReceived || 0) + montoAbono;
+        const isAbonoComplete = newTotalReceived >= invoiceData.total;
+
+        // Preparar datos de actualización
         const updateData = {
-          abonoFact: "no", // Cambiamos el abonoFact a "no" porque ya se pagó completo
-          amountReceivedAbonoFire: amountReceived,
-          changeAmountAbonoFire: changeAmount,
-          amountReceived: firebase.firestore.FieldValue.increment(amountReceived),
-          changeAmount: firebase.firestore.FieldValue.increment(changeAmount),
+          amountReceived: newTotalReceived,
+          changeAmount: (invoiceData.changeAmount || 0) + cambioAbono,
+          amountReceivedAbonoFire: montoAbono,
+          changeAmountAbonoFire: cambioAbono,
+          status: isAbonoComplete ? "pagado" : invoiceData.status,
+          abonoFact: isAbonoComplete ? "no" : "yes",
+          lastPaymentDate: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        // Solo actualizar paymentMethod si el método de pago es efectivo
-        // o si no hay un paymentMethod definido previamente
-        if (selectedPaymentMethod === "efectivo" || !invoiceData.paymentMethod) {
-          updateData.paymentMethod = getFullPaymentMethodName(selectedPaymentMethod);
+        // Actualizar método de pago solo si es efectivo
+        if (selectedPaymentMethod === "efectivo") {
+          updateData.paymentMethod = invoiceData.paymentMethod === "Efectivo" ? 
+                                    "Efectivo" : 
+                                    `Mixto (${invoiceData.paymentMethod} + Efectivo)`;
         }
 
-        // Condición 1: Si método original fue Transferencia/Tarjeta y el abono es en Efectivo
-        // O Condición 2: Si es un día diferente
-        if ((isOriginalMethodCardOrTransfer && isAbonoCash) || isDifferentDay) {
+        // Si es día diferente, actualizar timestamp y marcar como abono secundario
+        if (isDifferentDay) {
+          updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
           updateData.abonoFact2do = "yes";
-          
-          // Si es un día diferente, también actualizamos el timestamp
-          if (isDifferentDay) {
-            updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
-          }
         }
 
         await doc.ref.update(updateData);
 
-        // Crear el mensaje específico para el historial de abonos
-        const metodoPago = getFullPaymentMethodName(selectedPaymentMethod);
-        const mensajeAbono = `Pago de abono, ${metodoPago}, RD$${currentPendingAmount.toFixed(2)}`;
+        // Registrar en historial
+        const historyData = {
+          empleado: selectedEmployee,
+          id: currentInvoiceId,
+          nombreCliente: invoiceData.clientName,
+          numeroTelefono: invoiceData.clientPhone,
+          monto: montoAbono,
+          fecha: new Date(),
+          cambioStatus: isAbonoComplete ? "Abono Completado" : "Abono Parcial",
+          paymentMethod: getFullPaymentMethodName(selectedPaymentMethod),
+          montoTotalFactura: invoiceData.total,
+          saldoAnterior: currentPendingAmount,
+          saldoActual: invoiceData.total - newTotalReceived,
+          esAbono2do: isDifferentDay ? "yes" : "no",
+          amountReceivedAbono: montoAbono,
+          changeAmountAbono: cambioAbono
+        };
 
-// Dentro del evento click del botón "PAGAR ABONO"
-const montoAbonoPagado = currentPendingAmount; // Este es el monto que estaba pendiente
+        await db.collection("historialFacturasGeneradas").add(historyData);
 
-await db.collection("historialFacturasGeneradas").add({
-  empleado: selectedEmployee,
-  id: currentInvoiceId,
-  nombreCliente: currentInvoiceData.clientName,
-  numeroTelefono: currentInvoiceData.clientPhone,
-  monto: currentInvoiceData.total,
-  fecha: new Date(),
-  cambioStatus: "Abono Pagado",
-  paymentMethod: getFullPaymentMethodName(selectedPaymentMethod),
-  amountReceivedAbonoFire: montoAbonoPagado // Guardamos el monto pendiente que se pagó
-});
-
-// Actualizar la factura principal
-await doc.ref.update({
-  abonoFact: "no",
-  amountReceivedAbonoFire: montoAbonoPagado,
-  amountReceived: firebase.firestore.FieldValue.increment(montoAbonoPagado),
-  changeAmount: firebase.firestore.FieldValue.increment(changeAmount),
-  paymentMethod: selectedPaymentMethod === "efectivo" ? 
-                getFullPaymentMethodName(selectedPaymentMethod) : 
-                invoiceData.paymentMethod
-});
-
-        // Obtener los datos actualizados de la factura
+        // Actualizar vista
         const updatedDoc = await doc.ref.get();
         currentInvoiceData = updatedDoc.data();
-
-        // Actualizar la vista del modal con los nuevos datos
         showInvoiceDetails(currentInvoiceData);
 
-        // Mostrar mensaje de éxito sin cerrar el modal
-        alert("Abono pagado completamente. La factura ha sido actualizada.");
+        // Mostrar mensaje apropiado
+        let message = isAbonoComplete ? 
+          "¡Abono completado! Factura marcada como pagada.\n" : 
+          `Abono registrado. Saldo pendiente: RD$${(invoiceData.total - newTotalReceived).toFixed(2)}\n`;
+        
+        message += `Monto abono: RD$${montoAbono.toFixed(2)}`;
+        
+        if (cambioAbono > 0) {
+          message += `\nCambio: RD$${cambioAbono.toFixed(2)}`;
+        }
+        
+        if (isDifferentDay) {
+          message += "\n(Nota: Pago registrado en nueva fecha)";
+        }
 
-        // Actualizar la tabla de facturas sin recargar la página
+        alert(message);
+
+        // Actualizar lista
         loadInvoices(currentStatus);
-
-      } else {
-        console.error("No existe el documento con el campo 'id':", currentInvoiceId);
-        alert("No se pudo encontrar la factura para actualizar.");
       }
     } catch (error) {
-      console.error("Error al actualizar el estado:", error);
-      alert("No se pudo marcar el abono como pagado. Intenta nuevamente.");
+      console.error("Error al procesar abono:", error);
+      alert("Error al procesar el abono. Intente nuevamente.");
     }
   }
 });
