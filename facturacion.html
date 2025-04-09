@@ -490,15 +490,15 @@ serviceDiv.querySelector(".itemInput").addEventListener("input", () => {
     };
 
     const addHamper = (data) => {
-      // Verifica si ya hay 30 hampers
-      if (hampers.length >= 30) {
-        alert("No puedes agregar más de 30 hampers por factura.");
-        return; // Salir de la función si ya hay 30 hampers
-      }
+  // Verifica si ya hay 30 hampers
+  if (hampers.length >= 30) {
+    alert("No puedes agregar más de 30 hampers por factura.");
+    return;
+  }
 
-      const hamperDiv = document.createElement("div");
-      hamperDiv.classList.add("hamper");
-      hamperDiv.innerHTML = `
+  const hamperDiv = document.createElement("div");
+  hamperDiv.classList.add("hamper");
+  hamperDiv.innerHTML = `
     <h3>${data.nombre}</h3>
     <img src="./img/icon/${data.icon}" alt="${data.nombre}">
     <h5>Cantidad de Libras</h5>
@@ -511,51 +511,67 @@ serviceDiv.querySelector(".itemInput").addEventListener("input", () => {
     <button id="cerrarhamper" type="button" class="removeHamper">X</button>
   `;
 
-      hamperContainer.appendChild(hamperDiv);
-      hampers.push({
-        data: data,
-        weightInput: hamperDiv.querySelector(".weightInput"),
-        priceDisplay: hamperDiv.querySelector(".priceDisplay"),
-        consumo: data.consumo || [] // Almacenar el array "consumo"
-      });
+  hamperContainer.appendChild(hamperDiv);
+  const newHamper = {
+    data: data,
+    weightInput: hamperDiv.querySelector(".weightInput"),
+    priceDisplay: hamperDiv.querySelector(".priceDisplay"),
+    consumo: data.consumo || []
+  };
+  hampers.push(newHamper);
 
-      hamperDiv.querySelector(".increaseWeight").addEventListener("click", () => {
-        hamperDiv.querySelector(".weightInput").value = Math.min(100, parseInt(hamperDiv.querySelector(".weightInput").value) + 1);
-        calculatePrice(hamperDiv);
-        updateInvoicePreview();
-      });
+  // Event listeners para los botones de incremento/decremento
+  hamperDiv.querySelector(".increaseWeight").addEventListener("click", () => {
+    newHamper.weightInput.value = Math.min(100, parseInt(newHamper.weightInput.value) + 1);
+    calculatePrice(hamperDiv);
+    updateInvoicePreview();
+  });
 
-      hamperDiv.querySelector(".decreaseWeight").addEventListener("click", () => {
-        hamperDiv.querySelector(".weightInput").value = Math.max(1, parseInt(hamperDiv.querySelector(".weightInput").value) - 1);
-        calculatePrice(hamperDiv);
-        updateInvoicePreview();
-      });
+  hamperDiv.querySelector(".decreaseWeight").addEventListener("click", () => {
+    newHamper.weightInput.value = Math.max(1, parseInt(newHamper.weightInput.value) - 1);
+    calculatePrice(hamperDiv);
+    updateInvoicePreview();
+  });
 
-      hamperDiv.querySelector(".removeHamper").addEventListener("click", () => {
-        hamperContainer.removeChild(hamperDiv);
-        hampers = hampers.filter(h => h.weightInput !== hamperDiv.querySelector(".weightInput"));
-        updateInvoicePreview();
-      });
+  hamperDiv.querySelector(".removeHamper").addEventListener("click", () => {
+    hamperContainer.removeChild(hamperDiv);
+    hampers = hampers.filter(h => h !== newHamper);
+    updateInvoicePreview();
+  });
 
-      calculatePrice(hamperDiv);
-      updateInvoicePreview();
-
-      hamperDiv.querySelector(".weightInput").addEventListener("blur", () => {
-    const weightInput = hamperDiv.querySelector(".weightInput");
-    let value = parseFloat(weightInput.value);
-    if (!isNaN(value) && value >= 1) {
+  // Función de redondeo
+  const handleRounding = () => {
+    let value = parseFloat(newHamper.weightInput.value);
+    if (!isNaN(value)) {
+      if (value >= 1) {
         if (value % 1 >= 0.5) {
-            weightInput.value = Math.ceil(value); // Redondear hacia arriba
+          newHamper.weightInput.value = Math.ceil(value);
         } else {
-            weightInput.value = Math.floor(value); // Redondear hacia abajo
+          newHamper.weightInput.value = Math.floor(value);
         }
+      } else {
+        newHamper.weightInput.value = 1;
+      }
     } else {
-        weightInput.value = 1; // Establecer a 1 si el valor es inválido
+      newHamper.weightInput.value = 1;
     }
     calculatePrice(hamperDiv);
     updateInvoicePreview();
-});
-    };
+  };
+
+  // Event listeners para el input
+  newHamper.weightInput.addEventListener("blur", handleRounding);
+  newHamper.weightInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.keyCode === 13) {
+      e.preventDefault(); // Prevenir comportamiento por defecto
+      handleRounding();
+      newHamper.weightInput.blur();
+    }
+  });
+
+  calculatePrice(hamperDiv);
+  updateInvoicePreview();
+};
 
     const calculatePrice = (hamperDiv) => {
       const weight = parseInt(hamperDiv.querySelector(".weightInput").value) || 0;
@@ -1070,7 +1086,15 @@ document.getElementById("pendingPayment").addEventListener("click", () => {
 });
 
 document.getElementById("partialPayment").addEventListener("click", async () => {
-  const paymentMethod = document.querySelector(".payment-button.active").value;
+  // Verificar si hay un método de pago seleccionado
+  const selectedPaymentMethod = document.querySelector(".payment-button.active");
+  
+  if (!selectedPaymentMethod) {
+    alert("Por favor selecciona un método de pago");
+    return;
+  }
+
+  const paymentMethod = selectedPaymentMethod.value;
   const partialAmount = parseFloat(document.getElementById("partialAmount").value) || 0;
   const total = calculateTotal();
   
@@ -1662,6 +1686,16 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+// 1. Controlar visibilidad con el checkbox
+document.getElementById('pagarConAbonoCheckbox').addEventListener('change', function() {
+    document.getElementById('cashPaymentOptions').hidden = this.checked;
+});
+
+// 2. Reiniciar al cerrar el modal
+document.querySelector('.close-button').addEventListener('click', function() {
+    document.getElementById('pagarConAbonoCheckbox').checked = false;
+    document.getElementById('cashPaymentOptions').hidden = false;
+});
   </script>
 
 </body>
