@@ -836,6 +836,11 @@ button {
     display: inline-block;
 }
 
+.button-metodo-pago button:hover {
+    background: #d0d0d0;
+    transition: 0.3s;
+}
+
 .button-metodo-pago button span {
     pointer-events: none;
 }
