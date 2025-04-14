@@ -806,56 +806,64 @@ if (data.abonoFact === "yes") {
     const loadMoreBtn = document.getElementById("loadMoreBtn");
     const noMoreRecords = document.getElementById("noMoreRecords");
 
+
+
     const loadHistory = async (loadMore = false) => {
-      try {
-        if (!loadMore) {
-          historyList.innerHTML = "";
-          lastHistoryDoc = null;
-          historyData = [];
-          loadMoreBtn.style.display = "block";
-          noMoreRecords.style.display = "none";
-        }
+  try {
+    if (!loadMore) {
+      // Si no es una carga más, reiniciar el historial
+      historyList.innerHTML = "";
+      lastHistoryDoc = null;
+      historyData = []; // Reiniciar el array de datos
+      loadMoreBtn.style.display = "block";
+      noMoreRecords.style.display = "none";
+    }
 
-        let query = db.collection("historialFacturasGeneradas")
-          .orderBy("fecha", "desc")
-          .limit(10);
+    let query = db.collection("historialFacturasGeneradas")
+      .orderBy("fecha", "desc")
+      .limit(10);
 
-        if (lastHistoryDoc) {
-          query = query.startAfter(lastHistoryDoc);
-        }
+    if (lastHistoryDoc) {
+      query = query.startAfter(lastHistoryDoc);
+    }
 
-        const snapshot = await query.get();
+    const snapshot = await query.get();
 
-        if (snapshot.empty) {
-          if (loadMore) {
-            loadMoreBtn.style.display = "none";
-            noMoreRecords.style.display = "block";
-          } else {
-            historyList.innerHTML = "<li>No hay registros de historial</li>";
-            loadMoreBtn.style.display = "none";
-          }
-          return;
-        }
-
-        lastHistoryDoc = snapshot.docs[snapshot.docs.length - 1];
-
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          historyData.push({ id: doc.id, ...data });
-        });
-
-        renderHistoryItems();
-
-      } catch (error) {
-        console.error("Error al cargar el historial:", error);
-        alert("Error al cargar el historial. Intente nuevamente.");
+    if (snapshot.empty) {
+      if (loadMore) {
+        loadMoreBtn.style.display = "none";
+        noMoreRecords.style.display = "block";
+      } else {
+        historyList.innerHTML = "<li>No hay registros de historial</li>";
+        loadMoreBtn.style.display = "none";
       }
-    };
+      return;
+    }
 
-    const renderHistoryItems = () => {
-  if (historyData.length <= 10) {
-    historyList.innerHTML = "";
+    // Actualizar el último documento para la paginación
+    lastHistoryDoc = snapshot.docs[snapshot.docs.length - 1];
+
+    // Procesar los nuevos documentos
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      // Solo agregar si no está ya en historyData
+      if (!historyData.some(item => item.id === doc.id)) {
+        historyData.push({ id: doc.id, ...data });
+      }
+    });
+
+    // Renderizar los elementos del historial
+    renderHistoryItems();
+
+  } catch (error) {
+    console.error("Error al cargar el historial:", error);
+    alert("Error al cargar el historial. Intente nuevamente.");
   }
+};
+
+const renderHistoryItems = () => {
+  // Limpiar la lista antes de renderizar
+  historyList.innerHTML = "";
 
   historyData.forEach(data => {
     const listItem = document.createElement("li");
@@ -951,7 +959,6 @@ if (data.abonoFact === "yes") {
     historyList.appendChild(listItem);
   });
 };
-
 
 
 
