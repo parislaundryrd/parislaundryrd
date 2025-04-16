@@ -101,6 +101,8 @@
       </div>
 
       <div class="modal_preview_factura_down">
+        <button title="Imprimir Factura" id="printInvoiceButton" class="print-button"><img src="./img/icon/imprimir1.png" style="height: 20px;"></button>
+
         <!-- Sección de Abono (se mostrará solo para facturas con abono) -->
         <div id="abonoSection" style="display: none;">
           <div class="payment-method-abono">
@@ -115,7 +117,8 @@
 
             <div id="montoPendienteAbono" class="abono-pendiente"></div>
 
-            <div id="efectivoInputAbono" style="display: inline-flex;justify-content: space-evenly;width: 100%;box-sizing: border-box;padding: 0px 22px;font-size: 21px;">
+            <div id="efectivoInputAbono"
+              style="display: inline-flex;justify-content: space-evenly;width: 100%;box-sizing: border-box;padding: 0px 22px;font-size: 21px;">
               <label>Monto Recibido:</label>
               <div>
                 <div class="input-container">
@@ -431,13 +434,45 @@
       }
     };
 
+    
+
     const showInvoiceDetails = (data) => {
-      // Resetear el select de empleados
-      document.getElementById("employeeSelect").value = "";
-      const services = data.selectedServices.map(service => `<div>${service.name} (Peso: ${service.weight} lbs) - RD$${service.price}</div>`).join("");
-      const otherServices = data.otrosServicios.map(service => `<div>${service.name}: ${service.count} - RD$${(service.count * service.price).toFixed(2)}</div>`).join("");
-      const products = data.selectedProducts.map(product => `<div>${product.name} (Cantidad: ${product.quantity}) - RD$${(product.quantity * product.price).toFixed(2)}</div>`).join("");
-      const delivery = data.deliveryOption[0].name + " - RD$" + data.deliveryOption[0].price;
+  // Resetear el select de empleados
+  document.getElementById("employeeSelect").value = "";
+
+  const services = data.selectedServices.map(service => {
+    // Verificar si es un hamper completo
+    const isHamperComplete = service.hamperComplete === "yes";
+    // Mostrar "1 hamper" si es completo, de lo contrario mostrar las libras
+    const weightDisplay = isHamperComplete ? "1 hamper" : `${service.weight} lbs X RD$${service.priceXlbs}`;
+    
+    return `
+      <div style="display: grid; grid-template-columns: 1fr auto; margin-bottom: 5px;">
+        <div>${service.name} (${weightDisplay})</div>
+        <div>RD$${service.price}</div>
+      </div>
+    `;
+  }).join("");
+
+  const otherServices = data.otrosServicios.map(service => `
+    <div style="display: grid; grid-template-columns: 1fr auto; margin-bottom: 5px;">
+      <div>${service.name}: ${service.count}</div>
+      <div>RD$${(service.count * service.price).toFixed(2)}</div>
+    </div>
+  `).join("");
+
+  const products = data.selectedProducts.map(product => `
+    <div style="display: grid; grid-template-columns: 1fr auto; margin-bottom: 5px;">
+      <div>${product.name} (Cant. ${product.quantity} X RD$${product.price})</div>
+      <div>RD$${(product.quantity * product.price).toFixed(2)}</div>
+    </div>
+  `).join("");
+
+      
+      const deliveryName = data.deliveryOption[0].name;
+      const deliveryPrice = "RD$" + data.deliveryOption[0].price;
+
+      const clientAddress = data.clientAddress || "Sin dirección";
 
       // Verificar si es un abono (sin importar el status)
       const isAbono = data.abonoFact === "yes";
@@ -466,32 +501,53 @@
       `;
       } else {
         paymentDetailsHTML = `
-          <strong>Total:</strong> RD$${data.total.toFixed(2)}<br>
+          <div style="display: flex;gap: 5px;align-items: center;justify-content: space-between;"><strong>Total a Pagar:</strong> <strong>RD$${data.total.toFixed(2)}</strong></div></p>
       `;
       }
 
       modalInvoiceDetails.innerHTML = `
-      <strong>ID:</strong> ${data.id}<br>
-      <strong>Fecha:</strong> ${formattedDate}</p>
+      <div style="background: black; height: 1px; width: 99%"></div>
+      
+      <strong style="display: inline-flex;justify-content: flex-end;width: 100%;">Fecha y Hora:</strong>
+      <div style="display: inline-flex;justify-content: flex-end;width: 100%;">${formattedDate}</div>
+
+      <div style="background: black; height: 1px; width: 99%"></div>
+
       <strong>Cliente:</strong> ${data.clientName}${isAbono ? '<span style="color: red;"> (Abono)</span>' : ''}<br>
-      <strong>Número:</strong> ${data.clientPhone}<br>
-      <strong>Servicios de Hamper:</strong><br>${services || "Ninguno"}<br>
-      <strong>Otros Servicios:</strong><br>${otherServices || "Ninguno"}<br>
-      <strong>Productos Adicionales:</strong><br>${products || "Ninguno"}<br>
-      <strong>Opción de Delivery:</strong> ${delivery}<p>
+      <strong>Teléfono:</strong> ${data.clientPhone}<br>
+          <strong>Dirección:</strong> ${clientAddress}</p>
+
+  <strong>Servicios:</strong><br>${services || "Ninguno"}
+  ${otherServices || "Ninguno"}<br>
+  <strong>Productos:</strong><br>${products || "Ninguno"}</p>
+
+      <strong>Delivery:</strong> 
+      <span class="delivery-option">
+           <span class="delivery-name">${data.deliveryOption[0].name}</span>
+           <span class="delivery-price">RD$${data.deliveryOption[0].price}</span>
+      </span></p>
+
       ${paymentDetailsHTML}
-      <strong>Estado:</strong> ${data.status}<br>
-      <strong>Método de Pago:</strong> ${data.paymentMethod || "No especificado"}<br>
+
+      <div style="display: flex;gap: 5px;align-items: center;justify-content: space-between;"><strong>Método de Pago:</strong> ${data.paymentMethod || "No especificado"}</div>
+            <div style="display: flex;gap: 5px;align-items: center;justify-content: space-between;"><strong>Estado:</strong> ${data.status}</div><br>
+
+        <div style="background: black; height: 1px; width: 99%;margin-bottom: 10px;"></div>
+
+            <div style="width: 100%;display: inline-flex;flex-direction: column;align-items: center;">
+            ID de Factura: <strong style="font-size: 32px;">${data.id}</strong>
+            </div>
+
   `;
 
-// En la función showInvoiceDetails
-if (data.abonoFact === "yes") {
-  abonoSection.style.display = "block";
-  pagarAbonoBtn.style.display = "block";
-  currentPendingAmount = data.amountReceived ? 
-                       (data.total - data.amountReceived) : 
-                       data.total;
-  montoPendienteAbono.textContent = `Monto pendiente: RD$${currentPendingAmount.toFixed(2)}`;
+      // En la función showInvoiceDetails
+      if (data.abonoFact === "yes") {
+        abonoSection.style.display = "block";
+        pagarAbonoBtn.style.display = "block";
+        currentPendingAmount = data.amountReceived ?
+          (data.total - data.amountReceived) :
+          data.total;
+        montoPendienteAbono.textContent = `Monto pendiente: RD$${currentPendingAmount.toFixed(2)}`;
 
         // Resetear la selección de método de pago del abono
         paymentOptionsAbono.forEach(opt => opt.classList.remove("selected"));
@@ -555,10 +611,17 @@ if (data.abonoFact === "yes") {
           markAsDeliveredButton.style.cursor = "pointer";
         }
 
-        document.getElementById("paymentMethodContainer").style.display = "none";
-      } else {
-        document.querySelector(".modal_preview_factura_down").style.display = "none";
-      }
+      } else if (data.status === "pagado entregado") {
+    document.querySelector(".modal_preview_factura_down").style.display = "block";
+    // Aquí puedes ocultar los botones que no quieras mostrar para facturas entregadas
+    markAsPaidButton.style.display = "none";
+    markAsReadyButton.style.display = "none";
+    markAsDeliveredButton.style.display = "none";
+    document.querySelector(".Cube_button_pagado").style.display = "none";
+    document.getElementById("paymentMethodContainer").style.display = "none";
+} else {
+    document.querySelector(".modal_preview_factura_down").style.display = "none";
+}
 
       invoiceModal.style.display = "block";
     };
@@ -809,80 +872,80 @@ if (data.abonoFact === "yes") {
 
 
     const loadHistory = async (loadMore = false) => {
-  try {
-    if (!loadMore) {
-      // Si no es una carga más, reiniciar el historial
+      try {
+        if (!loadMore) {
+          // Si no es una carga más, reiniciar el historial
+          historyList.innerHTML = "";
+          lastHistoryDoc = null;
+          historyData = []; // Reiniciar el array de datos
+          loadMoreBtn.style.display = "block";
+          noMoreRecords.style.display = "none";
+        }
+
+        let query = db.collection("historialFacturasGeneradas")
+          .orderBy("fecha", "desc")
+          .limit(10);
+
+        if (lastHistoryDoc) {
+          query = query.startAfter(lastHistoryDoc);
+        }
+
+        const snapshot = await query.get();
+
+        if (snapshot.empty) {
+          if (loadMore) {
+            loadMoreBtn.style.display = "none";
+            noMoreRecords.style.display = "block";
+          } else {
+            historyList.innerHTML = "<li>No hay registros de historial</li>";
+            loadMoreBtn.style.display = "none";
+          }
+          return;
+        }
+
+        // Actualizar el último documento para la paginación
+        lastHistoryDoc = snapshot.docs[snapshot.docs.length - 1];
+
+        // Procesar los nuevos documentos
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          // Solo agregar si no está ya en historyData
+          if (!historyData.some(item => item.id === doc.id)) {
+            historyData.push({ id: doc.id, ...data });
+          }
+        });
+
+        // Renderizar los elementos del historial
+        renderHistoryItems();
+
+      } catch (error) {
+        console.error("Error al cargar el historial:", error);
+        alert("Error al cargar el historial. Intente nuevamente.");
+      }
+    };
+
+    const renderHistoryItems = () => {
+      // Limpiar la lista antes de renderizar
       historyList.innerHTML = "";
-      lastHistoryDoc = null;
-      historyData = []; // Reiniciar el array de datos
-      loadMoreBtn.style.display = "block";
-      noMoreRecords.style.display = "none";
-    }
 
-    let query = db.collection("historialFacturasGeneradas")
-      .orderBy("fecha", "desc")
-      .limit(10);
+      historyData.forEach(data => {
+        const listItem = document.createElement("li");
+        const formattedAmount = `RD$${formatNumberWithCommas(data.monto.toFixed(2))}`;
 
-    if (lastHistoryDoc) {
-      query = query.startAfter(lastHistoryDoc);
-    }
+        // Verificar si es un pago de abono
+        const isAbonoPayment = data.cambioStatus === "Abono Pagado";
 
-    const snapshot = await query.get();
+        const formattedDate = data.fecha.toDate().toLocaleString('es-ES', {
+          timeZone: 'America/Santo_Domingo',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true
+        });
 
-    if (snapshot.empty) {
-      if (loadMore) {
-        loadMoreBtn.style.display = "none";
-        noMoreRecords.style.display = "block";
-      } else {
-        historyList.innerHTML = "<li>No hay registros de historial</li>";
-        loadMoreBtn.style.display = "none";
-      }
-      return;
-    }
-
-    // Actualizar el último documento para la paginación
-    lastHistoryDoc = snapshot.docs[snapshot.docs.length - 1];
-
-    // Procesar los nuevos documentos
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      // Solo agregar si no está ya en historyData
-      if (!historyData.some(item => item.id === doc.id)) {
-        historyData.push({ id: doc.id, ...data });
-      }
-    });
-
-    // Renderizar los elementos del historial
-    renderHistoryItems();
-
-  } catch (error) {
-    console.error("Error al cargar el historial:", error);
-    alert("Error al cargar el historial. Intente nuevamente.");
-  }
-};
-
-const renderHistoryItems = () => {
-  // Limpiar la lista antes de renderizar
-  historyList.innerHTML = "";
-
-  historyData.forEach(data => {
-    const listItem = document.createElement("li");
-    const formattedAmount = `RD$${formatNumberWithCommas(data.monto.toFixed(2))}`;
-
-    // Verificar si es un pago de abono
-    const isAbonoPayment = data.cambioStatus === "Abono Pagado";
-
-    const formattedDate = data.fecha.toDate().toLocaleString('es-ES', {
-      timeZone: 'America/Santo_Domingo',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
-    });
-
-    listItem.innerHTML = `
+        listItem.innerHTML = `
       <strong>Empleado que realizó el cambio:</strong> ${data.empleado}<br>
       <strong>ID de Factura:</strong> ${data.id}<br>
       <strong>Cliente:</strong> ${data.nombreCliente}<br>
@@ -892,73 +955,73 @@ const renderHistoryItems = () => {
       <strong>Cambio de Estado:</strong>
     `;
 
-    if (isAbonoPayment) {
-      // Calcular el monto del abono (lo que realmente se pagó en este pago)
-      const montoAbonoPagado = data.amountReceivedAbonoFire || 
-                              (data.amountReceived - (data.monto - data.amountReceived));
-      
-      const metodoPago = data.paymentMethod || "Método no especificado";
-      const montoAbono = montoAbonoPagado ? 
-                        `RD$${montoAbonoPagado.toFixed(2)}` : 
-                        "Monto no especificado";
-      
-      const abonoStatusSpan = document.createElement("span");
-      abonoStatusSpan.textContent = `Abono Pagado, ${metodoPago}, ${montoAbono}`;
-      abonoStatusSpan.className = "status-pagado";
-      listItem.appendChild(abonoStatusSpan);
-    } else {
-      // Mantener el formato original para otros tipos de cambios
-      let previousStatusSpan = document.createElement("span");
-      let newStatusSpan = document.createElement("span");
-      let previousStatusText = "";
-      let newStatusText = "";
-      let previousStatusClass = "";
-      let newStatusClass = "";
+        if (isAbonoPayment) {
+          // Calcular el monto del abono (lo que realmente se pagó en este pago)
+          const montoAbonoPagado = data.amountReceivedAbonoFire ||
+            (data.amountReceived - (data.monto - data.amountReceived));
 
-      switch (data.cambioStatus) {
-        case "Pago Pendiente a Pagado":
-          previousStatusText = "Pago Pendiente";
-          previousStatusClass = "status-pago-pendiente";
-          newStatusText = "Pagado";
-          newStatusClass = "status-pagado";
-          break;
-        case "Pagado a Pagado Listo":
-          previousStatusText = "Pagado";
-          previousStatusClass = "status-pagado";
-          newStatusText = "Pagado Listo";
-          newStatusClass = "status-pagado-listo";
-          break;
-        case "Pagado Listo a Pagado Entregado":
-          previousStatusText = "Pagado Listo";
-          previousStatusClass = "status-pagado-listo";
-          newStatusText = "Pagado Entregado";
-          newStatusClass = "status-pagado-entregado";
-          break;
-        default:
-          previousStatusText = data.cambioStatus || "Estado Desconocido";
-          previousStatusClass = "";
-          newStatusText = "";
-          newStatusClass = "";
-          break;
-      }
+          const metodoPago = data.paymentMethod || "Método no especificado";
+          const montoAbono = montoAbonoPagado ?
+            `RD$${montoAbonoPagado.toFixed(2)}` :
+            "Monto no especificado";
 
-      if (newStatusText) {
-        previousStatusSpan.textContent = previousStatusText;
-        previousStatusSpan.className = previousStatusClass;
-        newStatusSpan.textContent = newStatusText;
-        newStatusSpan.className = newStatusClass;
+          const abonoStatusSpan = document.createElement("span");
+          abonoStatusSpan.textContent = `Abono Pagado, ${metodoPago}, ${montoAbono}`;
+          abonoStatusSpan.className = "status-pagado";
+          listItem.appendChild(abonoStatusSpan);
+        } else {
+          // Mantener el formato original para otros tipos de cambios
+          let previousStatusSpan = document.createElement("span");
+          let newStatusSpan = document.createElement("span");
+          let previousStatusText = "";
+          let newStatusText = "";
+          let previousStatusClass = "";
+          let newStatusClass = "";
 
-        listItem.appendChild(previousStatusSpan);
-        listItem.appendChild(document.createTextNode(" a "));
-        listItem.appendChild(newStatusSpan);
-      } else {
-        listItem.appendChild(document.createTextNode(previousStatusText));
-      }
-    }
+          switch (data.cambioStatus) {
+            case "Pago Pendiente a Pagado":
+              previousStatusText = "Pago Pendiente";
+              previousStatusClass = "status-pago-pendiente";
+              newStatusText = "Pagado";
+              newStatusClass = "status-pagado";
+              break;
+            case "Pagado a Pagado Listo":
+              previousStatusText = "Pagado";
+              previousStatusClass = "status-pagado";
+              newStatusText = "Pagado Listo";
+              newStatusClass = "status-pagado-listo";
+              break;
+            case "Pagado Listo a Pagado Entregado":
+              previousStatusText = "Pagado Listo";
+              previousStatusClass = "status-pagado-listo";
+              newStatusText = "Pagado Entregado";
+              newStatusClass = "status-pagado-entregado";
+              break;
+            default:
+              previousStatusText = data.cambioStatus || "Estado Desconocido";
+              previousStatusClass = "";
+              newStatusText = "";
+              newStatusClass = "";
+              break;
+          }
 
-    historyList.appendChild(listItem);
-  });
-};
+          if (newStatusText) {
+            previousStatusSpan.textContent = previousStatusText;
+            previousStatusSpan.className = previousStatusClass;
+            newStatusSpan.textContent = newStatusText;
+            newStatusSpan.className = newStatusClass;
+
+            listItem.appendChild(previousStatusSpan);
+            listItem.appendChild(document.createTextNode(" a "));
+            listItem.appendChild(newStatusSpan);
+          } else {
+            listItem.appendChild(document.createTextNode(previousStatusText));
+          }
+        }
+
+        historyList.appendChild(listItem);
+      });
+    };
 
 
 
@@ -990,154 +1053,154 @@ const renderHistoryItems = () => {
     });
 
     function validateAbonoPayment() {
-  if (selectedPaymentMethodAbono === "efectivo") {
-    const amountReceived = parseFloat(amountReceivedAbono.value) || 0;
-    const change = amountReceived - currentPendingAmount;
+      if (selectedPaymentMethodAbono === "efectivo") {
+        const amountReceived = parseFloat(amountReceivedAbono.value) || 0;
+        const change = amountReceived - currentPendingAmount;
 
-    if (amountReceived > 0) {
-      changeAmountAbono.innerHTML = `<strong>Cambio:</strong> RD$${change.toFixed(2)}`;
-      pagarAbonoBtn.disabled = amountReceived < currentPendingAmount;
-    } else {
-      changeAmountAbono.innerHTML = "";
-      pagarAbonoBtn.disabled = true;
-    }
-  } else {
-    pagarAbonoBtn.disabled = false;
-  }
-}
-
-
-pagarAbonoBtn.addEventListener("click", async () => {
-  if (currentInvoiceId) {
-    const selectedEmployee = document.getElementById("employeeSelect").value;
-
-    if (!selectedEmployee) {
-      alert("Por favor seleccione un empleado.");
-      return;
-    }
-
-    try {
-      const selectedPaymentMethod = selectedPaymentMethodAbono;
-      if (!selectedPaymentMethod) {
-        alert("Por favor seleccione un método de pago");
-        return;
-      }
-
-      let montoAbono = 0;
-      let cambioAbono = 0;
-
-      if (selectedPaymentMethod === "efectivo") {
-        montoAbono = parseFloat(document.getElementById("amountReceivedAbono").value) || 0;
-        cambioAbono = montoAbono - currentPendingAmount;
-
-        if (montoAbono <= 0) {
-          alert("El monto recibido debe ser mayor que cero");
-          return;
-        }
-        
-        if (cambioAbono < 0) {
-          alert(`El monto recibido (RD$${montoAbono.toFixed(2)}) no cubre el abono pendiente (RD$${currentPendingAmount.toFixed(2)})`);
-          return;
+        if (amountReceived > 0) {
+          changeAmountAbono.innerHTML = `<strong>Cambio:</strong> RD$${change.toFixed(2)}`;
+          pagarAbonoBtn.disabled = amountReceived < currentPendingAmount;
+        } else {
+          changeAmountAbono.innerHTML = "";
+          pagarAbonoBtn.disabled = true;
         }
       } else {
-        montoAbono = currentPendingAmount;
+        pagarAbonoBtn.disabled = false;
       }
-
-      const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
-      if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
-        const invoiceData = doc.data();
-
-        // Verificar si es un día diferente
-        const originalDate = invoiceData.timestamp.toDate();
-        const currentDate = new Date();
-        const isDifferentDay = !(
-          originalDate.getDate() === currentDate.getDate() &&
-          originalDate.getMonth() === currentDate.getMonth() &&
-          originalDate.getFullYear() === currentDate.getFullYear()
-        );
-
-        // Calcular nuevo estado
-        const newTotalReceived = (invoiceData.amountReceived || 0) + montoAbono;
-        const isAbonoComplete = newTotalReceived >= invoiceData.total;
-
-        // Preparar datos de actualización
-        const updateData = {
-          amountReceived: newTotalReceived,
-          changeAmount: (invoiceData.changeAmount || 0) + cambioAbono,
-          amountReceivedAbonoFire: montoAbono,
-          changeAmountAbonoFire: cambioAbono,
-          status: isAbonoComplete ? "pagado" : invoiceData.status,
-          abonoFact: isAbonoComplete ? "no" : "yes",
-          lastPaymentDate: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        // Actualizar método de pago solo si es efectivo
-        if (selectedPaymentMethod === "efectivo") {
-          updateData.paymentMethod = invoiceData.paymentMethod === "Efectivo" ? 
-                                    "Efectivo" : 
-                                    `Mixto (${invoiceData.paymentMethod} + Efectivo)`;
-        }
-
-        // Si es día diferente, actualizar timestamp y marcar como abono secundario
-        if (isDifferentDay) {
-          updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
-          updateData.abonoFact2do = "yes";
-        }
-
-        await doc.ref.update(updateData);
-
-        // Registrar en historial
-        const historyData = {
-          empleado: selectedEmployee,
-          id: currentInvoiceId,
-          nombreCliente: invoiceData.clientName,
-          numeroTelefono: invoiceData.clientPhone,
-          monto: montoAbono,
-          fecha: new Date(),
-          cambioStatus: isAbonoComplete ? "Abono Completado" : "Abono Parcial",
-          paymentMethod: getFullPaymentMethodName(selectedPaymentMethod),
-          montoTotalFactura: invoiceData.total,
-          saldoAnterior: currentPendingAmount,
-          saldoActual: invoiceData.total - newTotalReceived,
-          esAbono2do: isDifferentDay ? "yes" : "no",
-          amountReceivedAbono: montoAbono,
-          changeAmountAbono: cambioAbono
-        };
-
-        await db.collection("historialFacturasGeneradas").add(historyData);
-
-        // Actualizar vista
-        const updatedDoc = await doc.ref.get();
-        currentInvoiceData = updatedDoc.data();
-        showInvoiceDetails(currentInvoiceData);
-
-        // Mostrar mensaje apropiado
-        let message = isAbonoComplete ? 
-          "¡Abono completado! Factura marcada como pagada.\n" : 
-          `Abono registrado. Saldo pendiente: RD$${(invoiceData.total - newTotalReceived).toFixed(2)}\n`;
-        
-        message += `Monto abono: RD$${montoAbono.toFixed(2)}`;
-        
-        if (cambioAbono > 0) {
-          message += `\nCambio: RD$${cambioAbono.toFixed(2)}`;
-        }
-        
-        if (isDifferentDay) {
-          message += "\n(Nota: Pago registrado en nueva fecha)";
-        }
-
-        alert(message);
-
-        // Actualizar lista
-        loadInvoices(currentStatus);
-      }
-    } catch (error) {
-      console.error("Error al procesar abono:", error);
-      alert("Error al procesar el abono. Intente nuevamente.");
     }
-  }
-});
+
+
+    pagarAbonoBtn.addEventListener("click", async () => {
+      if (currentInvoiceId) {
+        const selectedEmployee = document.getElementById("employeeSelect").value;
+
+        if (!selectedEmployee) {
+          alert("Por favor seleccione un empleado.");
+          return;
+        }
+
+        try {
+          const selectedPaymentMethod = selectedPaymentMethodAbono;
+          if (!selectedPaymentMethod) {
+            alert("Por favor seleccione un método de pago");
+            return;
+          }
+
+          let montoAbono = 0;
+          let cambioAbono = 0;
+
+          if (selectedPaymentMethod === "efectivo") {
+            montoAbono = parseFloat(document.getElementById("amountReceivedAbono").value) || 0;
+            cambioAbono = montoAbono - currentPendingAmount;
+
+            if (montoAbono <= 0) {
+              alert("El monto recibido debe ser mayor que cero");
+              return;
+            }
+
+            if (cambioAbono < 0) {
+              alert(`El monto recibido (RD$${montoAbono.toFixed(2)}) no cubre el abono pendiente (RD$${currentPendingAmount.toFixed(2)})`);
+              return;
+            }
+          } else {
+            montoAbono = currentPendingAmount;
+          }
+
+          const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
+          if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            const invoiceData = doc.data();
+
+            // Verificar si es un día diferente
+            const originalDate = invoiceData.timestamp.toDate();
+            const currentDate = new Date();
+            const isDifferentDay = !(
+              originalDate.getDate() === currentDate.getDate() &&
+              originalDate.getMonth() === currentDate.getMonth() &&
+              originalDate.getFullYear() === currentDate.getFullYear()
+            );
+
+            // Calcular nuevo estado
+            const newTotalReceived = (invoiceData.amountReceived || 0) + montoAbono;
+            const isAbonoComplete = newTotalReceived >= invoiceData.total;
+
+            // Preparar datos de actualización
+            const updateData = {
+              amountReceived: newTotalReceived,
+              changeAmount: (invoiceData.changeAmount || 0) + cambioAbono,
+              amountReceivedAbonoFire: montoAbono,
+              changeAmountAbonoFire: cambioAbono,
+              status: isAbonoComplete ? "pagado" : invoiceData.status,
+              abonoFact: isAbonoComplete ? "no" : "yes",
+              lastPaymentDate: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            // Actualizar método de pago solo si es efectivo
+            if (selectedPaymentMethod === "efectivo") {
+              updateData.paymentMethod = invoiceData.paymentMethod === "Efectivo" ?
+                "Efectivo" :
+                `Mixto (${invoiceData.paymentMethod} + Efectivo)`;
+            }
+
+            // Si es día diferente, actualizar timestamp y marcar como abono secundario
+            if (isDifferentDay) {
+              updateData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+              updateData.abonoFact2do = "yes";
+            }
+
+            await doc.ref.update(updateData);
+
+            // Registrar en historial
+            const historyData = {
+              empleado: selectedEmployee,
+              id: currentInvoiceId,
+              nombreCliente: invoiceData.clientName,
+              numeroTelefono: invoiceData.clientPhone,
+              monto: montoAbono,
+              fecha: new Date(),
+              cambioStatus: isAbonoComplete ? "Abono Completado" : "Abono Parcial",
+              paymentMethod: getFullPaymentMethodName(selectedPaymentMethod),
+              montoTotalFactura: invoiceData.total,
+              saldoAnterior: currentPendingAmount,
+              saldoActual: invoiceData.total - newTotalReceived,
+              esAbono2do: isDifferentDay ? "yes" : "no",
+              amountReceivedAbono: montoAbono,
+              changeAmountAbono: cambioAbono
+            };
+
+            await db.collection("historialFacturasGeneradas").add(historyData);
+
+            // Actualizar vista
+            const updatedDoc = await doc.ref.get();
+            currentInvoiceData = updatedDoc.data();
+            showInvoiceDetails(currentInvoiceData);
+
+            // Mostrar mensaje apropiado
+            let message = isAbonoComplete ?
+              "¡Abono completado! Factura marcada como pagada.\n" :
+              `Abono registrado. Saldo pendiente: RD$${(invoiceData.total - newTotalReceived).toFixed(2)}\n`;
+
+            message += `Monto abono: RD$${montoAbono.toFixed(2)}`;
+
+            if (cambioAbono > 0) {
+              message += `\nCambio: RD$${cambioAbono.toFixed(2)}`;
+            }
+
+            if (isDifferentDay) {
+              message += "\n(Nota: Pago registrado en nueva fecha)";
+            }
+
+            alert(message);
+
+            // Actualizar lista
+            loadInvoices(currentStatus);
+          }
+        } catch (error) {
+          console.error("Error al procesar abono:", error);
+          alert("Error al procesar el abono. Intente nuevamente.");
+        }
+      }
+    });
 
     // Función auxiliar para obtener el nombre completo del método de pago
     function getFullPaymentMethodName(method) {
@@ -1250,8 +1313,80 @@ pagarAbonoBtn.addEventListener("click", async () => {
         unsubscribe();
       }
     });
+
+
+
+
+
+
+
+
+
+
+
+    // Función para imprimir la factura
+document.getElementById('printInvoiceButton').addEventListener('click', function() {
+  // Clonar el contenido del modal para imprimir
+  const printContent = document.getElementById('modalInvoiceDetails').cloneNode(true);
+  
+  // Crear una ventana de impresión
+  const printWindow = window.open('', '', 'width=800,height=600');
+  printWindow.document.write('<html><head><title>Factura</title>');
+  printWindow.document.write('<style>');
+  printWindow.document.write(`
+    body { font-family: Arial, sans-serif; padding-right: 20px; }
+    .id-factura { margin-top: 20px; text-align: center; }
+    strong { font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    .delivery-option { display: flex; justify-content: space-between; }
+    .delivery-name, .delivery-price { display: inline-block; }
+    hr { border: 0; height: 1px; background: #000; margin: 10px 0; }
+  `);
+  printWindow.document.write('</style>');
+  printWindow.document.write('</head><body>');
+
+    printWindow.document.write('<h2 style="text-align:center;font-size: 17px;">Factura</h2>');
+  printWindow.document.write('<h2 style="text-align:center;">Paris Laundry RD</h2>');
+  printWindow.document.write(printContent.innerHTML);
+
+
+  printWindow.document.write(`
+
+      <div>
+
+          <div style="width: 100%;margin-bottom: 0px;text-align: justify;">
+          <p>Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.</p>
+            </div>
+
+            <h2 style="width: 100%;text-align: center;font-size: 20px;">¡Gracias por elegirnos!</h2>
+
+            <div style="width: 100%;margin-bottom: 30px;text-align: center;"><p>.</p></div>
+
+      </div>
+
+  `);
+
+
+  printWindow.document.write('</body></html>');
+
+
+
+  printWindow.document.close();
+  
+  // Esperar a que se cargue el contenido antes de imprimir
+  printWindow.onload = function() {
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  };
+});
+
+
   </script>
 
 </body>
 
 </html>
+
+<!-- 77 -->
