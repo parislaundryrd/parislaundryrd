@@ -1219,7 +1219,7 @@ ${asumirPor !== "desactivado" ? `
         weight: weight,
         price: hamper.priceDisplay.textContent.replace('Precio: RD$', ''),
         priceXlbs: hamper.data.preciolibras,
-        hamperComplete: (weight >= librasMin && weight <= librasMax) ? "yes" : "no" // Agregamos este campo
+        hamperComplete: (weight >= librasMin && weight <= librasMax) ? "yes" : "no"
       };
     }),
     
@@ -1238,15 +1238,17 @@ ${asumirPor !== "desactivado" ? `
           price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
         })).filter(product => product.quantity > 0),
         total: total,
-        paymentMethod: paymentMethod,
-        status: status,
-        amountReceived: amountReceived,
-        changeAmount: changeAmount,
-        remainingBalance: remainingBalance,
-        abonoFact: isPartialPayment ? "yes" : "", // Cambiado a cadena vacía para no abonos
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        ITBISmonto: itbis
-      };
+    paymentMethod: paymentMethod,
+    status: status,
+    amountReceived: amountReceived,
+    changeAmount: changeAmount,
+    remainingBalance: remainingBalance,
+    abonoFact: isPartialPayment ? "yes" : "", // Cambiado a cadena vacía para no abonos
+    amountReceivedAbono1er: isPartialPayment ? partialAmount : 0, // Nuevo campo para el monto del primer abono
+    amountReceivedAbono1erMethod: isPartialPayment ? paymentMethod : "", 
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    ITBISmonto: itbis
+};
 
       try {
         const invoiceRef = await db.collection("facturas").add(invoiceData);

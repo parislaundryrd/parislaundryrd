@@ -149,6 +149,7 @@
       <th>Nombre del Cliente</th>
       <th>Teléfono del Cliente</th>
       <th>Método de Pago</th>
+      <th>Monto Recibido</th>
       <th>Total</th>
       <th>Fecha y Hora</th>
     </tr>
@@ -1735,93 +1736,290 @@
       }
     };
 
- // Cargar las facturas en tiempo real
-// Cargar las facturas en tiempo real
+
+// Función para cargar las facturas en tiempo real
 const loadFacturasRealTime = async () => {
   try {
     // Obtener el timestamp de la colección "caja"
     const cajaSnapshot = await db.collection("caja").get();
     if (!cajaSnapshot.empty) {
       const cajaDoc = cajaSnapshot.docs[0].data();
-      const cajaTimestamp = cajaDoc.timestamp.toDate(); // Convertir a objeto Date
+      const cajaTimestamp = cajaDoc.timestamp.toDate();
 
-      // Obtener las facturas generadas después del timestamp de la caja
+      // Obtener TODAS las facturas (sin filtro inicial)
       db.collection("facturas")
-        .where("timestamp", ">", cajaTimestamp)
-        .orderBy("timestamp") // Asegúrate de que los documentos estén ordenados por timestamp
+        .orderBy("timestamp")
         .onSnapshot((snapshot) => {
           const facturasTableBody = document.getElementById("facturasTable").getElementsByTagName("tbody")[0];
           const otrasFacturasTableBody = document.getElementById("otrasFacturasTable").getElementsByTagName("tbody")[0];
           
-          // Limpiar las tablas antes de agregar nuevas filas
           facturasTableBody.innerHTML = "";
           otrasFacturasTableBody.innerHTML = "";
 
           let contadorEfectivo = 1;
           let contadorOtras = 1;
 
+          const facturasArray = [];
           snapshot.forEach(doc => {
-            const factura = doc.data();
+            facturasArray.push({
+              id: doc.id,
+              ...doc.data()
+            });
+          });
+
+          // Filtrar facturas
+          const facturasFiltradas = facturasArray.filter(factura => {
+            const facturaTimestamp = factura.timestamp.toDate();
+            const facturaLastPayment = factura.lastPaymentDate ? factura.lastPaymentDate.toDate() : null;
             
-            // Determinar los valores a mostrar basados en abonoFact
-            let total, montoRecibido, cambio;
+            return facturaTimestamp > cajaTimestamp || 
+                  (facturaLastPayment && facturaLastPayment > cajaTimestamp);
+          });
+
+          // Ordenar facturas
+          facturasFiltradas.sort((a, b) => {
+            const fechaA = a.lastPaymentDate && a.lastPaymentDate.toDate() > a.timestamp.toDate() 
+              ? a.lastPaymentDate.toDate() 
+              : a.timestamp.toDate();
             
-            if (factura.paymentMethod === "Efectivo" && factura.abonoFact2do === "yes") {
-              // Usar los valores de abono para facturas con abonoFact = "pago2"
-              total = factura.remainingBalance || 0;
-              montoRecibido = factura.amountReceivedAbonoFire || 0;
-              cambio = factura.changeAmountAbonoFire || 0;
-            } else {
-              // Usar los valores normales para otras facturas
-              total = factura.total || 0;
-              montoRecibido = factura.amountReceived || 0;
-              cambio = factura.changeAmount || 0;
+            const fechaB = b.lastPaymentDate && b.lastPaymentDate.toDate() > b.timestamp.toDate() 
+              ? b.lastPaymentDate.toDate() 
+              : b.timestamp.toDate();
+            
+            return fechaB - fechaA;
+          });
+
+          // Función para comparar solo fechas (sin hora)
+          const sonFechasDiferentes = (date1, date2) => {
+            if (!date1 || !date2) return false;
+            const d1 = new Date(date1);
+            const d2 = new Date(date2);
+            return d1.getFullYear() !== d2.getFullYear() || 
+                   d1.getMonth() !== d2.getMonth() || 
+                   d1.getDate() !== d2.getDate();
+          };
+
+          // Procesar facturas
+          facturasFiltradas.forEach(factura => {
+            const fechaMostrar = factura.lastPaymentDate && factura.lastPaymentDate.toDate() > factura.timestamp.toDate()
+              ? factura.lastPaymentDate.toDate()
+              : factura.timestamp.toDate();
+
+            // Formatear fecha
+            const options = { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' };
+            const fechaFormateada = fechaMostrar.toLocaleString('es-ES', options);
+
+            // Etiqueta para el tipo de factura
+            let tipoFactura = '';
+            if (factura.abonoFact === "yes") {
+              tipoFactura = '<span style="color: orange;">Abono 1er Pago - </span>';
+            } else if (factura.abonoFact === "no") {
+              tipoFactura = '<span style="color: green;">Abono Completo - </span>';
+            }
+            const nombreCliente = tipoFactura + (factura.clientName || '');
+
+            // Caso 1: Factura normal sin abonos
+            if (!factura.amountReceivedAbono1erMethod && !factura.amountReceivedAbono2doMethod) {
+              const total = factura.total || 0;
+              const montoRecibido = factura.amountReceived || 0;
+              const cambio = factura.changeAmount || 0;
+              
+              if (factura.paymentMethod === "Efectivo") {
+                const row = facturasTableBody.insertRow();
+                row.insertCell(0).innerText = contadorEfectivo++;
+                row.insertCell(1).innerText = factura.id;
+                row.insertCell(2).innerHTML = nombreCliente;
+                row.insertCell(3).innerText = factura.clientPhone;
+                row.insertCell(4).innerText = factura.paymentMethod;
+                row.insertCell(5).innerText = montoRecibido;
+                row.insertCell(6).innerText = cambio;
+                row.insertCell(7).innerText = total;
+                row.insertCell(8).innerText = fechaFormateada;
+              } else {
+                const row = otrasFacturasTableBody.insertRow();
+                row.insertCell(0).innerText = contadorOtras++;
+                row.insertCell(1).innerText = factura.id;
+                row.insertCell(2).innerHTML = nombreCliente;
+                row.insertCell(3).innerText = factura.clientPhone;
+                row.insertCell(4).innerText = factura.paymentMethod;
+                row.insertCell(5).innerText = montoRecibido;
+                row.insertCell(6).innerText = total;
+                row.insertCell(7).innerText = fechaFormateada;
+              }
+              return;
             }
 
-            // Agregar "Abono" en rojo si abonoFact es "no"
-            const abonoText = factura.abonoFact === "no" ? '<span style="color: red;">Pago Abono - </span>' : '';
-            const nombreCliente = abonoText + (factura.clientName || '');
+            // Caso 2: Factura con abono completo (abonoFact === "no")
+            if (factura.abonoFact === "no") {
+              const total = factura.total || 0;
+              const cambio = factura.changeAmountAbonoFire || 0;
+              let montoRecibido = 0;
+              let esSegundoPago = factura.lastPaymentDate && 
+                                 sonFechasDiferentes(factura.timestamp.toDate(), factura.lastPaymentDate.toDate());
 
-            const rowData = {
-              id: factura.id,
-              clientName: nombreCliente,
-              clientPhone: factura.clientPhone,
-              paymentMethod: factura.paymentMethod,
-              amountReceived: montoRecibido,
-              changeAmount: cambio,
-              total: total,
-              timestamp: factura.timestamp.toDate()
-            };
+              // Caso 2.1: Ambos métodos son Transferencia o Tarjeta de Crédito
+              if ((factura.amountReceivedAbono1erMethod === "Transferencia" || 
+                   factura.amountReceivedAbono1erMethod === "Tarjeta de Crédito") &&
+                  (factura.amountReceivedAbono2doMethod === "Transferencia" || 
+                   factura.amountReceivedAbono2doMethod === "Tarjeta de Crédito")) {
+                
+                montoRecibido = esSegundoPago ? factura.amountReceivedAbono2do || 0 : 
+                              (factura.amountReceivedAbono1er || 0) + (factura.amountReceivedAbono2do || 0);
+                
+                const row = otrasFacturasTableBody.insertRow();
+                row.insertCell(0).innerText = contadorOtras++;
+                row.insertCell(1).innerText = factura.id;
+                row.insertCell(2).innerHTML = nombreCliente;
+                row.insertCell(3).innerText = factura.clientPhone;
+                row.insertCell(4).innerText = esSegundoPago ? factura.amountReceivedAbono2doMethod : factura.amountReceivedAbono1erMethod;
+                row.insertCell(5).innerText = montoRecibido;
+                row.insertCell(6).innerText = total;
+                row.insertCell(7).innerText = fechaFormateada;
+                return;
+              }
 
-            // Formatear el timestamp en formato de 12 horas
-            const options = { hour: 'numeric', minute: 'numeric', hour12: true, year: 'numeric', month: 'numeric', day: 'numeric' };
-            const fechaFormateada = rowData.timestamp.toLocaleString('es-ES', options);
+              // Caso 2.2: Primer método es Efectivo y segundo es Transferencia o Tarjeta
+              if (factura.amountReceivedAbono1erMethod === "Efectivo" && 
+                  (factura.amountReceivedAbono2doMethod === "Transferencia" || 
+                   factura.amountReceivedAbono2doMethod === "Tarjeta de Crédito")) {
+                
+                if (esSegundoPago) {
+                  // Solo mostrar en otras facturas
+                  const row = otrasFacturasTableBody.insertRow();
+                  row.insertCell(0).innerText = contadorOtras++;
+                  row.insertCell(1).innerText = factura.id;
+                  row.insertCell(2).innerHTML = nombreCliente;
+                  row.insertCell(3).innerText = factura.clientPhone;
+                  row.insertCell(4).innerText = factura.amountReceivedAbono2doMethod;
+                  row.insertCell(5).innerText = factura.amountReceivedAbono2do || 0;
+                  row.insertCell(6).innerText = total;
+                  row.insertCell(7).innerText = fechaFormateada;
+                } else {
+                  // Mostrar en ambas tablas
+                  // Tabla de efectivo (primer pago)
+                  const rowEfectivo = facturasTableBody.insertRow();
+                  rowEfectivo.insertCell(0).innerText = contadorEfectivo++;
+                  rowEfectivo.insertCell(1).innerText = factura.id;
+                  rowEfectivo.insertCell(2).innerHTML = nombreCliente;
+                  rowEfectivo.insertCell(3).innerText = factura.clientPhone;
+                  rowEfectivo.insertCell(4).innerText = factura.amountReceivedAbono1erMethod;
+                  rowEfectivo.insertCell(5).innerText = factura.amountReceivedAbono1er || 0;
+                  rowEfectivo.insertCell(6).innerText = cambio;
+                  rowEfectivo.insertCell(7).innerText = total;
+                  rowEfectivo.insertCell(8).innerText = fechaFormateada;
+                  
+                  // Tabla de otras facturas (segundo pago)
+                  const rowOtras = otrasFacturasTableBody.insertRow();
+                  rowOtras.insertCell(0).innerText = contadorOtras++;
+                  rowOtras.insertCell(1).innerText = factura.id;
+                  rowOtras.insertCell(2).innerHTML = nombreCliente;
+                  rowOtras.insertCell(3).innerText = factura.clientPhone;
+                  rowOtras.insertCell(4).innerText = factura.amountReceivedAbono2doMethod;
+                  rowOtras.insertCell(5).innerText = factura.amountReceivedAbono2do || 0;
+                  rowOtras.insertCell(6).innerText = total;
+                  rowOtras.insertCell(7).innerText = fechaFormateada;
+                }
+                return;
+              }
 
-            if (factura.paymentMethod === "Efectivo") {
-              // Agregar a la tabla de facturas en efectivo
-              const row = facturasTableBody.insertRow();
-              row.insertCell(0).innerText = contadorEfectivo++;
-              row.insertCell(1).innerText = rowData.id;
-              row.insertCell(2).innerHTML = rowData.clientName; // Usar innerHTML para renderizar el span
-              row.insertCell(3).innerText = rowData.clientPhone;
-              row.insertCell(4).innerText = rowData.paymentMethod;
-              row.insertCell(5).innerText = rowData.amountReceived;
-              row.insertCell(6).innerText = rowData.changeAmount;
-              row.insertCell(7).innerText = rowData.total;
-              row.insertCell(8).innerText = fechaFormateada;
-            } else if (factura.paymentMethod === "Transferencia" || factura.paymentMethod === "Tarjeta de Crédito") {
-              // Agregar a la tabla de otras facturas
-              const row = otrasFacturasTableBody.insertRow();
-              row.insertCell(0).innerText = contadorOtras++;
-              row.insertCell(1).innerText = rowData.id;
-              row.insertCell(2).innerHTML = rowData.clientName; // Usar innerHTML para consistencia
-              row.insertCell(3).innerText = rowData.clientPhone;
-              row.insertCell(4).innerText = rowData.paymentMethod;
-              row.insertCell(5).innerText = rowData.total;
-              row.insertCell(6).innerText = fechaFormateada;
+              // Caso 2.3: Primer método es Transferencia o Tarjeta y segundo es Efectivo
+              if ((factura.amountReceivedAbono1erMethod === "Transferencia" || 
+                   factura.amountReceivedAbono1erMethod === "Tarjeta de Crédito") &&
+                  factura.amountReceivedAbono2doMethod === "Efectivo") {
+                
+                if (esSegundoPago) {
+                  // Solo mostrar en tabla de efectivo
+                  const row = facturasTableBody.insertRow();
+                  row.insertCell(0).innerText = contadorEfectivo++;
+                  row.insertCell(1).innerText = factura.id;
+                  row.insertCell(2).innerHTML = nombreCliente;
+                  row.insertCell(3).innerText = factura.clientPhone;
+                  row.insertCell(4).innerText = factura.amountReceivedAbono2doMethod;
+                  row.insertCell(5).innerText = factura.amountReceivedAbono2do || 0;
+                  row.insertCell(6).innerText = cambio;
+                  row.insertCell(7).innerText = total;
+                  row.insertCell(8).innerText = fechaFormateada;
+                } else {
+                  // Mostrar en ambas tablas
+                  // Tabla de otras facturas (primer pago)
+                  const rowOtras = otrasFacturasTableBody.insertRow();
+                  rowOtras.insertCell(0).innerText = contadorOtras++;
+                  rowOtras.insertCell(1).innerText = factura.id;
+                  rowOtras.insertCell(2).innerHTML = nombreCliente;
+                  rowOtras.insertCell(3).innerText = factura.clientPhone;
+                  rowOtras.insertCell(4).innerText = factura.amountReceivedAbono1erMethod;
+                  rowOtras.insertCell(5).innerText = factura.amountReceivedAbono1er || 0;
+                  rowOtras.insertCell(6).innerText = total;
+                  rowOtras.insertCell(7).innerText = fechaFormateada;
+                  
+                  // Tabla de efectivo (segundo pago)
+                  const rowEfectivo = facturasTableBody.insertRow();
+                  rowEfectivo.insertCell(0).innerText = contadorEfectivo++;
+                  rowEfectivo.insertCell(1).innerText = factura.id;
+                  rowEfectivo.insertCell(2).innerHTML = nombreCliente;
+                  rowEfectivo.insertCell(3).innerText = factura.clientPhone;
+                  rowEfectivo.insertCell(4).innerText = factura.amountReceivedAbono2doMethod;
+                  rowEfectivo.insertCell(5).innerText = factura.amountReceivedAbono2do || 0;
+                  rowEfectivo.insertCell(6).innerText = cambio;
+                  rowEfectivo.insertCell(7).innerText = total;
+                  rowEfectivo.insertCell(8).innerText = fechaFormateada;
+                }
+                return;
+              }
+
+              // Caso 2.4: Ambos métodos son Efectivo
+              if (factura.amountReceivedAbono1erMethod === "Efectivo" && 
+                  factura.amountReceivedAbono2doMethod === "Efectivo") {
+                
+                montoRecibido = esSegundoPago ? factura.amountReceivedAbono2do || 0 : 
+                              (factura.amountReceivedAbono1er || 0) + (factura.amountReceivedAbono2do || 0);
+                
+                const row = facturasTableBody.insertRow();
+                row.insertCell(0).innerText = contadorEfectivo++;
+                row.insertCell(1).innerText = factura.id;
+                row.insertCell(2).innerHTML = nombreCliente;
+                row.insertCell(3).innerText = factura.clientPhone;
+                row.insertCell(4).innerText = "Efectivo";
+                row.insertCell(5).innerText = montoRecibido;
+                row.insertCell(6).innerText = cambio;
+                row.insertCell(7).innerText = total;
+                row.insertCell(8).innerText = fechaFormateada;
+                return;
+              }
+            }
+
+            // Caso 3: Factura con primer abono (abonoFact === "yes")
+            if (factura.abonoFact === "yes") {
+              const total = factura.total || 0;
+              const montoRecibido = factura.amountReceivedAbono1er || 0;
+              const cambio = factura.changeAmountAbonoFire || 0;
+              
+              if (factura.amountReceivedAbono1erMethod === "Efectivo") {
+                const row = facturasTableBody.insertRow();
+                row.insertCell(0).innerText = contadorEfectivo++;
+                row.insertCell(1).innerText = factura.id;
+                row.insertCell(2).innerHTML = nombreCliente;
+                row.insertCell(3).innerText = factura.clientPhone;
+                row.insertCell(4).innerText = factura.amountReceivedAbono1erMethod;
+                row.insertCell(5).innerText = montoRecibido;
+                row.insertCell(6).innerText = cambio;
+                row.insertCell(7).innerText = total;
+                row.insertCell(8).innerText = fechaFormateada;
+              } else {
+                const row = otrasFacturasTableBody.insertRow();
+                row.insertCell(0).innerText = contadorOtras++;
+                row.insertCell(1).innerText = factura.id;
+                row.insertCell(2).innerHTML = nombreCliente;
+                row.insertCell(3).innerText = factura.clientPhone;
+                row.insertCell(4).innerText = factura.amountReceivedAbono1erMethod;
+                row.insertCell(5).innerText = montoRecibido;
+                row.insertCell(6).innerText = total;
+                row.insertCell(7).innerText = fechaFormateada;
+              }
+              return;
             }
           });
-          updateTotals(); // Llamar a la función para actualizar los totales
+          updateTotals();
         });
     }
   } catch (error) {
@@ -2847,4 +3045,4 @@ const loadFacturasRealTime = async () => {
 
 </html>
 
-<!-- 20 -->
+<!-- 777 -->
