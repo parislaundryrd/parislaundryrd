@@ -1718,33 +1718,6 @@ ${asumirPor !== "desactivado" ? `
       document.getElementById('pagarConAbonoCheckbox').checked = false;
       document.getElementById('cashPaymentOptions').hidden = false;
     });
-
-
-    // Asegúrate de incluir la biblioteca escpos
-const escpos = require('escpos');
-
-// Configura la impresora
-const device = new escpos.USB(); // Cambia a Bluetooth si es necesario
-const printer = new escpos.Printer(device);
-
-// Función para imprimir la factura
-function printInvoice(invoiceDetails) {
-    device.open(function() {
-        printer
-            .font('A')
-            .size(1, 1)
-            .text('Factura')
-            .text(invoiceDetails)
-            .cut()
-            .close();
-    });
-}
-
-// Llama a esta función cuando el usuario haga clic en el botón de imprimir
-document.getElementById('printInvoiceButton').addEventListener('click', () => {
-    const invoiceDetails = document.getElementById('processedInvoiceDetails').innerHTML;
-    printInvoice(invoiceDetails);
-});
   </script>
 
 </body>
