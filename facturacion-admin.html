@@ -11,12 +11,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
   <script src="./js/menu.js" defer></script>
-
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://* blob: data: gap:; 
-  connect-src *; 
-  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; 
-  style-src 'self' 'unsafe-inline';">
-  
 </head>
 
 
@@ -304,9 +298,7 @@
               <p>¡Factura procesada y guardada con éxito!</p>
 
               <div style="display: inline-flex;width: 100%;flex-direction: row;justify-content: space-between;">
-                <button id="printInvoiceButton" onclick="printViaBluetooth()">
-                  <img src="./img/icon/imprimir1.png">Imprimir
-                </button>
+                <button id="printInvoiceButton"><img src="./img/icon/imprimir1.png">Imprimir</button>
                 <span id="invoiceIdDisplay"></span>
                 <button id="readyButton" onclick="closeProcessedInvoiceModal()"><img
                     src="./img/icon/check2.png">Listo</button>
@@ -1728,122 +1720,31 @@ ${asumirPor !== "desactivado" ? `
     });
 
 
+    // Asegúrate de incluir la biblioteca escpos
+const escpos = require('escpos');
 
+// Configura la impresora
+const device = new escpos.USB(); // Cambia a Bluetooth si es necesario
+const printer = new escpos.Printer(device);
 
-
-
-
-
-    // Función para imprimir vía Bluetooth
-async function printViaBluetooth() {
-  try {
-    // Verificar si estamos en Android
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    if (!isAndroid) {
-      alert("La impresión Bluetooth solo está disponible en dispositivos Android");
-      return;
-    }
-
-    // Obtener el contenido de la factura
-    const invoiceDetails = document.getElementById("processedInvoiceDetails").innerHTML;
-    const invoiceId = document.getElementById("invoiceIdDisplay").textContent;
-
-    // Crear el texto plano para imprimir
-    const printContent = generatePlainTextInvoice(invoiceDetails, invoiceId);
-
-    // Imprimir usando la API Bluetooth
-    await printWithBluetooth(printContent);
-    
-  } catch (error) {
-    console.error("Error al imprimir:", error);
-    alert("Error al imprimir: " + error.message);
-  }
-}
-
-// Generar texto plano para la impresora térmica
-function generatePlainTextInvoice(invoiceDetails, invoiceId) {
-  // Convertir HTML a texto plano con formato para impresora térmica
-  const div = document.createElement('div');
-  div.innerHTML = invoiceDetails;
-  
-  // Extraer texto y aplicar formato
-  let text = div.textContent || div.innerText || '';
-  
-  // Formatear para impresora térmica
-  let printText = '\x1B\x40'; // Reset printer
-  printText += '\x1B\x61\x01'; // Center align
-  
-  // Encabezado
-  printText += 'PARIS LAUNDRY RD\n\n';
-  printText += 'FACTURA\n';
-  printText += '----------------\n';
-  
-  // Detalles de la factura
-  printText += '\x1B\x61\x00'; // Left align
-  printText += text.replace(/(RD\$\d+\.\d{2})/g, '\n$1')
-                  .replace(/:/g, ': ')
-                  .replace(/\s+/g, ' ')
-                  .replace(/(\d)\s(lbs)/g, '$1$2');
-  
-  // Pie de página
-  printText += '\n----------------\n';
-  printText += '\x1B\x61\x01'; // Center align
-  printText += `ID: ${invoiceId}\n`;
-  printText += '¡Gracias por su preferencia!\n';
-  printText += '\x1B\x69'; // Cut paper (si la impresora lo soporta)
-  
-  return printText;
-}
-
-// Función para imprimir usando Bluetooth
-async function printWithBluetooth(printText) {
-  try {
-    // Verificar si Web Bluetooth API está disponible
-    if (!navigator.bluetooth) {
-      throw new Error('Web Bluetooth API no está soportada en este navegador');
-    }
-    
-    // Solicitar dispositivo Bluetooth
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [{ name: '2C-POS80-01' }],
-      optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'] // Servicio genérico para impresoras
+// Función para imprimir la factura
+function printInvoice(invoiceDetails) {
+    device.open(function() {
+        printer
+            .font('A')
+            .size(1, 1)
+            .text('Factura')
+            .text(invoiceDetails)
+            .cut()
+            .close();
     });
-    
-    // Conectar al dispositivo
-    const server = await device.gatt.connect();
-    
-    // Obtener servicio y característica (ajusta estos UUIDs según tu impresora)
-    const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
-    const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
-    
-    // Convertir texto a ArrayBuffer
-    const encoder = new TextEncoder();
-    const data = encoder.encode(printText);
-    
-    // Enviar datos a la impresora
-    await characteristic.writeValue(data);
-    
-    alert('Factura enviada a la impresora con éxito');
-    
-  } catch (error) {
-    console.error('Error Bluetooth:', error);
-    // Fallback: intentar con intent de Android
-    tryAndroidPrintFallback(printText);
-  }
 }
 
-// Fallback para Android usando Intents
-function tryAndroidPrintFallback(printText) {
-  if (typeof Android !== 'undefined' && Android.printViaBluetooth) {
-    // Si hay un WebView con soporte nativo
-    Android.printViaBluetooth(printText);
-  } else {
-    // Último recurso: abrir aplicación de impresión Bluetooth
-    const blob = new Blob([printText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    window.open(`intent://${url}#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=${encodeURIComponent(printText)};end`, '_blank');
-  }
-}
+// Llama a esta función cuando el usuario haga clic en el botón de imprimir
+document.getElementById('printInvoiceButton').addEventListener('click', () => {
+    const invoiceDetails = document.getElementById('processedInvoiceDetails').innerHTML;
+    printInvoice(invoiceDetails);
+});
   </script>
 
 </body>
