@@ -2,239 +2,263 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lector de Códigos de Barras</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
             margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
-        #container {
-            max-width: 600px;
-            margin: 0 auto;
+        .container {
+            width: 100%;
+            max-width: 500px;
             background: white;
-            padding: 20px;
             border-radius: 10px;
+            padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
         }
         #scanner-container {
             position: relative;
             width: 100%;
             height: 300px;
             margin: 20px 0;
-            border: 2px dashed #ccc;
-            border-radius: 5px;
+            border: 3px dashed #ccc;
+            border-radius: 8px;
             overflow: hidden;
+            background: #f9f9f9;
         }
         #video {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        #scan-region {
+        #scan-line {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 100px;
-            border: 3px solid #4CAF50;
-            box-sizing: border-box;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #e74c3c;
+            animation: scan 2s infinite linear;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
         }
         #result {
             margin: 20px 0;
-            padding: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
             font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            word-break: break-all;
+            min-height: 24px;
         }
-        button {
-            background-color: #4CAF50;
+        .btn {
+            background: #3498db;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 12px 25px;
             font-size: 16px;
             border-radius: 5px;
             cursor: pointer;
-            margin: 10px 5px;
+            margin: 5px;
+            transition: background 0.3s;
         }
-        button:hover {
-            background-color: #45a049;
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn-stop {
+            background: #e74c3c;
+        }
+        .btn-stop:hover {
+            background: #c0392b;
         }
         .hidden {
             display: none;
         }
         #error {
-            color: red;
+            color: #e74c3c;
             margin: 10px 0;
+            min-height: 20px;
         }
     </style>
 </head>
 <body>
-    <div id="container">
+    <div class="container">
         <h1>Lector de Códigos de Barras</h1>
-        <p>Enfoca un código de barras dentro del área marcada</p>
+        <p>Enfoca un código de barras dentro del área de escaneo</p>
         
         <div id="scanner-container">
             <video id="video" playsinline></video>
-            <div id="scan-region"></div>
+            <div id="scan-line"></div>
         </div>
         
         <div id="result">Esperando escaneo...</div>
         <div id="error"></div>
         
-        <button id="start-btn">Iniciar Escáner</button>
-        <button id="stop-btn" class="hidden">Detener Escáner</button>
-        <button id="switch-btn" class="hidden">Cambiar Cámara</button>
+        <button id="start-btn" class="btn">Iniciar Escáner</button>
+        <button id="stop-btn" class="btn btn-stop hidden">Detener</button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.getElementById('video');
             const startBtn = document.getElementById('start-btn');
             const stopBtn = document.getElementById('stop-btn');
-            const switchBtn = document.getElementById('switch-btn');
             const resultDiv = document.getElementById('result');
             const errorDiv = document.getElementById('error');
+            const scanLine = document.getElementById('scan-line');
             
-            let codeReader;
-            let currentDeviceId;
+            let stream = null;
             let scanning = false;
             
             // Verificar compatibilidad
-            if (!navigator.mediaDevices || !window.MediaStreamTrack) {
-                errorDiv.textContent = "Tu navegador no soporta el acceso a la cámara o esta función no está disponible.";
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                errorDiv.textContent = "Tu navegador no soporta el acceso a la cámara.";
                 startBtn.disabled = true;
                 return;
             }
             
-            // Inicializar el lector
-            codeReader = new ZXing.BrowserMultiFormatReader();
+            // Configuración de Quagga
+            const config = {
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: video,
+                    constraints: {
+                        width: { min: 640 },
+                        height: { min: 480 },
+                        facingMode: "environment", // Prioriza cámara trasera
+                        aspectRatio: { min: 1, max: 2 }
+                    },
+                },
+                decoder: {
+                    readers: [
+                        "ean_reader",
+                        "ean_8_reader",
+                        "code_128_reader",
+                        "code_39_reader",
+                        "code_39_vin_reader",
+                        "codabar_reader",
+                        "upc_reader",
+                        "upc_e_reader"
+                    ]
+                },
+                locate: true,
+                debug: false
+            };
             
             startBtn.addEventListener('click', startScanning);
             stopBtn.addEventListener('click', stopScanning);
-            switchBtn.addEventListener('click', switchCamera);
             
             async function startScanning() {
                 try {
                     startBtn.disabled = true;
-                    resultDiv.textContent = "Iniciando cámara...";
                     errorDiv.textContent = "";
+                    resultDiv.textContent = "Iniciando cámara...";
                     
-                    // Obtener lista de cámaras
-                    const videoInputDevices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-                    
-                    if (videoInputDevices.length === 0) {
-                        throw new Error("No se encontraron cámaras disponibles");
-                    }
-                    
-                    // Configurar la cámara trasera si está disponible
-                    let deviceId = videoInputDevices[0].deviceId; // Por defecto primera cámara
-                    
-                    // Intentar encontrar la cámara trasera (generalmente es la segunda)
-                    if (videoInputDevices.length > 1) {
-                        // Buscar cámara con "back" en el label
-                        const rearCamera = videoInputDevices.find(device => 
-                            device.label.toLowerCase().includes('back') || 
-                            device.label.toLowerCase().includes('rear'));
-                        
-                        if (rearCamera) {
-                            deviceId = rearCamera.deviceId;
-                        } else {
-                            deviceId = videoInputDevices[1].deviceId; // Segunda cámara si no se encuentra "back"
-                        }
-                    }
-                    
-                    currentDeviceId = deviceId;
-                    
-                    await codeReader.decodeFromVideoDevice(deviceId, 'video', (result, err) => {
-                        if (result) {
-                            handleScanResult(result.text);
-                        }
+                    // Iniciar Quagga
+                    await Quagga.init(config, function(err) {
                         if (err) {
-                            if (!(err instanceof ZXing.NotFoundException)) {
-                                console.error(err);
-                                errorDiv.textContent = "Error: " + err.message;
+                            console.error(err);
+                            errorDiv.textContent = "Error al iniciar el escáner: " + err.message;
+                            startBtn.disabled = false;
+                            return;
+                        }
+                        
+                        Quagga.start();
+                        scanning = true;
+                        startBtn.classList.add('hidden');
+                        stopBtn.classList.remove('hidden');
+                        resultDiv.textContent = "Escaneando...";
+                        scanLine.style.display = 'block';
+                        
+                        // Obtener el stream para poder detenerlo después
+                        stream = Quagga.CameraAccess.getActiveStream();
+                    });
+                    
+                    Quagga.onDetected(function(result) {
+                        if (result && result.codeResult) {
+                            handleScanResult(result.codeResult.code);
+                        }
+                    });
+                    
+                    Quagga.onProcessed(function(result) {
+                        if (result) {
+                            // Mostrar cuadro de detección (opcional)
+                            const drawingCtx = Quagga.canvas.ctx.overlay;
+                            const drawingCanvas = Quagga.canvas.dom.overlay;
+                            
+                            if (result.boxes) {
+                                drawingCtx.clearRect(
+                                    0, 
+                                    0, 
+                                    parseInt(drawingCanvas.getAttribute("width")), 
+                                    parseInt(drawingCanvas.getAttribute("height"))
+                                );
+                                
+                                result.boxes.filter(function(box) {
+                                    return box !== result.box;
+                                }).forEach(function(box) {
+                                    Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {
+                                        color: "green",
+                                        lineWidth: 2
+                                    });
+                                });
                             }
                         }
                     });
                     
-                    scanning = true;
-                    startBtn.classList.add('hidden');
-                    stopBtn.classList.remove('hidden');
-                    if (videoInputDevices.length > 1) {
-                        switchBtn.classList.remove('hidden');
-                    }
-                    
-                    resultDiv.textContent = "Escaneando...";
                 } catch (error) {
                     console.error(error);
                     errorDiv.textContent = "Error: " + error.message;
-                    resultDiv.textContent = "Error al iniciar el escáner";
                     startBtn.disabled = false;
                 }
             }
             
             function stopScanning() {
                 try {
-                    codeReader.reset();
-                    scanning = false;
-                    startBtn.classList.remove('hidden');
-                    stopBtn.classList.add('hidden');
-                    switchBtn.classList.add('hidden');
-                    resultDiv.textContent = "Escáner detenido";
-                    startBtn.disabled = false;
+                    if (scanning) {
+                        Quagga.stop();
+                        if (stream) {
+                            stream.getTracks().forEach(track => track.stop());
+                        }
+                        
+                        scanning = false;
+                        startBtn.classList.remove('hidden');
+                        stopBtn.classList.add('hidden');
+                        scanLine.style.display = 'none';
+                        resultDiv.textContent = "Escáner detenido";
+                        startBtn.disabled = false;
+                    }
                 } catch (error) {
                     console.error(error);
                     errorDiv.textContent = "Error al detener el escáner: " + error.message;
                 }
             }
             
-            async function switchCamera() {
-                if (!scanning) return;
+            function handleScanResult(code) {
+                resultDiv.textContent = "Código detectado: " + code;
+                console.log("Código de barras:", code);
                 
-                try {
-                    const videoInputDevices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-                    if (videoInputDevices.length < 2) {
-                        errorDiv.textContent = "Solo se encontró una cámara disponible";
-                        return;
-                    }
-                    
-                    // Encontrar el índice de la cámara actual
-                    let currentIndex = videoInputDevices.findIndex(device => device.deviceId === currentDeviceId);
-                    let nextIndex = (currentIndex + 1) % videoInputDevices.length;
-                    
-                    // Detener el escaneo actual
-                    codeReader.reset();
-                    
-                    // Iniciar con la nueva cámara
-                    currentDeviceId = videoInputDevices[nextIndex].deviceId;
-                    await codeReader.decodeFromVideoDevice(currentDeviceId, 'video', (result, err) => {
-                        if (result) {
-                            handleScanResult(result.text);
-                        }
-                        if (err && !(err instanceof ZXing.NotFoundException)) {
-                            console.error(err);
-                            errorDiv.textContent = "Error: " + err.message;
-                        }
-                    });
-                    
-                    resultDiv.textContent = "Cambiando a cámara: " + videoInputDevices[nextIndex].label;
-                } catch (error) {
-                    console.error(error);
-                    errorDiv.textContent = "Error al cambiar de cámara: " + error.message;
-                }
-            }
-            
-            function handleScanResult(resultText) {
-                resultDiv.textContent = "Código escaneado: " + resultText;
-                
-                console.log("Código de barras detectado:", resultText);
+                // Feedback visual
+                resultDiv.style.animation = "none";
+                void resultDiv.offsetWidth; // Trigger reflow
+                resultDiv.style.animation = "highlight 0.5s";
                 
                 // Feedback táctil
                 if (navigator.vibrate) {
@@ -243,28 +267,34 @@
                 
                 // Feedback de audio
                 playBeepSound();
+                
+                // Aquí puedes hacer algo con el código leído
+                // Por ejemplo, enviarlo a un servidor o procesarlo
             }
             
             function playBeepSound() {
                 try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
                     
                     oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
+                    gainNode.connect(audioCtx.destination);
                     
                     oscillator.type = "sine";
                     oscillator.frequency.value = 800;
                     gainNode.gain.value = 0.1;
                     
                     oscillator.start();
-                    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.5);
-                    oscillator.stop(audioContext.currentTime + 0.5);
-                } catch (error) {
-                    console.error("Error al reproducir sonido:", error);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+                    oscillator.stop(audioCtx.currentTime + 0.3);
+                } catch (e) {
+                    console.log("No se pudo reproducir sonido:", e);
                 }
             }
+            
+            // Detener el escáner al salir de la página
+            window.addEventListener('beforeunload', stopScanning);
         });
     </script>
 </body>
