@@ -112,7 +112,7 @@
         <button id="stop-btn" class="btn btn-stop hidden">Detener</button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -126,8 +126,8 @@
             let stream = null;
             let scanning = false;
             
-            // Verificar compatibilidad
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            // Ver ificar compatibilidad
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUser Media) {
                 errorDiv.textContent = "Tu navegador no soporta el acceso a la cámara.";
                 startBtn.disabled = true;
                 return;
