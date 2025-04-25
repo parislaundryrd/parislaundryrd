@@ -1,155 +1,218 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>EAN-13: Generar y Escanear</title>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 20px;
-      text-align: center;
-    }
-
-    input, button {
-      padding: 12px;
-      font-size: 18px;
-      margin: 10px auto;
-      width: 90%;
-      max-width: 350px;
-      display: block;
-      border-radius: 8px;
-    }
-
-    button {
-      background-color: #28a745;
-      color: white;
-      border: none;
-    }
-
-    button:hover {
-      background-color: #218838;
-    }
-
-    svg {
-      margin-top: 20px;
-    }
-
-    .error {
-      color: red;
-    }
-
-    #scanner-container {
-      display: none;
-      margin-top: 20px;
-    }
-
-    #scanner {
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto;
-      border: 2px solid #000;
-    }
-
-    @media (max-width: 600px) {
-      svg {
-        width: 100%;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Lector de Códigos de Barras</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        #container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #scanner-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #scan-region {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 100px;
+            border: 3px solid #4CAF50;
+            box-sizing: border-box;
+        }
+        #result {
+            margin: 20px 0;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            word-break: break-all;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
+    <div id="container">
+        <h1>Lector de Códigos de Barras</h1>
+        <p>Enfoca un código de barras dentro del área marcada</p>
+        
+        <div id="scanner-container">
+            <video id="video" playsinline></video>
+            <div id="scan-region"></div>
+        </div>
+        
+        <div id="result">Esperando escaneo...</div>
+        
+        <button id="start-btn">Iniciar Escáner</button>
+        <button id="stop-btn" class="hidden">Detener Escáner</button>
+        <button id="switch-btn" class="hidden">Cambiar Cámara</button>
+    </div>
 
-  <h2>EAN-13: Generar y Escanear</h2>
-  <p>Introduce 12 dígitos o escanea un código EAN-13:</p>
-
-  <input type="text" id="codigo" maxlength="12" placeholder="Ej: 123456789012">
-  <button onclick="generarEAN13()">Generar Código</button>
-  <button onclick="iniciarEscaneo()">📷 Escanear Código de Barras</button>
-  <div id="error" class="error"></div>
-
-  <div id="scanner-container">
-    <video id="scanner"></video>
-    <button onclick="detenerEscaneo()">❌ Detener Escaneo</button>
-  </div>
-
-  <svg id="barcode"></svg>
-
-  <script>
-    function calcularDigitoVerificador(codigo12) {
-      let suma = 0;
-      for (let i = 0; i < 12; i++) {
-        const num = parseInt(codigo12[i]);
-        suma += (i % 2 === 0) ? num : num * 3;
-      }
-      const resto = suma % 10;
-      return (10 - resto) % 10;
-    }
-
-    function generarEAN13() {
-      const input = document.getElementById("codigo");
-      const error = document.getElementById("error");
-      let valor = input.value.trim();
-
-      if (!/^\d{12}$/.test(valor)) {
-        error.textContent = "Debes ingresar exactamente 12 números.";
-        return;
-      }
-
-      const digito = calcularDigitoVerificador(valor);
-      const completo = valor + digito;
-
-      error.textContent = "";
-      JsBarcode("#barcode", completo, {
-        format: "EAN13",
-        lineColor: "#000",
-        width: 2,
-        height: 100,
-        displayValue: true
-      });
-    }
-
-    function iniciarEscaneo() {
-      document.getElementById("scanner-container").style.display = "block";
-
-      Quagga.init({
-        inputStream: {
-          name: "Live",
-          type: "LiveStream",
-          target: document.querySelector("#scanner"),
-          constraints: {
-            facingMode: "environment" // Cámara trasera
-          }
-        },
-        decoder: {
-          readers: ["ean_reader"]
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest"></script>
+    <script>
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const switchBtn = document.getElementById('switch-btn');
+        const resultDiv = document.getElementById('result');
+        
+        let codeReader;
+        let currentDeviceId;
+        let scanning = false;
+        
+        // Inicializar el lector
+        codeReader = new ZXing.BrowserMultiFormatReader();
+        
+        startBtn.addEventListener('click', startScanning);
+        stopBtn.addEventListener('click', stopScanning);
+        switchBtn.addEventListener('click', switchCamera);
+        
+        async function startScanning() {
+            try {
+                resultDiv.textContent = "Escaneando...";
+                
+                // Obtener lista de cámaras
+                const videoInputDevices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+                
+                // Configurar la cámara trasera si está disponible
+                let deviceId = null;
+                if (videoInputDevices.length > 1) {
+                    // Buscar cámara trasera (generalmente es la segunda)
+                    deviceId = videoInputDevices[1].deviceId;
+                } else if (videoInputDevices.length > 0) {
+                    deviceId = videoInputDevices[0].deviceId;
+                }
+                
+                currentDeviceId = deviceId;
+                
+                await codeReader.decodeFromVideoDevice(deviceId, 'video', (result, err) => {
+                    if (result) {
+                        handleScanResult(result.text);
+                    }
+                    if (err && !(err instanceof ZXing.NotFoundException)) {
+                        console.error(err);
+                        resultDiv.textContent = "Error: " + err.message;
+                    }
+                });
+                
+                scanning = true;
+                startBtn.classList.add('hidden');
+                stopBtn.classList.remove('hidden');
+                if (videoInputDevices.length > 1) {
+                    switchBtn.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error(error);
+                resultDiv.textContent = "Error al acceder a la cámara: " + error.message;
+            }
         }
-      }, function (err) {
-        if (err) {
-          console.error(err);
-          return;
+        
+        function stopScanning() {
+            codeReader.reset();
+            scanning = false;
+            startBtn.classList.remove('hidden');
+            stopBtn.classList.add('hidden');
+            switchBtn.classList.add('hidden');
+            resultDiv.textContent = "Escáner detenido";
         }
-        Quagga.start();
-      });
-
-      Quagga.onDetected(function (data) {
-        const codigo = data.codeResult.code;
-        if (/^\d{13}$/.test(codigo)) {
-          document.getElementById("codigo").value = codigo.slice(0, 12);
-          generarEAN13();
-          detenerEscaneo();
+        
+        async function switchCamera() {
+            if (!scanning) return;
+            
+            const videoInputDevices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+            if (videoInputDevices.length < 2) return;
+            
+            // Encontrar el índice de la cámara actual
+            let currentIndex = videoInputDevices.findIndex(device => device.deviceId === currentDeviceId);
+            let nextIndex = (currentIndex + 1) % videoInputDevices.length;
+            
+            // Detener el escaneo actual
+            codeReader.reset();
+            
+            // Iniciar con la nueva cámara
+            currentDeviceId = videoInputDevices[nextIndex].deviceId;
+            await codeReader.decodeFromVideoDevice(currentDeviceId, 'video', (result, err) => {
+                if (result) {
+                    handleScanResult(result.text);
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error(err);
+                    resultDiv.textContent = "Error: " + err.message;
+                }
+            });
         }
-      });
-    }
-
-    function detenerEscaneo() {
-      Quagga.stop();
-      document.getElementById("scanner-container").style.display = "none";
-    }
-  </script>
-
+        
+        function handleScanResult(resultText) {
+            resultDiv.textContent = "Código escaneado: " + resultText;
+            
+            // Aquí puedes agregar lo que quieras hacer con el resultado
+            // Por ejemplo, enviarlo a un servidor o procesarlo
+            console.log("Código de barras detectado:", resultText);
+            
+            // Opcional: vibrar el dispositivo para feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(200);
+            }
+            
+            // Opcional: reproducir sonido
+            playBeepSound();
+        }
+        
+        function playBeepSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = "sine";
+            oscillator.frequency.value = 800;
+            gainNode.gain.value = 0.1;
+            
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.5);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+    </script>
 </body>
 </html>
