@@ -4,297 +4,232 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lector de Códigos de Barras</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
+            background-color: #f5f5f5;
         }
         .container {
             width: 100%;
             max-width: 500px;
-            background: white;
+            background-color: white;
             border-radius: 10px;
-            padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
         h1 {
-            color: #2c3e50;
+            text-align: center;
+            color: #333;
             margin-top: 0;
         }
         #scanner-container {
             position: relative;
             width: 100%;
             height: 300px;
-            margin: 20px 0;
-            border: 3px dashed #ccc;
-            border-radius: 8px;
             overflow: hidden;
-            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
-        #video {
+        #interactive.viewport {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            position: relative;
         }
-        #scan-line {
+        #interactive.viewport > canvas, #interactive.viewport > video {
+            max-width: 100%;
+            width: 100%;
+            height: auto;
+        }
+        .overlay {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 3px;
-            background: #e74c3c;
-            animation: scan 2s infinite linear;
-            box-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
-        }
-        @keyframes scan {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
-        #result {
-            margin: 20px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 5px;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-size: 18px;
-            min-height: 24px;
         }
-        .btn {
-            background: #3498db;
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 16px;
             border-radius: 5px;
             cursor: pointer;
-            margin: 5px;
-            transition: background 0.3s;
+            font-size: 16px;
+            flex: 1;
         }
-        .btn:hover {
-            background: #2980b9;
+        button:hover {
+            background-color: #45a049;
         }
-        .btn-stop {
-            background: #e74c3c;
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
-        .btn-stop:hover {
-            background: #c0392b;
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            min-height: 50px;
         }
-        .hidden {
-            display: none;
+        .result-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
         }
-        #error {
-            color: #e74c3c;
-            margin: 10px 0;
-            min-height: 20px;
+        .result-item:last-child {
+            border-bottom: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Lector de Códigos de Barras</h1>
-        <p>Enfoca un código de barras dentro del área de escaneo</p>
         
-        <div id="scanner-container">
-            <video id="video" playsinline></video>
-            <div id="scan-line"></div>
+        <div class="controls">
+            <button id="start-button">Iniciar Escaneo</button>
+            <button id="reset-button" disabled>Detener</button>
         </div>
         
-        <div id="result">Esperando escaneo...</div>
-        <div id="error"></div>
+        <div id="scanner-container">
+            <div id="interactive" class="viewport">
+                <div class="overlay">Esperando iniciar la cámara</div>
+            </div>
+        </div>
         
-        <button id="start-btn" class="btn">Iniciar Escáner</button>
-        <button id="stop-btn" class="btn btn-stop hidden">Detener</button>
+        <div>
+            <h3>Resultados:</h3>
+            <div id="result">
+                <p>Los códigos escaneados aparecerán aquí.</p>
+            </div>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const video = document.getElementById('video');
-            const startBtn = document.getElementById('start-btn');
-            const stopBtn = document.getElementById('stop-btn');
-            const resultDiv = document.getElementById('result');
-            const errorDiv = document.getElementById('error');
-            const scanLine = document.getElementById('scan-line');
+            const startButton = document.getElementById('start-button');
+            const resetButton = document.getElementById('reset-button');
+            const resultContainer = document.getElementById('result');
+            const overlay = document.querySelector('.overlay');
             
-            let stream = null;
             let scanning = false;
             
-            // Ver ificar compatibilidad
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUser Media) {
-                errorDiv.textContent = "Tu navegador no soporta el acceso a la cámara.";
-                startBtn.disabled = true;
-                return;
-            }
+            startButton.addEventListener('click', function() {
+                if (!scanning) {
+                    startScanner();
+                }
+            });
             
-            // Configuración de Quagga
-            const config = {
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: video,
-                    constraints: {
-                        width: { min: 640 },
-                        height: { min: 480 },
-                        facingMode: "environment", // Prioriza cámara trasera
-                        aspectRatio: { min: 1, max: 2 }
+            resetButton.addEventListener('click', function() {
+                if (scanning) {
+                    stopScanner();
+                }
+            });
+            
+            function startScanner() {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: document.querySelector('#interactive'),
+                        constraints: {
+                            facingMode: "environment" // Usar cámara trasera
+                        },
                     },
-                },
-                decoder: {
-                    readers: [
-                        "ean_reader",
-                        "ean_8_reader",
-                        "code_128_reader",
-                        "code_39_reader",
-                        "code_39_vin_reader",
-                        "codabar_reader",
-                        "upc_reader",
-                        "upc_e_reader"
-                    ]
-                },
-                locate: true,
-                debug: false
-            };
-            
-            startBtn.addEventListener('click', startScanning);
-            stopBtn.addEventListener('click', stopScanning);
-            
-            async function startScanning() {
-                try {
-                    startBtn.disabled = true;
-                    errorDiv.textContent = "";
-                    resultDiv.textContent = "Iniciando cámara...";
-                    
-                    // Iniciar Quagga
-                    await Quagga.init(config, function(err) {
-                        if (err) {
-                            console.error(err);
-                            errorDiv.textContent = "Error al iniciar el escáner: " + err.message;
-                            startBtn.disabled = false;
-                            return;
-                        }
-                        
-                        Quagga.start();
-                        scanning = true;
-                        startBtn.classList.add('hidden');
-                        stopBtn.classList.remove('hidden');
-                        resultDiv.textContent = "Escaneando...";
-                        scanLine.style.display = 'block';
-                        
-                        // Obtener el stream para poder detenerlo después
-                        stream = Quagga.CameraAccess.getActiveStream();
-                    });
-                    
-                    Quagga.onDetected(function(result) {
-                        if (result && result.codeResult) {
-                            handleScanResult(result.codeResult.code);
-                        }
-                    });
-                    
-                    Quagga.onProcessed(function(result) {
-                        if (result) {
-                            // Mostrar cuadro de detección (opcional)
-                            const drawingCtx = Quagga.canvas.ctx.overlay;
-                            const drawingCanvas = Quagga.canvas.dom.overlay;
-                            
-                            if (result.boxes) {
-                                drawingCtx.clearRect(
-                                    0, 
-                                    0, 
-                                    parseInt(drawingCanvas.getAttribute("width")), 
-                                    parseInt(drawingCanvas.getAttribute("height"))
-                                );
-                                
-                                result.boxes.filter(function(box) {
-                                    return box !== result.box;
-                                }).forEach(function(box) {
-                                    Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {
-                                        color: "green",
-                                        lineWidth: 2
-                                    });
-                                });
-                            }
-                        }
-                    });
-                    
-                } catch (error) {
-                    console.error(error);
-                    errorDiv.textContent = "Error: " + error.message;
-                    startBtn.disabled = false;
-                }
-            }
-            
-            function stopScanning() {
-                try {
-                    if (scanning) {
-                        Quagga.stop();
-                        if (stream) {
-                            stream.getTracks().forEach(track => track.stop());
-                        }
-                        
-                        scanning = false;
-                        startBtn.classList.remove('hidden');
-                        stopBtn.classList.add('hidden');
-                        scanLine.style.display = 'none';
-                        resultDiv.textContent = "Escáner detenido";
-                        startBtn.disabled = false;
+                    decoder: {
+                        readers: [
+                            "code_128_reader",
+                            "ean_reader",
+                            "ean_8_reader",
+                            "code_39_reader",
+                            "code_39_vin_reader",
+                            "codabar_reader",
+                            "upc_reader",
+                            "upc_e_reader",
+                            "i2of5_reader"
+                        ],
+                        multiple: false
+                    },
+                    locate: true
+                }, function(err) {
+                    if (err) {
+                        console.error(err);
+                        showMessage("Error al iniciar la cámara: " + err);
+                        return;
                     }
-                } catch (error) {
-                    console.error(error);
-                    errorDiv.textContent = "Error al detener el escáner: " + error.message;
-                }
+                    
+                    Quagga.start();
+                    scanning = true;
+                    overlay.style.display = 'none';
+                    startButton.disabled = true;
+                    resetButton.disabled = false;
+                });
+                
+                Quagga.onDetected(function(result) {
+                    if (result && result.codeResult) {
+                        beepSuccess();
+                        addResult(result.codeResult.code, result.codeResult.format);
+                    }
+                });
             }
             
-            function handleScanResult(code) {
-                resultDiv.textContent = "Código detectado: " + code;
-                console.log("Código de barras:", code);
-                
-                // Feedback visual
-                resultDiv.style.animation = "none";
-                void resultDiv.offsetWidth; // Trigger reflow
-                resultDiv.style.animation = "highlight 0.5s";
-                
-                // Feedback táctil
-                if (navigator.vibrate) {
-                    navigator.vibrate(200);
-                }
-                
-                // Feedback de audio
-                playBeepSound();
-                
-                // Aquí puedes hacer algo con el código leído
-                // Por ejemplo, enviarlo a un servidor o procesarlo
+            function stopScanner() {
+                Quagga.stop();
+                scanning = false;
+                overlay.style.display = 'flex';
+                overlay.textContent = 'Esperando iniciar la cámara';
+                startButton.disabled = false;
+                resetButton.disabled = true;
             }
             
-            function playBeepSound() {
-                try {
-                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    
-                    oscillator.type = "sine";
-                    oscillator.frequency.value = 800;
-                    gainNode.gain.value = 0.1;
-                    
-                    oscillator.start();
-                    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
-                    oscillator.stop(audioCtx.currentTime + 0.3);
-                } catch (e) {
-                    console.log("No se pudo reproducir sonido:", e);
+            function addResult(code, format) {
+                const currentContent = resultContainer.innerHTML;
+                if (currentContent.includes('Los códigos escaneados aparecerán aquí.')) {
+                    resultContainer.innerHTML = '';
                 }
+                
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                
+                const timestamp = new Date().toLocaleTimeString();
+                resultItem.innerHTML = `
+                    <strong>Código:</strong> ${code}<br>
+                    <strong>Formato:</strong> ${format}<br>
+                    <strong>Hora:</strong> ${timestamp}
+                `;
+                
+                resultContainer.insertBefore(resultItem, resultContainer.firstChild);
             }
             
-            // Detener el escáner al salir de la página
-            window.addEventListener('beforeunload', stopScanning);
+            function showMessage(message) {
+                overlay.style.display = 'flex';
+                overlay.textContent = message;
+            }
+            
+            function beepSuccess() {
+                const beep = new Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
+                beep.play();
+            }
         });
     </script>
 </body>
