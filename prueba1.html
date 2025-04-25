@@ -68,6 +68,10 @@
         .hidden {
             display: none;
         }
+        #error {
+            color: red;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -81,6 +85,7 @@
         </div>
         
         <div id="result">Esperando escaneo...</div>
+        <div id="error"></div>
         
         <button id="start-btn">Iniciar Escáner</button>
         <button id="stop-btn" class="hidden">Detener Escáner</button>
@@ -89,130 +94,178 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest"></script>
     <script>
-        const video = document.getElementById('video');
-        const startBtn = document.getElementById('start-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const switchBtn = document.getElementById('switch-btn');
-        const resultDiv = document.getElementById('result');
-        
-        let codeReader;
-        let currentDeviceId;
-        let scanning = false;
-        
-        // Inicializar el lector
-        codeReader = new ZXing.BrowserMultiFormatReader();
-        
-        startBtn.addEventListener('click', startScanning);
-        stopBtn.addEventListener('click', stopScanning);
-        switchBtn.addEventListener('click', switchCamera);
-        
-        async function startScanning() {
-            try {
-                resultDiv.textContent = "Escaneando...";
-                
-                // Obtener lista de cámaras
-                const videoInputDevices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-                
-                // Configurar la cámara trasera si está disponible
-                let deviceId = null;
-                if (videoInputDevices.length > 1) {
-                    // Buscar cámara trasera (generalmente es la segunda)
-                    deviceId = videoInputDevices[1].deviceId;
-                } else if (videoInputDevices.length > 0) {
-                    deviceId = videoInputDevices[0].deviceId;
-                }
-                
-                currentDeviceId = deviceId;
-                
-                await codeReader.decodeFromVideoDevice(deviceId, 'video', (result, err) => {
-                    if (result) {
-                        handleScanResult(result.text);
-                    }
-                    if (err && !(err instanceof ZXing.NotFoundException)) {
-                        console.error(err);
-                        resultDiv.textContent = "Error: " + err.message;
-                    }
-                });
-                
-                scanning = true;
-                startBtn.classList.add('hidden');
-                stopBtn.classList.remove('hidden');
-                if (videoInputDevices.length > 1) {
-                    switchBtn.classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error(error);
-                resultDiv.textContent = "Error al acceder a la cámara: " + error.message;
-            }
-        }
-        
-        function stopScanning() {
-            codeReader.reset();
-            scanning = false;
-            startBtn.classList.remove('hidden');
-            stopBtn.classList.add('hidden');
-            switchBtn.classList.add('hidden');
-            resultDiv.textContent = "Escáner detenido";
-        }
-        
-        async function switchCamera() {
-            if (!scanning) return;
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('video');
+            const startBtn = document.getElementById('start-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const switchBtn = document.getElementById('switch-btn');
+            const resultDiv = document.getElementById('result');
+            const errorDiv = document.getElementById('error');
             
-            const videoInputDevices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-            if (videoInputDevices.length < 2) return;
+            let codeReader;
+            let currentDeviceId;
+            let scanning = false;
             
-            // Encontrar el índice de la cámara actual
-            let currentIndex = videoInputDevices.findIndex(device => device.deviceId === currentDeviceId);
-            let nextIndex = (currentIndex + 1) % videoInputDevices.length;
-            
-            // Detener el escaneo actual
-            codeReader.reset();
-            
-            // Iniciar con la nueva cámara
-            currentDeviceId = videoInputDevices[nextIndex].deviceId;
-            await codeReader.decodeFromVideoDevice(currentDeviceId, 'video', (result, err) => {
-                if (result) {
-                    handleScanResult(result.text);
-                }
-                if (err && !(err instanceof ZXing.NotFoundException)) {
-                    console.error(err);
-                    resultDiv.textContent = "Error: " + err.message;
-                }
-            });
-        }
-        
-        function handleScanResult(resultText) {
-            resultDiv.textContent = "Código escaneado: " + resultText;
-            
-            // Aquí puedes agregar lo que quieras hacer con el resultado
-            // Por ejemplo, enviarlo a un servidor o procesarlo
-            console.log("Código de barras detectado:", resultText);
-            
-            // Opcional: vibrar el dispositivo para feedback
-            if (navigator.vibrate) {
-                navigator.vibrate(200);
+            // Verificar compatibilidad
+            if (!navigator.mediaDevices || !window.MediaStreamTrack) {
+                errorDiv.textContent = "Tu navegador no soporta el acceso a la cámara o esta función no está disponible.";
+                startBtn.disabled = true;
+                return;
             }
             
-            // Opcional: reproducir sonido
-            playBeepSound();
-        }
-        
-        function playBeepSound() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
+            // Inicializar el lector
+            codeReader = new ZXing.BrowserMultiFormatReader();
             
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+            startBtn.addEventListener('click', startScanning);
+            stopBtn.addEventListener('click', stopScanning);
+            switchBtn.addEventListener('click', switchCamera);
             
-            oscillator.type = "sine";
-            oscillator.frequency.value = 800;
-            gainNode.gain.value = 0.1;
+            async function startScanning() {
+                try {
+                    startBtn.disabled = true;
+                    resultDiv.textContent = "Iniciando cámara...";
+                    errorDiv.textContent = "";
+                    
+                    // Obtener lista de cámaras
+                    const videoInputDevices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+                    
+                    if (videoInputDevices.length === 0) {
+                        throw new Error("No se encontraron cámaras disponibles");
+                    }
+                    
+                    // Configurar la cámara trasera si está disponible
+                    let deviceId = videoInputDevices[0].deviceId; // Por defecto primera cámara
+                    
+                    // Intentar encontrar la cámara trasera (generalmente es la segunda)
+                    if (videoInputDevices.length > 1) {
+                        // Buscar cámara con "back" en el label
+                        const rearCamera = videoInputDevices.find(device => 
+                            device.label.toLowerCase().includes('back') || 
+                            device.label.toLowerCase().includes('rear'));
+                        
+                        if (rearCamera) {
+                            deviceId = rearCamera.deviceId;
+                        } else {
+                            deviceId = videoInputDevices[1].deviceId; // Segunda cámara si no se encuentra "back"
+                        }
+                    }
+                    
+                    currentDeviceId = deviceId;
+                    
+                    await codeReader.decodeFromVideoDevice(deviceId, 'video', (result, err) => {
+                        if (result) {
+                            handleScanResult(result.text);
+                        }
+                        if (err) {
+                            if (!(err instanceof ZXing.NotFoundException)) {
+                                console.error(err);
+                                errorDiv.textContent = "Error: " + err.message;
+                            }
+                        }
+                    });
+                    
+                    scanning = true;
+                    startBtn.classList.add('hidden');
+                    stopBtn.classList.remove('hidden');
+                    if (videoInputDevices.length > 1) {
+                        switchBtn.classList.remove('hidden');
+                    }
+                    
+                    resultDiv.textContent = "Escaneando...";
+                } catch (error) {
+                    console.error(error);
+                    errorDiv.textContent = "Error: " + error.message;
+                    resultDiv.textContent = "Error al iniciar el escáner";
+                    startBtn.disabled = false;
+                }
+            }
             
-            oscillator.start();
-            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.5);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        }
+            function stopScanning() {
+                try {
+                    codeReader.reset();
+                    scanning = false;
+                    startBtn.classList.remove('hidden');
+                    stopBtn.classList.add('hidden');
+                    switchBtn.classList.add('hidden');
+                    resultDiv.textContent = "Escáner detenido";
+                    startBtn.disabled = false;
+                } catch (error) {
+                    console.error(error);
+                    errorDiv.textContent = "Error al detener el escáner: " + error.message;
+                }
+            }
+            
+            async function switchCamera() {
+                if (!scanning) return;
+                
+                try {
+                    const videoInputDevices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+                    if (videoInputDevices.length < 2) {
+                        errorDiv.textContent = "Solo se encontró una cámara disponible";
+                        return;
+                    }
+                    
+                    // Encontrar el índice de la cámara actual
+                    let currentIndex = videoInputDevices.findIndex(device => device.deviceId === currentDeviceId);
+                    let nextIndex = (currentIndex + 1) % videoInputDevices.length;
+                    
+                    // Detener el escaneo actual
+                    codeReader.reset();
+                    
+                    // Iniciar con la nueva cámara
+                    currentDeviceId = videoInputDevices[nextIndex].deviceId;
+                    await codeReader.decodeFromVideoDevice(currentDeviceId, 'video', (result, err) => {
+                        if (result) {
+                            handleScanResult(result.text);
+                        }
+                        if (err && !(err instanceof ZXing.NotFoundException)) {
+                            console.error(err);
+                            errorDiv.textContent = "Error: " + err.message;
+                        }
+                    });
+                    
+                    resultDiv.textContent = "Cambiando a cámara: " + videoInputDevices[nextIndex].label;
+                } catch (error) {
+                    console.error(error);
+                    errorDiv.textContent = "Error al cambiar de cámara: " + error.message;
+                }
+            }
+            
+            function handleScanResult(resultText) {
+                resultDiv.textContent = "Código escaneado: " + resultText;
+                
+                console.log("Código de barras detectado:", resultText);
+                
+                // Feedback táctil
+                if (navigator.vibrate) {
+                    navigator.vibrate(200);
+                }
+                
+                // Feedback de audio
+                playBeepSound();
+            }
+            
+            function playBeepSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.type = "sine";
+                    oscillator.frequency.value = 800;
+                    gainNode.gain.value = 0.1;
+                    
+                    oscillator.start();
+                    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.5);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                } catch (error) {
+                    console.error("Error al reproducir sonido:", error);
+                }
+            }
+        });
     </script>
 </body>
 </html>
