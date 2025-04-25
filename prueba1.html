@@ -100,6 +100,12 @@
         .result-item:last-child {
             border-bottom: none;
         }
+        .success-message {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -108,7 +114,7 @@
         
         <div class="controls">
             <button id="start-button">Iniciar Escaneo</button>
-            <button id="reset-button" disabled>Detener</button>
+            <button id="reset-button" disabled>Reiniciar</button>
         </div>
         
         <div id="scanner-container">
@@ -118,9 +124,9 @@
         </div>
         
         <div>
-            <h3>Resultados:</h3>
+            <h3>Resultado:</h3>
             <div id="result">
-                <p>Los códigos escaneados aparecerán aquí.</p>
+                <p>El código escaneado aparecerá aquí.</p>
             </div>
         </div>
     </div>
@@ -133,17 +139,22 @@
             const overlay = document.querySelector('.overlay');
             
             let scanning = false;
+            let codeDetected = false;
             
             startButton.addEventListener('click', function() {
                 if (!scanning) {
                     startScanner();
+                    codeDetected = false;
                 }
             });
             
             resetButton.addEventListener('click', function() {
-                if (scanning) {
-                    stopScanner();
-                }
+                resultContainer.innerHTML = '<p>El código escaneado aparecerá aquí.</p>';
+                startButton.disabled = false;
+                resetButton.disabled = true;
+                overlay.style.display = 'flex';
+                overlay.textContent = 'Esperando iniciar la cámara';
+                codeDetected = false;
             });
             
             function startScanner() {
@@ -186,9 +197,21 @@
                 });
                 
                 Quagga.onDetected(function(result) {
-                    if (result && result.codeResult) {
+                    if (result && result.codeResult && !codeDetected) {
+                        codeDetected = true;
                         beepSuccess();
                         addResult(result.codeResult.code, result.codeResult.format);
+                        
+                        // Detener el escaneo automáticamente después de detectar un código
+                        stopScanner();
+                        
+                        // Mostrar el mensaje de éxito
+                        overlay.style.display = 'flex';
+                        overlay.textContent = '¡Código detectado!';
+                        overlay.className = 'overlay success';
+                        
+                        // Cambiar el texto del botón de reinicio
+                        resetButton.textContent = 'Escanear otro código';
                     }
                 });
             }
@@ -196,29 +219,21 @@
             function stopScanner() {
                 Quagga.stop();
                 scanning = false;
-                overlay.style.display = 'flex';
-                overlay.textContent = 'Esperando iniciar la cámara';
-                startButton.disabled = false;
-                resetButton.disabled = true;
+                startButton.disabled = true;
+                resetButton.disabled = false;
             }
             
             function addResult(code, format) {
-                const currentContent = resultContainer.innerHTML;
-                if (currentContent.includes('Los códigos escaneados aparecerán aquí.')) {
-                    resultContainer.innerHTML = '';
-                }
-                
-                const resultItem = document.createElement('div');
-                resultItem.className = 'result-item';
-                
                 const timestamp = new Date().toLocaleTimeString();
-                resultItem.innerHTML = `
-                    <strong>Código:</strong> ${code}<br>
-                    <strong>Formato:</strong> ${format}<br>
-                    <strong>Hora:</strong> ${timestamp}
-                `;
                 
-                resultContainer.insertBefore(resultItem, resultContainer.firstChild);
+                resultContainer.innerHTML = `
+                    <div class="result-item">
+                        <strong>Código:</strong> ${code}<br>
+                        <strong>Formato:</strong> ${format}<br>
+                        <strong>Hora:</strong> ${timestamp}
+                    </div>
+                    <div class="success-message">¡Código detectado con éxito!</div>
+                `;
             }
             
             function showMessage(message) {
