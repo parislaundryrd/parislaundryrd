@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>EAN-13: Generar y Escanear</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+    }
+
+    input, button {
+      padding: 12px;
+      font-size: 18px;
+      margin: 10px auto;
+      width: 90%;
+      max-width: 350px;
+      display: block;
+      border-radius: 8px;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    svg {
+      margin-top: 20px;
+    }
+
+    .error {
+      color: red;
+    }
+
+    #scanner-container {
+      display: none;
+      margin-top: 20px;
+    }
+
+    #scanner {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      border: 2px solid #000;
+    }
+
+    @media (max-width: 600px) {
+      svg {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>EAN-13: Generar y Escanear</h2>
+  <p>Introduce 12 dígitos o escanea un código EAN-13:</p>
+
+  <input type="text" id="codigo" maxlength="12" placeholder="Ej: 123456789012">
+  <button onclick="generarEAN13()">Generar Código</button>
+  <button onclick="iniciarEscaneo()">📷 Escanear Código de Barras</button>
+  <div id="error" class="error"></div>
+
+  <div id="scanner-container">
+    <video id="scanner"></video>
+    <button onclick="detenerEscaneo()">❌ Detener Escaneo</button>
+  </div>
+
+  <svg id="barcode"></svg>
+
+  <script>
+    function calcularDigitoVerificador(codigo12) {
+      let suma = 0;
+      for (let i = 0; i < 12; i++) {
+        const num = parseInt(codigo12[i]);
+        suma += (i % 2 === 0) ? num : num * 3;
+      }
+      const resto = suma % 10;
+      return (10 - resto) % 10;
+    }
+
+    function generarEAN13() {
+      const input = document.getElementById("codigo");
+      const error = document.getElementById("error");
+      let valor = input.value.trim();
+
+      if (!/^\d{12}$/.test(valor)) {
+        error.textContent = "Debes ingresar exactamente 12 números.";
+        return;
+      }
+
+      const digito = calcularDigitoVerificador(valor);
+      const completo = valor + digito;
+
+      error.textContent = "";
+      JsBarcode("#barcode", completo, {
+        format: "EAN13",
+        lineColor: "#000",
+        width: 2,
+        height: 100,
+        displayValue: true
+      });
+    }
+
+    function iniciarEscaneo() {
+      document.getElementById("scanner-container").style.display = "block";
+
+      Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          target: document.querySelector("#scanner"),
+          constraints: {
+            facingMode: "environment" // Cámara trasera
+          }
+        },
+        decoder: {
+          readers: ["ean_reader"]
+        }
+      }, function (err) {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        Quagga.start();
+      });
+
+      Quagga.onDetected(function (data) {
+        const codigo = data.codeResult.code;
+        if (/^\d{13}$/.test(codigo)) {
+          document.getElementById("codigo").value = codigo.slice(0, 12);
+          generarEAN13();
+          detenerEscaneo();
+        }
+      });
+    }
+
+    function detenerEscaneo() {
+      Quagga.stop();
+      document.getElementById("scanner-container").style.display = "none";
+    }
+  </script>
+
+</body>
+</html>
