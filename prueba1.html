@@ -1583,6 +1583,8 @@ const printInvoice = () => {
 };
 
 const prepareInvoiceForPrint = (invoiceDetails, invoiceId) => {
+  // Detectar si es un dispositivo Android
+  const isAndroid = /Android/i.test(navigator.userAgent);
   // Guardar el contenido original del cuerpo para restaurarlo después
   const originalContent = document.body.innerHTML;
   
@@ -1608,29 +1610,41 @@ const prepareInvoiceForPrint = (invoiceDetails, invoiceId) => {
   });
 
   // Crear un div para la versión imprimible
+  // Añadir metaetiqueta viewport para mejor control en móviles
+  const viewportMeta = isAndroid ? 
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">' : 
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+    
   const printContent = `
     <html>
       <head>
         <title>Factura</title>
+        ${viewportMeta}
         <style>
           @media print {
+            @page {
+              size: auto;
+              margin: 0mm 0mm 3mm 0mm; /* Elimina márgenes laterales, deja un pequeño margen inferior para el corte */
+            }
             body {
               font-family: Arial, sans-serif;
               margin: 0;
-              padding: 20px;
+              padding: 10px 0; /* Elimina el padding lateral */
               print-color-adjust: exact;
               -webkit-print-color-adjust: exact;
+              transform: scale(0.7); /* Escala al 70% */
+              transform-origin: top center; /* Centro de la escala desde arriba */
             }
             .logo-container {
               display: block !important;
               visibility: visible !important;
               text-align: center;
-              margin: 10px 0;
+              margin: 5px 0;
             }
             img {
               display: block !important;
               visibility: visible !important;
-              max-width: 100px;
+              max-width: 80px; /* Reducido para mantener proporción con escala */
               height: auto;
               margin: 0 auto;
             }
@@ -1640,12 +1654,18 @@ const prepareInvoiceForPrint = (invoiceDetails, invoiceId) => {
             .no-print {
               display: none !important;
             }
+            /* Añadir un marcador de corte de papel */
+            .page-break-after {
+              page-break-after: always;
+              height: 0;
+              display: block;
+            }
           }
           
           body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
           }
           h1 {
             text-align: center;
@@ -1711,7 +1731,9 @@ const prepareInvoiceForPrint = (invoiceDetails, invoiceId) => {
               <p>Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.</p>
             </div>
             <h2>¡Gracias por elegirnos!</h2>
-            <div style="width: 100%;margin-bottom: 30px;text-align: center;"><p>.</p></div>
+            <div style="width: 100%;margin-bottom: 15px;text-align: center;"><p>.</p></div>
+            <!-- Marcador de corte de papel -->
+            <div class="page-break-after"></div>
           </div>
         </div>
         
@@ -1747,7 +1769,29 @@ const prepareInvoiceForPrint = (invoiceDetails, invoiceId) => {
   
   // Añadir eventos a los botones
   document.getElementById("doPrint").addEventListener("click", () => {
-    window.print();
+    // En Android, aplicar ajustes específicos antes de imprimir
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      // Aplicar estilos específicos para Android
+      const styleElement = document.createElement('style');
+      styleElement.textContent = `
+        @media print {
+          body {
+            width: 100% !important;
+            transform: scale(0.7) !important;
+            transform-origin: top center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+        }
+      `;
+      document.head.appendChild(styleElement);
+    }
+    
+    // Pequeño retraso para asegurar que los estilos se apliquen
+    setTimeout(() => {
+      window.print();
+    }, 100);
   });
   
   document.getElementById("goBack").addEventListener("click", () => {
