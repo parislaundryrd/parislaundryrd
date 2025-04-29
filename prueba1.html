@@ -1578,26 +1578,20 @@ const printInvoice = () => {
   const invoiceDetails = document.getElementById("processedInvoiceDetails").innerHTML;
   const invoiceId = document.getElementById("invoiceIdDisplay").textContent;
   
-  // Crear el contenido de la factura directamente en el documento actual
-  prepareInvoiceForPrint(invoiceDetails, invoiceId);
+  // Preparar la factura optimizada para impresoras térmicas
+  prepareThermalPrint(invoiceDetails, invoiceId);
 };
 
-const prepareInvoiceForPrint = (invoiceDetails, invoiceId) => {
-  // Detectar si es un dispositivo Android
-  const isAndroid = /Android/i.test(navigator.userAgent);
-  // Guardar el contenido original del cuerpo para restaurarlo después
+const prepareThermalPrint = (invoiceDetails, invoiceId) => {
+  // Guardar el contenido original
   const originalContent = document.body.innerHTML;
   
-  // Obtener la fecha y hora actual
-  const now = new Date();
-  const hours = now.getHours() % 12 || 12;
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+  // Detectar si es un dispositivo móvil
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   
-  // Reemplazar "Peso: X lbs" por "1 hamper" si está dentro del rango
+  // Procesar los detalles de la factura (reemplazar "Peso: X lbs" por "1 hamper" si aplica)
   const modifiedDetails = invoiceDetails.replace(/Peso: (\d+) lbs/g, (match, weight) => {
     const weightNum = parseInt(weight);
-    // Verificar si hampers está definido globalmente, si no, usar el match original
     if (typeof hampers !== 'undefined') {
       const hamperData = hampers.find(hamper => parseInt(hamper.weightInput.value) === weightNum);
       if (hamperData) {
@@ -1609,192 +1603,226 @@ const prepareInvoiceForPrint = (invoiceDetails, invoiceId) => {
     return match;
   });
 
-  // Crear un div para la versión imprimible
-  // Añadir metaetiqueta viewport para mejor control en móviles
-  const viewportMeta = isAndroid ? 
-    '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">' : 
-    '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
-    
-  const printContent = `
+  // Crear el contenido optimizado para impresoras térmicas
+  const thermalPrintContent = `
     <html>
       <head>
-        <title>Factura</title>
-        ${viewportMeta}
+        <title>Factura Térmica</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
         <style>
+          /* Estilos generales */
+          body {
+            font-family: 'Courier New', monospace; /* Fuente tipo terminal - mejor para impresoras térmicas */
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            background-color: white;
+          }
+          
+          /* Contenedor principal con ancho fijo para POS 80mm (aproximadamente 302px) */
+          .thermal-receipt {
+            width: ${isMobile ? '100%' : '302px'};
+            max-width: 302px;
+            margin: 0 auto;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          /* Estilos para impresión */
           @media print {
             @page {
-              size: auto;
-              margin: 0mm 0mm 3mm 0mm; /* Elimina márgenes laterales, deja un pequeño margen inferior para el corte */
-            }
-            body {
-              font-family: Arial, sans-serif;
+              size: 80mm auto; /* Ancho fijo de 80mm (estándar para POS) */
               margin: 0;
-              padding: 10px 0; /* Elimina el padding lateral */
-              print-color-adjust: exact;
-              -webkit-print-color-adjust: exact;
-              transform: scale(0.14); /* Escala al 70% */
-              transform-origin: top center; /* Centro de la escala desde arriba */
+              padding: 0;
             }
-            .logo-container {
-              display: block !important;
-              visibility: visible !important;
-              text-align: center;
-              margin: 5px 0;
+            
+            html, body {
+              width: 100%;
+              margin: 0 !important;
+              padding: 0 !important;
+              background-color: white;
             }
-            img {
-              display: block !important;
-              visibility: visible !important;
-              max-width: 80px; /* Reducido para mantener proporción con escala */
-              height: auto;
-              margin: 0 auto;
+            
+            .thermal-receipt {
+              width: 100% !important;
+              max-width: none !important;
             }
-            .print-only {
-              display: block !important;
-            }
+            
             .no-print {
               display: none !important;
             }
-            /* Añadir un marcador de corte de papel */
-            .page-break-after {
-              page-break-after: always;
-              height: 0;
-              display: block;
+            
+            /* Ayuda al corte de papel */
+            .receipt-footer {
+              margin-bottom: 40mm; /* Espacio extra al final para facilitar el corte */
+            }
+            
+            /* Asegura que no haya cambios de página */
+            .thermal-content {
+              page-break-inside: avoid;
             }
           }
           
-          body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 10px;
-          }
-          h1 {
+          /* Estilos del recibo */
+          .receipt-header {
             text-align: center;
-            font-size: 14px;
-            margin-block-start: 0px;
-            margin-block-end: 0px;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
           }
-          h2 {
-            margin-block-start: 0px;
-            margin-block-end: 5px;
+          
+          .receipt-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px 0;
+          }
+          
+          .store-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 5px 0;
+          }
+          
+          .receipt-body {
+            padding: 5px 0;
+          }
+          
+          .invoice-id {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 5px 0;
+            border-top: 1px dashed #000;
+            border-bottom: 1px dashed #000;
+          }
+          
+          .receipt-footer {
+            text-align: center;
             margin-top: 10px;
+            padding-top: 5px;
+            border-top: 1px dashed #000;
+          }
+          
+          .receipt-note {
+            font-size: 10px;
             text-align: center;
-            font-size: 1.1em;
+            margin: 5px 0;
           }
-          img {
-            display: block !important;
-            visibility: visible !important;
-            max-width: 100px;
-            height: auto;
-            margin: 0 auto;
-          }
-          .invoice-details {
-            margin: 0px 0px;
-          }
-          .invoice-details strong {
-            display: block;
-            margin: 0px 0;
-          }
-          .logo-container {
-            text-align: center;
+          
+          .thank-you {
+            font-weight: bold;
             margin: 10px 0;
           }
-          .print-only {
-            display: none;
+          
+          /* Botones de control para vista previa */
+          .control-buttons {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
           }
-          .back-button {
-            background-color: #4CAF50;
-            color: white;
+          
+          .print-button, .back-button {
             padding: 10px 15px;
+            margin: 0 5px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            margin-top: 20px;
+          }
+          
+          .print-button {
+            background-color: #4CAF50;
+            color: white;
+          }
+          
+          .back-button {
+            background-color: #f44336;
+            color: white;
+          }
+          
+          /* Espacio extra para corte de papel */
+          .paper-cut {
+            height: 40mm;
+            border-bottom: 1px dashed #000;
+            margin-bottom: 20px;
+            position: relative;
+          }
+          
+          .cut-line {
+            margin-top: 5mm;
+            border-top: 1px dashed #000;
+            position: relative;
+            text-align: center;
+          }
+          
+          .cut-line:after {
+            content: "✂ - - - - - - - - - - - - - - -";
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
           }
         </style>
       </head>
       <body>
-        <div class="print-only">
-          <h2 style="margin-block-end: 7px;">Factura</h2>
-          <div style="background: black; height: 1px; width: 99%"></div>
-          <div class="logo-container">
-            <!-- Logo como texto para mayor compatibilidad -->
-            <h1 style="font-size: 24px;">Paris Laundry RD2</h1>
-          </div>
-          <div class="invoice-details">
-            ${modifiedDetails}
-            <div style="background: black; height: 1px; width: 99%"></div>
-            <div style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-top: 10px; margin-bottom: 0px;">
-              <span>ID de Factura:</span> <strong style="font-size: 37px;">${invoiceId}</strong>
+        <div class="thermal-receipt">
+          <div class="thermal-content">
+            <div class="receipt-header">
+              <div class="receipt-title">FACTURA</div>
+              <div class="store-name">Paris Laundry RD2</div>
             </div>
-            <div style="width: 100%;margin-bottom: 0px;text-align: justify;">
-              <p>Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.</p>
+            
+            <div class="receipt-body">
+              ${modifiedDetails}
             </div>
-            <h2>¡Gracias por elegirnos!</h2>
-            <div style="width: 100%;margin-bottom: 15px;text-align: center;"><p>.</p></div>
-            <!-- Marcador de corte de papel -->
-            <div class="page-break-after"></div>
-          </div>
-        </div>
-        
-        <div class="no-print">
-          <h2>Vista previa de impresión</h2>
-          <div style="background: black; height: 1px; width: 99%"></div>
-          <div class="logo-container">
-            <h1 style="font-size: 24px;">Paris Laundry RD2</h1>
-          </div>
-          <div class="invoice-details">
-            ${modifiedDetails}
-            <div style="background: black; height: 1px; width: 99%"></div>
-            <div style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-top: 10px; margin-bottom: 0px;">
-              <span>ID de Factura:</span> <strong style="font-size: 37px;">${invoiceId}</strong>
+            
+            <div class="invoice-id">
+              ID de Factura:<br>
+              ${invoiceId}
             </div>
-            <div style="width: 100%;margin-bottom: 0px;text-align: justify;">
-              <p>Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.</p>
+            
+            <div class="receipt-note">
+              Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.
             </div>
-            <h2>¡Gracias por elegirnos!</h2>
+            
+            <div class="receipt-footer">
+              <div class="thank-you">¡Gracias por elegirnos!</div>
+            </div>
+            
+            <!-- Área especial para facilitar el corte manual -->
+            <div class="cut-line"></div>
+            
+            <!-- Espacio extra después del corte -->
+            <div class="paper-cut"></div>
           </div>
           
-          <div style="text-align: center; margin-top: 20px;">
-            <button id="doPrint" class="back-button">Imprimir factura</button>
-            <button id="goBack" class="back-button" style="background-color: #f44336;">Volver</button>
+          <div class="control-buttons no-print">
+            <button class="print-button" id="printButton">Imprimir Factura</button>
+            <button class="back-button" id="backButton">Volver</button>
           </div>
         </div>
       </body>
     </html>
   `;
   
-  // Reemplazar el contenido del cuerpo
-  document.body.innerHTML = printContent;
+  // Reemplazar el contenido del documento
+  document.body.innerHTML = thermalPrintContent;
   
   // Añadir eventos a los botones
-  document.getElementById("doPrint").addEventListener("click", () => {
-    // En Android, aplicar ajustes específicos antes de imprimir
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    if (isAndroid) {
-      // Aplicar estilos específicos para Android
-      const styleElement = document.createElement('style');
-      styleElement.textContent = `
-        @media print {
-          body {
-            width: 100% !important;
-            transform: scale(0.7) !important;
-            transform-origin: top center !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-        }
-      `;
-      document.head.appendChild(styleElement);
-    }
+  document.getElementById("printButton").addEventListener("click", () => {
+    // Antes de imprimir, aplicar optimizaciones adicionales para impresoras térmicas POS
+    optimizeForThermalPrinter();
     
-    // Pequeño retraso para asegurar que los estilos se apliquen
+    // Pequeño retraso para asegurar que las optimizaciones se apliquen
     setTimeout(() => {
       window.print();
     }, 100);
   });
   
-  document.getElementById("goBack").addEventListener("click", () => {
+  document.getElementById("backButton").addEventListener("click", () => {
     // Restaurar el contenido original
     document.body.innerHTML = originalContent;
     // Volver a añadir el event listener al botón de impresión
@@ -1802,27 +1830,49 @@ const prepareInvoiceForPrint = (invoiceDetails, invoiceId) => {
       printInvoice();
     });
   });
+};
+
+// Función para optimizar aún más para impresoras térmicas justo antes de imprimir
+const optimizeForThermalPrinter = () => {
+  // Ocultar los botones de control para la impresión
+  const controlButtons = document.querySelector('.control-buttons');
+  if (controlButtons) {
+    controlButtons.style.display = 'none';
+  }
   
-  // Intentar cargar el logo si está disponible (opcional)
-  try {
-    const logoImg = new Image();
-    logoImg.onload = () => {
-      // Si el logo se carga con éxito, añadirlo a la página
-      const logoContainers = document.querySelectorAll('.logo-container');
-      logoContainers.forEach(container => {
-        // Crear un elemento para contener el logo
-        const logoElement = document.createElement('img');
-        logoElement.src = logoImg.src;
-        logoElement.alt = "Logo de Paris Laundry RD";
-        logoElement.style.maxWidth = "100px";
+  // Si es un dispositivo Android, aplicar optimizaciones específicas adicionales
+  if (/Android/i.test(navigator.userAgent)) {
+    // Crear y añadir estilos adicionales para maximizar la compatibilidad
+    const optimizationStyles = document.createElement('style');
+    optimizationStyles.textContent = `
+      @media print {
+        body, html {
+          width: 80mm !important;
+          height: auto !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
         
-        // Insertar el logo antes del título
-        container.insertBefore(logoElement, container.firstChild);
-      });
-    };
-    logoImg.src = "logo1.png";  // Intentar cargar el logo
-  } catch (e) {
-    console.warn("No se pudo cargar el logo", e);
+        .thermal-receipt {
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        
+        /* Instrucciones adicionales para POS 2C-POS80-01 */
+        .paper-cut {
+          height: 35mm !important;
+          page-break-after: always;
+        }
+      }
+    `;
+    document.head.appendChild(optimizationStyles);
+  }
+  
+  // Mostrar instrucciones visuales para corte manual en la vista previa (se ocultarán al imprimir)
+  const cutLine = document.querySelector('.cut-line');
+  if (cutLine) {
+    cutLine.style.borderTop = '2px dashed red';
   }
 };
 
