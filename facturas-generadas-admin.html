@@ -57,6 +57,7 @@
                   <th>Nombre del Cliente</th>
                   <th>Número de Teléfono</th>
                   <th>Monto</th>
+                  <th>Empleado</th>
                   <th>Fecha</th>
                 </tr>
               </thead>
@@ -395,6 +396,7 @@
                 <td>${invoice.clientName}${abonoText}</td>
                 <td>${invoice.clientPhone}</td>
                 <td>${formattedTotal}</td>
+                <td>${invoice.NombreEmpleado || 'No especificado'}</td>
                 <td>${formattedDate}</td>
             `;
         row.addEventListener("click", () => {
@@ -1277,6 +1279,7 @@ if (data.paymentMethod) {
                     <td>${highlightedName}</td>
                     <td>${highlightedPhone}</td>
                     <td>${highlightedTotal}</td>
+                    <td>${highlightedEmployee}</td>
                     <td>${highlightedDate}</td>
                 `;
           row.addEventListener("click", () => {
