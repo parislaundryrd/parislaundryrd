@@ -405,6 +405,14 @@
             onEnd: (evt) => {
               updateHamperOrder();
             },
+            // Configuración para deshabilitar touch
+            supportPointer: false,
+            touchStartThreshold: 0,
+            forceFallback: true,
+            fallbackTolerance: 0,
+            draggable: "> div",
+            delay: ('ontouchstart' in window || navigator.maxTouchPoints) ? 10000 : 0,
+            delayOnTouchOnly: true
           });
         })
         .catch((error) => {
@@ -599,6 +607,14 @@
             onEnd: (evt) => {
               updateOtherServiceOrder();
             },
+            // Configuración para deshabilitar touch
+            supportPointer: false,
+            touchStartThreshold: 0,
+            forceFallback: true,
+            fallbackTolerance: 0,
+            draggable: "> div",
+            delay: ('ontouchstart' in window || navigator.maxTouchPoints) ? 10000 : 0,
+            delayOnTouchOnly: true
           });
         })
         .catch((error) => {
