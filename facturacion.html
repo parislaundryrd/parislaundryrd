@@ -36,10 +36,9 @@
               <strong>Dirección:</strong> <br>
 
               <strong><br>Delivery:</strong>
-              <br><span style="display: flex; justify-content: space-between;"><span>Sin
-                  delivery:</span><span>RD$0</span></span><br>
-              <br><span
-                style="display: flex; justify-content: space-between;"><strong>Total:</strong><strong>RD$0.00</strong></span>
+              <br><span style="display: flex; justify-content: space-between;"><span>Sin delivery:</span><span>RD$0</span></span><br>
+              
+              <span style="display: flex; justify-content: space-between;"><strong>Total:</strong><strong>RD$0.00</strong></span>
             </p>
           </div>
 
@@ -751,7 +750,7 @@ ${asumirPor !== "desactivado" ? `
   </div>
 ` : ""}
     
-    <br><div style="display: flex; justify-content: space-between;">
+    <div style="display: flex; justify-content: space-between;">
       <strong>Total a Pagar:</strong>
       <strong>RD$${total.toFixed(2)}</strong>
     </div>
@@ -1147,192 +1146,221 @@ ${asumirPor !== "desactivado" ? `
     });
 
     const processInvoice = async (status, isPartialPayment = false, partialAmount = 0) => {
-      // Si el estado es "pago pendiente", no se necesita un método de pago
-      let paymentMethod = status === "pago pendiente" ? "Pago Pendiente" : document.querySelector(".payment-button.active").value;
+  // Si el estado es "pago pendiente", no se necesita un método de pago
+  let paymentMethod = status === "pago pendiente" ? "Pago Pendiente" : document.querySelector(".payment-button.active").value;
 
-      const deliveryOption = deliverySelection.querySelector("button.active");
-      const deliveryPrice = deliveryOption ? deliveryOption.dataset.value : "0";
+  const deliveryOption = deliverySelection.querySelector("button.active");
+  const deliveryPrice = deliveryOption ? deliveryOption.dataset.value : "0";
 
-      // Obtener el subtotal
-      let subtotal = 0;
+  // Obtener el subtotal
+  let subtotal = 0;
 
-      // Calcular el total de los hampers
-      hampers.forEach(hamper => {
-        const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
-        subtotal += price; // Sumar al subtotal
-      });
+  // Calcular el total de los hampers
+  hampers.forEach(hamper => {
+    const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
+    subtotal += price; // Sumar al subtotal
+  });
 
-      // Calcular el total de otros servicios
-      otrosServicios.forEach(item => {
-        const count = parseInt(item.input.value) || 0;
-        subtotal += count * item.price; // Sumar al subtotal
-      });
+  // Calcular el total de otros servicios
+  otrosServicios.forEach(item => {
+    const count = parseInt(item.input.value) || 0;
+    subtotal += count * item.price; // Sumar al subtotal
+  });
 
-      // Calcular el total de productos adicionales
-      const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
-      selectedProducts.forEach(product => {
-        const quantity = parseInt(product.value) || 0;
-        const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
-        subtotal += quantity * productPrice; // Sumar al subtotal
-      });
+  // Calcular el total de productos adicionales
+  const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+  selectedProducts.forEach(product => {
+    const quantity = parseInt(product.value) || 0;
+    const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+    subtotal += quantity * productPrice; // Sumar al subtotal
+  });
 
-      // Obtener el precio del delivery
-      const selectedDelivery = deliverySelection.querySelector("button.active");
-      const deliveryPriceValue = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
-      subtotal += deliveryPriceValue; // Incluir delivery en el subtotal
+  // Obtener el precio del delivery
+  const selectedDelivery = deliverySelection.querySelector("button.active");
+  const deliveryPriceValue = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
+  subtotal += deliveryPriceValue; // Incluir delivery en el subtotal
 
-      // Calcular el ITBIS
-      const itbis = (asumirPor !== "desactivado") ? subtotal * itbisPercentage : 0; // Calcular ITBIS solo si no está desactivado
+  // Calcular el ITBIS
+  const itbis = (asumirPor !== "desactivado") ? subtotal * itbisPercentage : 0; // Calcular ITBIS solo si no está desactivado
 
-      // Calcular el total a pagar
-      const total = (asumirPor === "empresa") ? subtotal : subtotal + itbis; // Ajustar el total según asumirPor
+  // Calcular el total a pagar
+  const total = (asumirPor === "empresa") ? subtotal : subtotal + itbis; // Ajustar el total según asumirPor
 
-      // Si el método de pago es Efectivo, obtener el monto recibido y calcular el cambio
-      let amountReceived = 0;
-      let changeAmount = 0;
-      let remainingBalance = 0;
+  // Si el método de pago es Efectivo, obtener el monto recibido y calcular el cambio
+  let amountReceived = 0;
+  let changeAmount = 0;
+  let remainingBalance = 0;
 
-      if (isPartialPayment) {
-        amountReceived = partialAmount;
-        remainingBalance = total - partialAmount;
-      } else if (paymentMethod === "Efectivo") {
-        amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
-        changeAmount = amountReceived - total;
-      } else if (paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") {
-        // Para transferencia/tarjeta sin abono, el monto recibido es el total
-        amountReceived = total;
-      }
+  if (isPartialPayment) {
+    amountReceived = partialAmount;
+    remainingBalance = total - partialAmount;
+  } else if (paymentMethod === "Efectivo") {
+    amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+    changeAmount = amountReceived - total;
+  } else if (paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") {
+    // Para transferencia/tarjeta sin abono, el monto recibido es el total
+    amountReceived = total;
+  }
 
-      const invoiceData = {
-        id: generateNewInvoiceId(await getLastInvoiceId()),
-        clientName: document.getElementById("clientName").value.trim(),
-        clientPhone: document.getElementById("clientPhone").value.replace(/-/g, ''),
-        clientAddress: document.getElementById("clientAddress").value.trim(),
-        NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
-        selectedServices: hampers.map(hamper => {
-          const weight = parseInt(hamper.weightInput.value);
-          const librasMin = parseInt(hamper.data.librasmin);
-          const librasMax = parseInt(hamper.data.librasmax);
+  const invoiceData = {
+    id: generateNewInvoiceId(await getLastInvoiceId()),
+    clientName: document.getElementById("clientName").value.trim(),
+    clientPhone: document.getElementById("clientPhone").value.replace(/-/g, ''),
+    clientAddress: document.getElementById("clientAddress").value.trim(),
+    NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
+    selectedServices: hampers.map(hamper => {
+      const weight = parseInt(hamper.weightInput.value);
+      const librasMin = parseInt(hamper.data.librasmin);
+      const librasMax = parseInt(hamper.data.librasmax);
 
-          return {
-            name: hamper.data.nombre,
-            weight: weight,
-            price: hamper.priceDisplay.textContent.replace('Precio: RD$', ''),
-            priceXlbs: hamper.data.preciolibras,
-            hamperComplete: (weight >= librasMin && weight <= librasMax) ? "yes" : "no"
-          };
-        }),
-
-        otrosServicios: otrosServicios.map(item => ({
-          name: item.name,
-          count: parseInt(item.input.value) || 0,
-          price: item.price
-        })).filter(item => item.count > 0),
-        deliveryOption: deliveryOption ? [{
-          name: deliveryOption.dataset.name,
-          price: deliveryPrice
-        }] : [{ name: "Sin Delivery", price: "0" }],
-        selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
-          name: product.closest('.product-item').querySelector('div').textContent,
-          quantity: parseInt(product.value) || 0,
-          price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
-        })).filter(product => product.quantity > 0),
-        total: total,
-        paymentMethod: paymentMethod,
-        status: status,
-        amountReceived: amountReceived,
-        changeAmount: changeAmount,
-        remainingBalance: remainingBalance,
-        abonoFact: isPartialPayment ? "yes" : "", // Cambiado a cadena vacía para no abonos
-        amountReceivedAbono1er: isPartialPayment ? partialAmount : 0, // Nuevo campo para el monto del primer abono
-        amountReceivedAbono1erMethod: isPartialPayment ? paymentMethod : "",
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        ITBISmonto: itbis
+      return {
+        name: hamper.data.nombre,
+        weight: weight,
+        price: hamper.priceDisplay.textContent.replace('Precio: RD$', ''),
+        priceXlbs: hamper.data.preciolibras,
+        hamperComplete: (weight >= librasMin && weight <= librasMax) ? "yes" : "no"
       };
+    }),
 
-      try {
-        const invoiceRef = await db.collection("facturas").add(invoiceData);
-        const invoiceDoc = await invoiceRef.get();
-        const invoiceId = invoiceDoc.data().id;
-        document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
+    otrosServicios: otrosServicios.map(item => ({
+      name: item.name,
+      count: parseInt(item.input.value) || 0,
+      price: item.price
+    })).filter(item => item.count > 0),
+    deliveryOption: deliveryOption ? [{
+      name: deliveryOption.dataset.name,
+      price: deliveryPrice
+    }] : [{ name: "Sin Delivery", price: "0" }],
+    selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
+      name: product.closest('.product-item').querySelector('div').textContent,
+      quantity: parseInt(product.value) || 0,
+      price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
+    })).filter(product => product.quantity > 0),
+    total: total,
+    paymentMethod: paymentMethod,
+    status: status,
+    amountReceived: amountReceived,
+    changeAmount: changeAmount,
+    remainingBalance: remainingBalance,
+    abonoFact: isPartialPayment ? "yes" : "", // Cambiado a cadena vacía para no abonos
+    amountReceivedAbono1er: isPartialPayment ? partialAmount : 0, // Nuevo campo para el monto del primer abono
+    amountReceivedAbono1erMethod: isPartialPayment ? paymentMethod : "",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    ITBISmonto: itbis
+  };
 
+  try {
+    const invoiceRef = await db.collection("facturas").add(invoiceData);
+    const invoiceDoc = await invoiceRef.get();
+    const invoiceId = invoiceDoc.data().id;
+    document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
 
-        // Actualizar inventario de productos adicionales basado en el array "consumo" de los hampers
-        for (const hamper of hampers) {
-          for (const item of hamper.consumo) {
-            const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-            if (!productDoc.empty) {
-              const productRef = productDoc.docs[0].ref;
-              const productData = productDoc.docs[0].data();
-              const newQuantity = productData.cantidad - item.cantidad;
-              await productRef.update({ cantidad: newQuantity });
-            }
-          }
+    // ========== [NUEVO CÓDIGO AÑADIDO] ==========
+    // Función para detectar productos básicos (insensible a mayúsculas/acentos)
+    const esProductoBasico = (nombre) => 
+      nombre.normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .includes('basico');
+
+    // Calcular total de productos no básicos
+    let totalProductos = 0;
+    const productosInputs = Array.from(productSelection.querySelectorAll(".productInput"));
+    
+    productosInputs.forEach(input => {
+      const cantidad = parseInt(input.value) || 0;
+      if (cantidad > 0) {
+        const nombreProducto = input.closest('.product-item').querySelector('div').textContent;
+        if (!esProductoBasico(nombreProducto)) {
+          totalProductos += cantidad;
         }
-
-        // Actualizar inventario de productos adicionales basado en el array "consumo" de los "otroservicio"
-        for (const servicio of otrosServicios) {
-          const cantidadServicio = parseInt(servicio.input.value) || 0;
-          if (cantidadServicio > 0) {
-            for (const item of servicio.consumo) {
-              const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-              if (!productDoc.empty) {
-                const productRef = productDoc.docs[0].ref;
-                const productData = productDoc.docs[0].data();
-                const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
-                await productRef.update({ cantidad: newQuantity });
-              }
-            }
-          }
-        }
-
-        // Actualizar inventario de productos seleccionados manualmente
-        const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
-        for (const product of selectedProducts) {
-          const quantity = parseInt(product.value) || 0;
-          if (quantity > 0) {
-            const productName = product.closest('.product-item').querySelector('div').textContent;
-            const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
-            if (!productDoc.empty) {
-              const productRef = productDoc.docs[0].ref;
-              const productData = productDoc.docs[0].data();
-              const newQuantity = productData.cantidad - quantity;
-              await productRef.update({ cantidad: newQuantity });
-            }
-          }
-        }
-
-        disablePaymentButtons();
-        document.getElementById("cashPaymentOptions").classList.add("hidden");
-        // document.getElementById("transferCardPaymentOptions").classList.add("hidden");
-
-
-        showProcessedInvoiceModal(
-          document.getElementById("modalInvoiceDetails").innerHTML,
-          paymentMethod,
-          amountReceived,
-          changeAmount,
-          status,
-          isPartialPayment,
-          partialAmount,
-          remainingBalance
-        );
-
-        clearSelections();
-        document.getElementById("billingForm").reset();
-        document.getElementById("amountReceived").value = "";
-        document.getElementById("partialAmount").value = "";
-        document.getElementById("changeAmount").textContent = "";
-        document.getElementById("empleado").selectedIndex = 0;
-        updateInvoicePreview();
-
-      } catch (error) {
-        console.error("Error al guardar la factura: ", error);
-        alert("Hubo un problema al procesar la factura. Inténtalo de nuevo.");
       }
+    });
 
-      document.getElementById("confirmationModal").classList.add("hidden");
-    };
+    // Registrar en ventaproductos solo si hay productos válidos
+    if (totalProductos > 0) {
+      const nombreEmpleado = document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text;
+      
+      await db.collection("ventaproductos").doc(nombreEmpleado).set({
+        empleado: nombreEmpleado,
+        monto: firebase.firestore.FieldValue.increment(totalProductos)
+      }, { merge: true });
+    }
+    // ========== [FIN DE NUEVO CÓDIGO] ==========
+
+    // Actualizar inventario de productos adicionales basado en el array "consumo" de los hampers
+    for (const hamper of hampers) {
+      for (const item of hamper.consumo) {
+        const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+        if (!productDoc.empty) {
+          const productRef = productDoc.docs[0].ref;
+          const productData = productDoc.docs[0].data();
+          const newQuantity = productData.cantidad - item.cantidad;
+          await productRef.update({ cantidad: newQuantity });
+        }
+      }
+    }
+
+    // Actualizar inventario de productos adicionales basado en el array "consumo" de los "otroservicio"
+    for (const servicio of otrosServicios) {
+      const cantidadServicio = parseInt(servicio.input.value) || 0;
+      if (cantidadServicio > 0) {
+        for (const item of servicio.consumo) {
+          const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+          if (!productDoc.empty) {
+            const productRef = productDoc.docs[0].ref;
+            const productData = productDoc.docs[0].data();
+            const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
+            await productRef.update({ cantidad: newQuantity });
+          }
+        }
+      }
+    }
+
+    // Actualizar inventario de productos seleccionados manualmente
+    for (const product of selectedProducts) {
+      const quantity = parseInt(product.value) || 0;
+      if (quantity > 0) {
+        const productName = product.closest('.product-item').querySelector('div').textContent;
+        const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
+        if (!productDoc.empty) {
+          const productRef = productDoc.docs[0].ref;
+          const productData = productDoc.docs[0].data();
+          const newQuantity = productData.cantidad - quantity;
+          await productRef.update({ cantidad: newQuantity });
+        }
+      }
+    }
+
+    disablePaymentButtons();
+    document.getElementById("cashPaymentOptions").classList.add("hidden");
+
+    showProcessedInvoiceModal(
+      document.getElementById("modalInvoiceDetails").innerHTML,
+      paymentMethod,
+      amountReceived,
+      changeAmount,
+      status,
+      isPartialPayment,
+      partialAmount,
+      remainingBalance
+    );
+
+    clearSelections();
+    document.getElementById("billingForm").reset();
+    document.getElementById("amountReceived").value = "";
+    document.getElementById("partialAmount").value = "";
+    document.getElementById("changeAmount").textContent = "";
+    document.getElementById("empleado").selectedIndex = 0;
+    updateInvoicePreview();
+
+  } catch (error) {
+    console.error("Error al guardar la factura: ", error);
+    alert("Hubo un problema al procesar la factura. Inténtalo de nuevo.");
+  }
+
+  document.getElementById("confirmationModal").classList.add("hidden");
+};
 
 
 
@@ -1524,9 +1552,9 @@ ${asumirPor !== "desactivado" ? `
 
         <div style="display: inline-flex;flex-direction: column;justify-content: space-between;">
           <h1 style="font-size: 24px;text-align: center;margin-block-start: 0px;margin-block-end: 0px;">Paris Laundry RD</h1>
-          <p style="margin-block-start: 0px;margin-block-end: 0px;font-size: 12px;">Dirección: Santo Domingo Este, Sector Alma Rosa, Calle Club Activo 2030 #24, 2do nivel.</p>
+          <p style="margin-block-start: 0px;margin-block-end: 0px;font-size: 12px;width: 95%;margin: 0 auto;">Dirección: Santo Domingo Este, Sector Alma Rosa, Calle Club Activo 2030 #24, 2do nivel.</p>
 
-             <div style="text-align: end;padding-left: 0; margin-left: 0;"">
+             <div style="text-align: end;padding-left: 0;margin-left: 0;display: inline-flex;flex-direction: column;">
                <strong>Fecha y Hora:</strong>
                <span>${dateString} ${timeString}</span>
              </div>
@@ -1535,7 +1563,7 @@ ${asumirPor !== "desactivado" ? `
 
     </div>
 
-    <div style="background: black; height: 1px; width: 99%"></div>
+    <div style="background: black; height: 1px; width: 100%; margin-bottom: 4px;"></div>
     
     ${invoiceDetails}<br>
     
@@ -1584,209 +1612,335 @@ ${asumirPor !== "desactivado" ? `
 
 
 
-    document.getElementById("printInvoiceButton").addEventListener("click", () => {
-      printInvoice();
-    });
 
-    const printInvoice = () => {
-      const invoiceDetails = document.getElementById("processedInvoiceDetails").innerHTML;
-      const invoiceId = document.getElementById("invoiceIdDisplay").textContent; // Obtener el ID de la factura
 
-      // Cargar primero la imagen para asegurarnos de que esté disponible antes de imprimir
-      const logoImg = new Image();
-      logoImg.onload = () => {
-        // Una vez que la imagen se cargue, procedemos con la impresión
-        proceedWithPrinting(invoiceDetails, invoiceId, logoImg);
-      };
 
-      logoImg.onerror = () => {
-        // Si hay un error al cargar la imagen, intentamos con una ruta alternativa
-        console.warn("Error al cargar el logo. Intentando ruta alternativa...");
-        logoImg.src = "../logo1.png"; // Intentar con una ruta relativa alternativa
 
-        // Si después de un tiempo prudente sigue sin cargar, imprimimos sin logo
-        setTimeout(() => {
-          if (!logoImg.complete || logoImg.naturalHeight === 0) {
-            console.error("No se pudo cargar el logo. Imprimiendo sin logo.");
-            proceedWithPrinting(invoiceDetails, invoiceId, null);
-          }
-        }, 1000);
-      };
 
-      // Intentar primero con la ruta directa
-      logoImg.src = "./img/logo1_impresion.png";
-    };
 
-    const proceedWithPrinting = (invoiceDetails, invoiceId, logoImg) => {
-      const printWindow = window.open('', '', 'height=600,width=800');
 
-      // Obtener la fecha y hora actual en formato AM/PM    
-      const now = new Date();
-      const hours = now.getHours() % 12 || 12;
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-      const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
 
-      // Reemplazar "Peso: X lbs" por "1 hamper" si está dentro del rango
-      const modifiedDetails = invoiceDetails.replace(/Peso: (\d+) lbs/g, (match, weight) => {
-        const weightNum = parseInt(weight);
-        const hamperData = hampers.find(hamper => parseInt(hamper.weightInput.value) === weightNum);
-        if (hamperData) {
-          const librasMin = parseInt(hamperData.data.librasmin);
-          const librasMax = parseInt(hamperData.data.librasmax);
-          return (weightNum >= librasMin && weightNum <= librasMax) ? "1 hamper" : match;
-        }
-        return match;
-      });
 
-      // Preparar el logo para la ventana de impresión
-      let logoHtml = '';
+  // Añadir la biblioteca QRious en el head del documento
+(function loadQriousScript() {
+  if (!window.QRious) {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
+    script.async = true;
+    document.head.appendChild(script);
+  }
+})();
 
-      if (logoImg && logoImg.complete && logoImg.naturalHeight !== 0) {
-        // Si la imagen se cargó correctamente, la convertimos a base64 para asegurar que se imprima
-        try {
-          // Crear un canvas para convertir la imagen a base64
-          const canvas = document.createElement('canvas');
-          canvas.width = logoImg.width;
-          canvas.height = logoImg.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(logoImg, 0, 0);
+document.getElementById("printInvoiceButton").addEventListener("click", () => {
+  printInvoice();
+});
 
-          // Convertir a base64
-          const dataUrl = canvas.toDataURL('image/png');
+const printInvoice = () => {
+  const invoiceDetails = document.getElementById("processedInvoiceDetails").innerHTML;
+  const invoiceId = document.getElementById("invoiceIdDisplay").textContent; // Obtener el ID de la factura
 
-          // Crear el HTML para la imagen
-          logoHtml = `<img src="${dataUrl}" alt="Logo de Paris Laundry RD" style="">`;
-        } catch (e) {
-          console.error("Error al convertir la imagen a base64", e);
-          // Usar la imagen directamente como fallback
-          logoHtml = `<img src="${logoImg.src}" alt="Logo de Paris Laundry RD" style="">`;
-        }
-      } else {
-        // Si no se pudo cargar la imagen, usar un texto como respaldo
-        logoHtml = `<div style="border: 1px solid #ccc; padding: 10px; text-align: center;">
-                  <span style="font-size: 20px; font-weight: bold;">PARIS LAUNDRY RD</span>
-                </div>`;
+  // Cargar primero la imagen para asegurarnos de que esté disponible antes de imprimir
+  const logoImg = new Image();
+  logoImg.onload = () => {
+    // Una vez que la imagen se cargue, procedemos con la impresión
+    proceedWithPrinting(invoiceDetails, invoiceId, logoImg);
+  };
+
+  logoImg.onerror = () => {
+    // Si hay un error al cargar la imagen, intentamos con una ruta alternativa
+    console.warn("Error al cargar el logo. Intentando ruta alternativa...");
+    logoImg.src = "../logo1.png"; // Intentar con una ruta relativa alternativa
+
+    // Si después de un tiempo prudente sigue sin cargar, imprimimos sin logo
+    setTimeout(() => {
+      if (!logoImg.complete || logoImg.naturalHeight === 0) {
+        console.error("No se pudo cargar el logo. Imprimiendo sin logo.");
+        proceedWithPrinting(invoiceDetails, invoiceId, null);
       }
+    }, 1000);
+  };
 
-      printWindow.document.write(`
-<html>
-  <head>
-      <title>Factura</title>
-      <style>
-          @media print {
-              body {
-                  font-family: Arial, sans-serif;
-                  margin: 0;
-                  padding: 20px;
-                  print-color-adjust: exact;
-                  -webkit-print-color-adjust: exact;
-              }
-              .logo-container {
-                  display: block !important;
-                  visibility: visible !important;
-                  text-align: center;
-                  margin: 10px 0;
-              }
-    img {
-        display: block !important;
-        visibility: visible !important;
-        max-width: 100px;
-        height: auto;
-        margin: 0 auto;
+  // Intentar primero con la ruta directa
+  logoImg.src = "./img/logo1_impresion.png";
+};
+
+const proceedWithPrinting = (invoiceDetails, invoiceId, logoImg) => {
+  const printWindow = window.open('', '', 'height=600,width=800');
+
+  // Obtener la fecha y hora actual en formato AM/PM    
+  const now = new Date();
+  const hours = now.getHours() % 12 || 12;
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+  const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
+
+  // Reemplazar "Peso: X lbs" por "1 hamper" si está dentro del rango
+  const modifiedDetails = invoiceDetails.replace(/Peso: (\d+) lbs/g, (match, weight) => {
+    const weightNum = parseInt(weight);
+    const hamperData = hampers.find(hamper => parseInt(hamper.weightInput.value) === weightNum);
+    if (hamperData) {
+      const librasMin = parseInt(hamperData.data.librasmin);
+      const librasMax = parseInt(hamperData.data.librasmax);
+      return (weightNum >= librasMin && weightNum <= librasMax) ? "1 hamper" : match;
     }
-          }
-          
+    return match;
+  });
+
+  // Preparar el logo para la ventana de impresión
+  let logoHtml = '';
+
+  if (logoImg && logoImg.complete && logoImg.naturalHeight !== 0) {
+    // Si la imagen se cargó correctamente, la convertimos a base64 para asegurar que se imprima
+    try {
+      // Crear un canvas para convertir la imagen a base64
+      const canvas = document.createElement('canvas');
+      canvas.width = logoImg.width;
+      canvas.height = logoImg.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(logoImg, 0, 0);
+
+      // Convertir a base64
+      const dataUrl = canvas.toDataURL('image/png');
+
+      // Crear el HTML para la imagen
+      logoHtml = `<img src="${dataUrl}" alt="Logo de Paris Laundry RD" style="">`;
+    } catch (e) {
+      console.error("Error al convertir la imagen a base64", e);
+      // Usar la imagen directamente como fallback
+      logoHtml = `<img src="${logoImg.src}" alt="Logo de Paris Laundry RD" style="">`;
+    }
+  } else {
+    // Si no se pudo cargar la imagen, usar un texto como respaldo
+    logoHtml = `<div style="border: 1px solid #ccc; padding: 10px; text-align: center;">
+              <span style="font-size: 20px; font-weight: bold;">PARIS LAUNDRY RD</span>
+            </div>`;
+  }
+
+  // Crear URL para consultar estado de la ropa
+  const trackingUrl = `www.midominio.com/#id-${invoiceId}`;
+  
+  // Generar código QR localmente con QRious
+  const qrCanvas = document.createElement('canvas');
+  qrCanvas.width = 100;
+  qrCanvas.height = 100;
+  
+  // Esperar a que la biblioteca QRious esté cargada
+  const generateQR = () => {
+    if (window.QRious) {
+      const qr = new QRious({
+        element: qrCanvas,
+        value: 'https://' + trackingUrl,
+        size: 100
+      });
+      return qrCanvas.toDataURL('image/png');
+    } else {
+      // Si QRious no está cargado, esperamos 100ms y volvemos a intentar
+      return null;
+    }
+  };
+  
+  // Intentar generar el QR o usar un texto alternativo
+  let qrDataUrl = generateQR();
+  
+  // Si la biblioteca no está lista, esperar un poco y reintentar una vez
+  if (!qrDataUrl && typeof QRious === 'undefined') {
+    setTimeout(() => {
+      const retryQrDataUrl = generateQR();
+      if (retryQrDataUrl) {
+        // Si en el segundo intento se consigue generar el QR, actualizar la imagen
+        const qrImg = printWindow.document.querySelector('.qr-code img');
+        if (qrImg) {
+          qrImg.src = retryQrDataUrl;
+        }
+      }
+    }, 200); // Esperar 200ms antes de reintentar
+  }
+
+  printWindow.document.write(`
+<html>
+<head>
+  <title>Factura</title>
+  <style>
+      @media print {
+          @page {
+      margin: 3mm 3mm 3mm 3mm; /* o 0 para márgenes mínimos */
+      size: auto;
+    }
           body {
               font-family: Arial, sans-serif;
               margin: 0;
               padding: 20px;
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
           }
-          h1 {
+          .logo-container {
+              display: block !important;
+              visibility: visible !important;
               text-align: center;
-              font-size: 14px;
-              margin-block-start: 0px;
-              margin-block-end: 0px;
+              margin: 10px 0;
           }
-
-          h2 {
-              margin-block-start: 0px;
-              margin-block-end: 5px;
-              margin-top: 10px;
+          img {
+              display: block !important;
+              visibility: visible !important;
+              max-width: 100px;
+              height: auto;
+              margin: 0 auto;
+          }
+          .qr-code {
+              display: block !important;
+              visibility: visible !important;
               text-align: center;
-              font-size: 1.1em;
+              margin: 0;
           }
-
-              img {
-        display: block !important;
-        visibility: visible !important;
-        max-width: 100px;
-        height: auto;
-        margin: 0 auto;
-    }
+          .tracking-info {
+              text-align: center;
+              margin: 5px 0;
+          }
+      }
       
-          .invoice-details {
-              margin: 0px 0px;
+      body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+      
+      }
+      h1 {
+          text-align: center;
+          font-size: 14px;
+          margin-block-start: 0px;
+          margin-block-end: 0px;
+      }
+
+      h2 {
+          margin-block-start: 0px;
+          margin-block-end: 5px;
+          margin-top: 10px;
+          text-align: center;
+          font-size: 1.1em;
+      }
+
+      img {
+          display: block !important;
+          visibility: visible !important;
+          max-width: 100px;
+          height: auto;
+          margin: 0 auto;
+      }
+  
+      .invoice-details {
+          margin: 0px 0px;
+      }
+      .invoice-details strong {
+          display: block;
+          margin: 0px 0;
+      }
+      
+      .logo-container {
+          text-align: center;
+          margin: 10px 0;
+      }
+      .tracking-info {
+          text-align: center;
+          margin: 2px 0;
+          font-size: 0.9em;
+      }
+      .tracking-url {
+          font-weight: bold;
+          font-size: 1em;
+      }
+      .qr-code {
+          text-align: center;
+          margin: 0;
+      }
+
+        body, html, .MasterBox, .container_previewfactura, #invoiceResult {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 97% !important;
+  }
+  </style>
+</head>
+<body>
+
+  <h2 style="margin-block-end: 7px;">Factura</h2>
+  <div style="background: black; height: 1px; width: 100%;"></div>
+
+  <!-- <div class="logo-container" style="display: inline-flex;align-items: center;">
+      <div style="width: 50px;">${logoHtml}</div>
+      <div>
+          <h1 style="font-size: 24px;">Paris Laundry RD3</h1>
+      </div>   
+  </div> -->
+
+  <div class="invoice-details">
+
+      ${modifiedDetails}
+
+      <div style="background: black; height: 1px; width: 100%; margin-top: 4px;"></div>
+
+      <div style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-top: 10px; margin-bottom: 0px;">
+          <span>ID de Factura:</span> <strong style="font-size: 37px;">${invoiceId}</strong>
+      </div>
+      
+      <!-- Información de seguimiento -->
+      <!-- <div class="tracking-info">
+          <p style="margin-block-start: 7px;margin-block-end: 2px;">Consulta el estado de tu ropa en el link:</p>
+          <p class="tracking-url" style="margin-block-start: 2px;margin-block-end: 2px;">${trackingUrl}</p>
+      </div> -->
+      
+      <!-- Código QR -->
+      <!-- <div class="qr-code">
+          ${qrDataUrl 
+            ? `<img src="${qrDataUrl}" alt="Código QR para seguimiento" style="width:100px; height:100px;">` 
+            : `<div style="width:100px; height:100px; margin:0 auto; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; text-align:center; font-size:10px;">
+                 Escanea el URL para seguimiento
+               </div>`
           }
-          .invoice-details strong {
-              display: block;
-              margin: 0px 0;
-          }
-          
-                    .logo-container {
-                        text-align: center;
-                        margin: 10px 0;
-                    }
-      </style>
-  </head>
-  <body>
+      </div> -->
 
-    <h2 style="margin-block-end: 7px;">Factura</h2>
-    <div style="background: black; height: 1px; width: 99%"></div>
+      <div style="width: 100%;margin-bottom: 0px;text-align: justify;">
+          <p>Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.</p>
+      </div>
 
-    <!-- <div class="logo-container" style="display: inline-flex;align-items: center;">
-        <div style="width: 50px;">${logoHtml}</div>
-        <div>
-            <h1 style="font-size: 24px;">Paris Laundry RD3</h1>
-        </div>   
-    </div> -->
+      <h2>¡Gracias por elegirnos!</h2>
 
-    <div class="invoice-details">
+      <div style="width: 100%;margin-bottom: 30px;text-align: center;"><p>.</p></div>
 
-        ${modifiedDetails}
-
-        <div style="background: black; height: 1px; width: 99%"></div>
-
-        <div style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-top: 10px; margin-bottom: 0px;">
-            <span>ID de Factura:</span> <strong style="font-size: 37px;">${invoiceId}</strong>
-        </div>
-
-        <div style="width: 100%;margin-bottom: 0px;text-align: justify;">
-            <p>Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.</p>
-        </div>
-
-        <h2>¡Gracias por elegirnos!</h2>
-
-        <div style="width: 100%;margin-bottom: 30px;text-align: center;"><p>.</p></div>
-
-    </div>
-  </body>
+  </div>
+</body>
 </html>
-  `);
+`);
 
-      printWindow.document.close();
-      printWindow.focus();
+  printWindow.document.close();
+  printWindow.focus();
 
-      // Añadir un pequeño retraso para asegurar que el contenido esté completamente cargado
+  // Si tenemos el QR generado, imprimimos inmediatamente
+  if (qrDataUrl) {
+    setTimeout(() => {
+      printWindow.print();
       setTimeout(() => {
-        printWindow.print();
-        // Mantener la ventana abierta por un tiempo para asegurar que la impresión funcione
-        setTimeout(() => {
-          printWindow.close();
-        }, 500);
-      }, 500);
-    };
+        printWindow.close();
+      }, 300);
+    }, 200);
+  } else {
+    // Si el QR aún no está listo, damos un poco más de tiempo para que se cargue la biblioteca
+    setTimeout(() => {
+      printWindow.print();
+      setTimeout(() => {
+        printWindow.close();
+      }, 300);
+    }, 500);
+  }
+};
+
+
+
+
+
 
 
     // ===== [CONTROL DE ABONO SIMPLIFICADO] ===== //
