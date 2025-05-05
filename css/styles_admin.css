@@ -564,7 +564,6 @@ h1 {
 
 #hamperList div:hover,
 #otherServiceList div:hover {
-    transform: scale(0.98);
     cursor: grab;
     background: #8897e08a;
     transition: 0.3s;
