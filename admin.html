@@ -370,6 +370,13 @@
     const editHamperModal = document.getElementById("editHamperModal");
     const editOtherServiceModal = document.getElementById("editOtherServiceModal");
 
+    // Función para detectar dispositivos táctiles
+function isTouchDevice() {
+  return 'ontouchstart' in window || 
+         navigator.maxTouchPoints > 0 || 
+         navigator.msMaxTouchPoints > 0;
+}
+
     /// Cargar Hampers
     const loadHampers = () => {
       db.collection("servicio")
@@ -411,7 +418,7 @@
             forceFallback: true,
             fallbackTolerance: 0,
             draggable: "> div",
-            delay: ('ontouchstart' in window || navigator.maxTouchPoints) ? 10000 : 0,
+            delay: isTouchDevice() ? 10000 : 0,
             delayOnTouchOnly: true
           });
         })
@@ -613,7 +620,7 @@
             forceFallback: true,
             fallbackTolerance: 0,
             draggable: "> div",
-            delay: ('ontouchstart' in window || navigator.maxTouchPoints) ? 10000 : 0,
+            delay: isTouchDevice() ? 10000 : 0,
             delayOnTouchOnly: true
           });
         })
