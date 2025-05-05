@@ -14,19 +14,32 @@
   <script src="./js/menu.js" defer></script>
 
   <style>
-    /* Estilos para dispositivos táctiles */
-    @media (hover: none) and (pointer: coarse) {
-      #hamperList, #otherServiceList {
-        pointer-events: none;
-      }
-      
-      #hamperList div button, #otherServiceList div button {
-        pointer-events: auto;
-      }
-    }
+  /* Estilos para dispositivos táctiles */
+  .touch-device #hamperList,
+  .touch-device #otherServiceList {
+    pointer-events: none;
+  }
+  
+  .touch-device #hamperList div button,
+  .touch-device #otherServiceList div button {
+    pointer-events: auto;
+  }
+  
+  /* Opcional: mejorar la experiencia táctil */
+  .touch-device #hamperList div,
+  .touch-device #otherServiceList div {
+    padding: 10px;
+    margin: 5px 0;
+  }
+  
+  .touch-device #hamperList div button,
+  .touch-device #otherServiceList div button {
+    padding: 8px 12px;
+    font-size: 16px;
+  }
   </style>
 
-  
+
 </head>
 
 <body>
@@ -365,6 +378,21 @@
   </div>
 
   <script>
+
+// Función para detectar si es un dispositivo táctil
+function isTouchDevice() {
+  return (('ontouchstart' in window) ||
+     (navigator.maxTouchPoints > 0) ||
+     (navigator.msMaxTouchPoints > 0));
+}
+
+// Aplicar clase CSS si es dispositivo táctil
+if (isTouchDevice()) {
+  document.documentElement.classList.add('touch-device');
+}
+
+
+
     // Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
