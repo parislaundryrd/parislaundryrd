@@ -1086,3 +1086,31 @@ li {
     margin-top: 10px;
   }
   
+
+
+
+
+    /* Estilos para dispositivos táctiles */
+    .touch-device #hamperList,
+    .touch-device #otherServiceList {
+      pointer-events: none;
+    }
+    
+    .touch-device #hamperList div button,
+    .touch-device #otherServiceList div button {
+      pointer-events: auto;
+    }
+    
+    /* Opcional: mejorar la experiencia táctil */
+    .touch-device #hamperList div,
+    .touch-device #otherServiceList div {
+      padding: 10px;
+      margin: 5px 0;
+    }
+    
+    .touch-device #hamperList div button,
+    .touch-device #otherServiceList div button {
+      padding: 8px 12px;
+      font-size: 16px;
+    }
+    /* Estilos para dispositivos táctiles FIN */
