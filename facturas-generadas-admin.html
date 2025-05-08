@@ -751,7 +751,8 @@ if (data.paymentMethod) {
           status: "pagado",
           paymentMethod: selectedPaymentMethod,
           amountReceived: amountReceived,  // Siempre se envía el monto recibido
-          changeAmount: change            // Cambio será 0 para no efectivo
+          changeAmount: change,            // Cambio será 0 para no efectivo
+          timestamp: firebase.firestore.FieldValue.serverTimestamp() // Actualizar la fecha al momento del pago
         });
 
         await db.collection("historialFacturasGeneradas").add({
