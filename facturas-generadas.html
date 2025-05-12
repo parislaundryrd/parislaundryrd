@@ -1223,78 +1223,84 @@ if (data.paymentMethod) {
       return text.replace(regex, '<span class="highlight">$1</span>');
     }
 
-    // Función para buscar facturas modificada
-    searchInput.addEventListener("input", () => {
-      const searchTerm = searchInput.value.toLowerCase().trim();
-      invoicesBody.innerHTML = "";
+  // Función para buscar facturas corregida
+searchInput.addEventListener("input", () => {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    invoicesBody.innerHTML = "";
 
-      if (searchTerm === "") {
+    if (searchTerm === "") {
         // Si la búsqueda está vacía, mostrar todas las facturas nuevamente
         renderInvoices();
         // Mostrar el botón de cargar más si corresponde
         if (currentStatus === "pagado entregado" && invoices.length >= 15) {
-          loadMoreContainer.style.display = "block";
+            loadMoreContainer.style.display = "block";
         }
         return;
-      }
+    }
 
+    const filteredInvoices = invoices.filter(invoice => {
+        // Convertir todo a string para la búsqueda
+        const id = invoice.id.toLowerCase();
+        const name = invoice.clientName.toLowerCase();
+        const phone = invoice.clientPhone.toLowerCase();
+        const total = `rd$${invoice.total.toFixed(2)}`;
+        const employee = (invoice.NombreEmpleado || 'No especificado').toLowerCase();
 
+        return id.includes(searchTerm) ||
+            name.includes(searchTerm) ||
+            phone.includes(searchTerm) ||
+            total.includes(searchTerm) ||
+            employee.includes(searchTerm);
+    });
 
-
-
-      const filteredInvoices = invoices.filter(invoice =>
-        invoice.id.toLowerCase().includes(searchTerm) ||
-        invoice.clientName.toLowerCase().includes(searchTerm) ||
-        invoice.clientPhone.toLowerCase().includes(searchTerm) ||
-        `RD$${invoice.total.toFixed(2)}`.includes(searchTerm)
-      );
-
-      if (filteredInvoices.length === 0) {
+    if (filteredInvoices.length === 0) {
         document.getElementById("noInvoicesMessage").classList.remove("hidden");
         loadMoreContainer.style.display = "none";
-      } else {
+    } else {
         document.getElementById("noInvoicesMessage").classList.add("hidden");
         filteredInvoices.forEach((invoice) => {
-          const row = document.createElement("tr");
-          const formattedDate = invoice.timestamp.toDate().toLocaleString('es-ES', {
-            timeZone: 'America/Santo_Domingo',
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          });
+            const row = document.createElement("tr");
+            const formattedDate = invoice.timestamp.toDate().toLocaleString('es-ES', {
+                timeZone: 'America/Santo_Domingo',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
 
-          const formattedTotal = `RD$${formatNumberWithCommas(invoice.total.toFixed(2))}`;
+            const formattedTotal = `RD$${formatNumberWithCommas(invoice.total.toFixed(2))}`;
+            const employeeName = invoice.NombreEmpleado || 'No especificado';
 
-          // Aplicar resaltado a los campos que coincidan
-          const highlightedId = highlightText(invoice.id, searchTerm);
-          const highlightedName = highlightText(invoice.clientName, searchTerm);
-          const highlightedPhone = highlightText(invoice.clientPhone, searchTerm);
-          const highlightedTotal = highlightText(formattedTotal, searchTerm);
-          const highlightedDate = highlightText(formattedDate, searchTerm);
+            // Aplicar resaltado a los campos que coincidan
+            const highlightedId = highlightText(invoice.id, searchTerm);
+            const highlightedName = highlightText(invoice.clientName, searchTerm);
+            const highlightedPhone = highlightText(invoice.clientPhone, searchTerm);
+            const highlightedTotal = highlightText(formattedTotal, searchTerm);
+            const highlightedEmployee = highlightText(employeeName, searchTerm);
+            const highlightedDate = highlightText(formattedDate, searchTerm);
 
-          row.innerHTML = `
-                    <td>${highlightedId}</td>
-                    <td>${highlightedName}</td>
-                    <td>${highlightedPhone}</td>
-                    <td>${highlightedTotal}</td>
-                    <td>${highlightedEmployee}</td>
-                    <td>${highlightedDate}</td>
-                `;
-          row.addEventListener("click", () => {
-            currentInvoiceId = invoice.id;
-            currentInvoiceData = invoice;
-            showInvoiceDetails(invoice);
-          });
-          invoicesBody.appendChild(row);
+            row.innerHTML = `
+                <td>${highlightedId}</td>
+                <td>${highlightedName}</td>
+                <td>${highlightedPhone}</td>
+                <td>${highlightedTotal}</td>
+                <td>${highlightedEmployee}</td>
+                <td>${highlightedDate}</td>
+            `;
+            row.addEventListener("click", () => {
+                currentInvoiceId = invoice.id;
+                currentInvoiceData = invoice;
+                showInvoiceDetails(invoice);
+            });
+            invoicesBody.appendChild(row);
         });
 
         // Ocultar el botón de cargar más durante la búsqueda
         loadMoreContainer.style.display = "none";
-      }
-    });
+    }
+});
 
     // Limpiar listener al salir
     window.addEventListener("beforeunload", () => {
