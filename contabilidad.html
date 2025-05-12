@@ -96,14 +96,16 @@
           <!-- Chart -->
           <div class="Chart-Master">
             <div class="ChartCSS">
-              <h2 style="margin-block-start: -4px;margin-block-end: 5px;text-align: center;">Ingresos y Gastos por Mes
-              </h2>
+              <div class="box-año-dashboard" style="display: inline-flex;align-items: center;margin: 7px 0px;">
+                <h2 style="margin-block-start: -4px;margin-block-end: 5px;text-align: center;display: contents;">Ingresos y Gastos por Mes - Año: </h2>
+                <select id="yearSelect" style="margin-left: 5px;"><option value="2025">2025</option></select>
+              </div>
+
               <canvas id="monthlyChart" width="400" height="160"></canvas>
             </div>
             <div class="ChartCSS">
-              <h2 style="margin-block-start: 5px;margin-block-end: 5px;text-align: center;">Año</h2>
               <!-- <label for="yearSelect">Año:</label> -->
-              <select id="yearSelect"></select>
+
             </div>
           </div>
           <!-- Chart FIN -->
@@ -300,7 +302,19 @@
 
             <h3 style="text-align: center;">Incentivos</h3>
 
-            <div class="cube-form">
+<div class="cube-form">
+  <!-- Agregar este span para mostrar la cantidad de productos vendidos -->
+  <div class="cube-form-flex">
+<div id="productsSoldInfo" style="margin-bottom: 8px;">
+  <span style="font-weight: bold;">Cantidad de productos vendidos:</span>
+  <span id="productsSoldAmount" style="color: #0069af; font-weight: bold;">0</span>
+  <div id="productsSoldTimestamp" style="font-size: 14px;color: #0069af;font-weight: bold;"></div>
+<label style="display: flex; align-items: center; margin-top: 5px;">
+  <input type="checkbox" id="resetProductsSoldCheckbox" style="margin-right: 7px;margin-bottom: 6px;height: 25px;width: 25px;" >
+  Pagar incentivo por ventas de producto.
+</label>
+</div>
+  </div>
 
               <div class="cube-form-flex">
                 <div>
@@ -1081,75 +1095,105 @@
       };
 
       // Modificar la función addTransaction para usar generateTimestampId
-      const addTransaction = async () => {
-        const type = document.getElementById("transactionType").value;
-        const dateInput = document.getElementById("transactionDate").value;
-        const timeInput = document.getElementById("transactionTime").value;
+    const addTransaction = async () => {
+  const type = document.getElementById("transactionType").value;
+  const dateInput = document.getElementById("transactionDate").value;
+  const timeInput = document.getElementById("transactionTime").value;
 
-        if (type === "employeePayment") {
-          // Lógica para el pago de empleado
-          const salaryPayment = parseFloat(document.getElementById("salaryPayment").value) || 0;
-          const holidayPayment = parseFloat(document.getElementById("holidayPayment").value) || 0;
-          const overtimePayment = parseFloat(document.getElementById("overtimePayment").value) || 0;
-          const vacationPayment = parseFloat(document.getElementById("vacationPayment").value) || 0;
-          const christmasPayment = parseFloat(document.getElementById("christmasPayment").value) || 0;
-          const productSale = parseFloat(document.getElementById("productSale").value) || 0;
-          const productionIncentive = parseFloat(document.getElementById("productionIncentive").value) || 0;
-          const punctualityIncentive = parseFloat(document.getElementById("punctualityIncentive").value) || 0;
-          const licenseDay = parseFloat(document.getElementById("licenseDay").value) || 0;
-          const insurance = parseFloat(document.getElementById("insurance").value) || 0;
+  if (type === "employeePayment") {
+    // Lógica para el pago de empleado
+    const salaryPayment = parseFloat(document.getElementById("salaryPayment").value) || 0;
+    const holidayPayment = parseFloat(document.getElementById("holidayPayment").value) || 0;
+    const overtimePayment = parseFloat(document.getElementById("overtimePayment").value) || 0;
+    const vacationPayment = parseFloat(document.getElementById("vacationPayment").value) || 0;
+    const christmasPayment = parseFloat(document.getElementById("christmasPayment").value) || 0;
+    const productSale = parseFloat(document.getElementById("productSale").value) || 0;
+    const productionIncentive = parseFloat(document.getElementById("productionIncentive").value) || 0;
+    const punctualityIncentive = parseFloat(document.getElementById("punctualityIncentive").value) || 0;
+    const licenseDay = parseFloat(document.getElementById("licenseDay").value) || 0;
+    const insurance = parseFloat(document.getElementById("insurance").value) || 0;
 
-          const total = salaryPayment + holidayPayment + overtimePayment + vacationPayment + christmasPayment +
-            productSale + productionIncentive + punctualityIncentive - licenseDay - insurance;
+    const total = salaryPayment + holidayPayment + overtimePayment + vacationPayment + christmasPayment +
+      productSale + productionIncentive + punctualityIncentive - licenseDay - insurance;
 
-          const employeeName = document.getElementById("employeeName").value;
+    const employeeName = document.getElementById("employeeName").value;
 
-          // Obtener la fecha y hora de pago de empleado
-          const employeePaymentDate = document.getElementById("employeePaymentDate").value;
-          const employeePaymentTime = document.getElementById("employeePaymentTime").value;
+    // Obtener la fecha y hora de pago de empleado
+    const employeePaymentDate = document.getElementById("employeePaymentDate").value;
+    const employeePaymentTime = document.getElementById("employeePaymentTime").value;
 
-          // Validar fecha y hora de pago de empleado
-          if (!employeePaymentDate || !employeePaymentTime) {
-            alert("Por favor, ingresa una fecha y hora válidas para el pago de empleado.");
-            return;
-          }
+    // Validar fecha y hora de pago de empleado
+    if (!employeePaymentDate || !employeePaymentTime) {
+      alert("Por favor, ingresa una fecha y hora válidas para el pago de empleado.");
+      return;
+    }
 
-          // Crear el objeto Date para el pago de empleado
-          const [year, month, day] = employeePaymentDate.split('-');
-          const [hours, minutes] = employeePaymentTime.split(':');
-          const paymentDate = new Date(year, month - 1, day, hours, minutes);
+    // Crear el objeto Date para el pago de empleado
+    const [year, month, day] = employeePaymentDate.split('-');
+    const [hours, minutes] = employeePaymentTime.split(':');
+    const paymentDate = new Date(year, month - 1, day, hours, minutes);
 
-          // Generar ID único basado en timestamp con prefijo 'pe'
-          const newId = generateTimestampId('pe');
+    // Generar ID único basado en timestamp con prefijo 'pe'
+    const newId = generateTimestampId('pe');
 
-          // Agregar el pago de empleado con el nuevo ID
-          db.collection("PagoEmpleado").add({
-            id: newId,
-            type: "expense",
-            timestamp: paymentDate,
-            employeeName,
-            salaryPayment,
-            holidayPayment,
-            overtimePayment,
-            vacationPayment,
-            christmasPayment,
-            productSale,
-            productionIncentive,
-            punctualityIncentive,
-            licenseDay,
-            insurance,
-            total
-          }).then(() => {
-            alert("Pago de empleado agregado correctamente.");
-            resetForm(); // Llamar a la función para reiniciar el formulario
-            closeModal.click();
-            loadTransactions();
-          }).catch((error) => {
-            console.error("Error al agregar el pago de empleado: ", error);
-            alert("Hubo un problema al agregar el pago de empleado.");
+    // Verificar si el checkbox está marcado
+    const resetProductsSold = document.getElementById("resetProductsSoldCheckbox").checked;
+    
+    // Si el checkbox está marcado, reiniciar los montos en ventaproductos
+    if (resetProductsSold && employeeName) {
+      try {
+        // Obtener todos los documentos de ventaproductos para este empleado
+        const querySnapshot = await db.collection("ventaproductos")
+          .where("empleado", "==", employeeName)
+          .get();
+
+        // Crear un batch para actualizar todos los documentos
+        const batch = db.batch();
+        
+        querySnapshot.forEach(doc => {
+          const docRef = db.collection("ventaproductos").doc(doc.id);
+          batch.update(docRef, {
+            monto: 0,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
           });
+        });
 
-        } else {
+        // Ejecutar el batch
+        await batch.commit();
+        console.log("Contador de productos vendidos reiniciado para", employeeName);
+      } catch (error) {
+        console.error("Error al reiniciar el contador de productos vendidos:", error);
+      }
+    }
+
+    // Agregar el pago de empleado con el nuevo ID
+    db.collection("PagoEmpleado").add({
+      id: newId,
+      type: "expense",
+      timestamp: paymentDate,
+      employeeName,
+      salaryPayment,
+      holidayPayment,
+      overtimePayment,
+      vacationPayment,
+      christmasPayment,
+      productSale,
+      productionIncentive,
+      punctualityIncentive,
+      licenseDay,
+      insurance,
+      total
+    }).then(() => {
+      alert("Pago de empleado agregado correctamente.");
+      resetForm(); // Llamar a la función para reiniciar el formulario
+      closeModal.click();
+      loadTransactions();
+    }).catch((error) => {
+      console.error("Error al agregar el pago de empleado: ", error);
+      alert("Hubo un problema al agregar el pago de empleado.");
+    });
+
+  } else {
           // Lógica para transacciones normales (gasto o ingreso)
           const amount = parseFloat(document.getElementById("transactionAmount").value);
           const details = document.getElementById("transactionDetails").value;
@@ -1357,11 +1401,77 @@
         });
       };
 
-      // Llamar a la función para cargar los nombres de empleados al abrir el modal
-      document.getElementById("addTransactionButton").addEventListener("click", () => {
-        loadEmployeeNames(); // Cargar nombres de empleados
-        addTransactionModal.style.display = "block"; // Mostrar el modal
+
+
+
+// Función para cargar los productos vendidos por el empleado seleccionado
+const loadProductsSoldByEmployee = (employeeName) => {
+  const productsSoldAmount = document.getElementById("productsSoldAmount");
+  const productsSoldTimestamp = document.getElementById("productsSoldTimestamp");
+  
+  if (!employeeName) {
+    productsSoldAmount.textContent = "0";
+    productsSoldTimestamp.textContent = "";
+    return;
+  }
+
+  db.collection("ventaproductos")
+    .where("empleado", "==", employeeName)
+    .get()
+    .then((querySnapshot) => {
+      let totalAmount = 0;
+      let latestTimestamp = null;
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        totalAmount += parseFloat(data.monto) || 0;
+        
+        // Obtener el timestamp más reciente
+        if (data.timestamp) {
+          const docTimestamp = data.timestamp.toDate();
+          if (!latestTimestamp || docTimestamp > latestTimestamp) {
+            latestTimestamp = docTimestamp;
+          }
+        }
       });
+
+      productsSoldAmount.textContent = `${totalAmount}`;
+      
+      // Mostrar la fecha y hora del timestamp más reciente
+      if (latestTimestamp) {
+        const options = { 
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        };
+        productsSoldTimestamp.textContent = `Último pago de incentivo por ventas: ${latestTimestamp.toLocaleDateString('es-DO', options)}`;
+      } else {
+        productsSoldTimestamp.textContent = "";
+      }
+    })
+    .catch((error) => {
+      console.error("Error al cargar productos vendidos:", error);
+      productsSoldAmount.textContent = "Error";
+      productsSoldTimestamp.textContent = "";
+    });
+};
+
+// Modifica el evento change del select de empleados para cargar los productos vendidos
+document.getElementById("employeeName").addEventListener("change", function() {
+  loadProductsSoldByEmployee(this.value);
+});
+
+// También llama a la función cuando se abre el modal para actualizar si ya hay un empleado seleccionado
+document.getElementById("addTransactionButton").addEventListener("click", () => {
+  loadEmployeeNames();
+  const employeeName = document.getElementById("employeeName").value;
+  loadProductsSoldByEmployee(employeeName);
+  addTransactionModal.style.display = "block";
+});
+
+
 
 
 
@@ -1807,7 +1917,6 @@
 
     </script>
 
-    <script src="./js/fecha-hora.js"></script>
     <script src="./js/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -1816,4 +1925,4 @@
 
 </html>
 
-<!-- 10  -->
+<!-- 4 -->
