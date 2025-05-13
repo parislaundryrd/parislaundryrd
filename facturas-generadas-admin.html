@@ -1004,7 +1004,8 @@ if (data.paymentMethod) {
             "Monto no especificado";
 
           const abonoStatusSpan = document.createElement("span");
-          abonoStatusSpan.textContent = `Abono Pagado, ${metodoPago}, ${montoAbono}`;
+          //abonoStatusSpan.textContent = `Abono Pagado, ${metodoPago}, ${montoAbono}`;
+          abonoStatusSpan.textContent = `Abono Pagado - ${metodoPago} - ${formattedAmount}`;
           abonoStatusSpan.className = "status-pagado";
           listItem.appendChild(abonoStatusSpan);
         } else {
