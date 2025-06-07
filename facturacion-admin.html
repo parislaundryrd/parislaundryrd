@@ -349,67 +349,71 @@
     }
 
     // Cargar servicios, productos y empleados
-    const loadServices = () => {
-      db.collection("servicio").onSnapshot((snapshot) => {
-        serviceSelection.innerHTML = "";
-        otrosServiciosContainer.innerHTML = "";
-        hamperContainer.innerHTML = "";
-        otrosServiciosDisplay.innerHTML = "";
+   const loadServices = () => {
+  db.collection("servicio").onSnapshot((snapshot) => {
+    serviceSelection.innerHTML = "";
+    otrosServiciosContainer.innerHTML = "";
+    hamperContainer.innerHTML = "";
+    otrosServiciosDisplay.innerHTML = "";
 
-        const hampersArray = [];
-        const otrosServiciosArray = [];
+    const hampersArray = [];
+    const otrosServiciosArray = [];
 
-        snapshot.forEach((doc) => {
-          const data = doc.data();
+    snapshot.forEach((doc) => {
+      const data = doc.data();
 
-          if (data.tipo === "hamper") {
-            hampersArray.push({ id: doc.id, ...data });
-          }
+      if (data.tipo === "hamper") {
+        hampersArray.push({ id: doc.id, ...data });
+      }
 
-          if (data.tipo === "otroservicio") {
-            otrosServiciosArray.push({ id: doc.id, ...data });
-          }
-        });
+      if (data.tipo === "otroservicio") {
+        otrosServiciosArray.push({ id: doc.id, ...data });
+      }
+    });
 
-        // Ordenar hampers por OrdenNumHamper
-        hampersArray.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
+    // Ordenar hampers por OrdenNumHamper
+    hampersArray.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
 
-        // Ordenar otros servicios por OrdenNumServicio
-        otrosServiciosArray.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
+    // Ordenar otros servicios por OrdenNumServicio
+    otrosServiciosArray.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
 
-        // Mostrar hampers ordenados
-        hampersArray.forEach((data) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.innerHTML = `<div><img src="./img/icon/${data.icon}" alt="${data.nombre}"></div> <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>`;
-          button.dataset.value = data.precio;
-          button.dataset.name = data.nombre;
-          button.dataset.librasmin = data.librasmin;
-          button.dataset.librasmax = data.librasmax;
-          button.dataset.preciolibras = data.preciolibras;
-          button.addEventListener("click", () => {
-            addHamper(data);
-          });
-          serviceSelection.appendChild(button);
-        });
-
-
-
-        // Mostrar otros servicios ordenados
-        otrosServiciosArray.forEach((data) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.innerHTML = `<div><img src="./img/icon/${data.icon}" alt="${data.nombre}"></div> <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>`;
-          button.dataset.value = data.precio;
-          button.dataset.name = data.nombre;
-          button.dataset.icon = data.icon;
-          button.addEventListener("click", () => {
-            addOtherService(data, button);
-          });
-          otrosServiciosContainer.appendChild(button);
-        });
+    // Mostrar hampers ordenados
+    hampersArray.forEach((data) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.innerHTML = `
+        <div><img src="${data.icon}" alt="${data.nombre}"></div>
+        <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>
+      `;
+      button.dataset.value = data.precio;
+      button.dataset.name = data.nombre;
+      button.dataset.librasmin = data.librasmin;
+      button.dataset.librasmax = data.librasmax;
+      button.dataset.preciolibras = data.preciolibras;
+      button.addEventListener("click", () => {
+        addHamper(data);
       });
-    };
+      serviceSelection.appendChild(button);
+    });
+
+    // Mostrar otros servicios ordenados
+    otrosServiciosArray.forEach((data) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.innerHTML = `
+        <div><img src="${data.icon}" alt="${data.nombre}"></div>
+        <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>
+      `;
+      button.dataset.value = data.precio;
+      button.dataset.name = data.nombre;
+      button.dataset.icon = data.icon;
+      button.addEventListener("click", () => {
+        addOtherService(data, button);
+      });
+      otrosServiciosContainer.appendChild(button);
+    });
+  });
+};
 
     const addOtherService = (data, button) => {
       const existingService = otrosServiciosDisplay.querySelector(`div[data-name="${data.nombre}"]`);
@@ -495,18 +499,18 @@
       updateInvoicePreview();
     };
 
-    const addHamper = (data) => {
-      // Verifica si ya hay 30 hampers
-      if (hampers.length >= 30) {
-        alert("No puedes agregar más de 30 hampers por factura.");
-        return;
-      }
+   const addHamper = (data) => {
+  // Verifica si ya hay 30 hampers
+  if (hampers.length >= 30) {
+    alert("No puedes agregar más de 30 hampers por factura.");
+    return;
+  }
 
-      const hamperDiv = document.createElement("div");
-      hamperDiv.classList.add("hamper");
-      hamperDiv.innerHTML = `
+  const hamperDiv = document.createElement("div");
+  hamperDiv.classList.add("hamper");
+  hamperDiv.innerHTML = `
     <h3>${data.nombre}</h3>
-    <img src="./img/icon/${data.icon}" alt="${data.nombre}">
+    <img src="${data.icon}" alt="${data.nombre}">
     <h5>Cantidad de Libras</h5>
     <div id="hamperWeight">
       <button id="btnmenosmas" type="button" class="decreaseWeight">-</button>
