@@ -449,7 +449,7 @@ function setupFileInput(inputElement, textElement, previewElement) {
       reader.onload = function(event) {
         const base64String = event.target.result;
         textElement.value = base64String;
-        previewElement.innerHTML = `<img src="${base64String}" class="image-preview">`;
+        previewElement.innerHTML = `<img src="${base64String}" class="image-preview" style="height: 64px;">`;
         previewElement.classList.remove('no-image');
       };
       reader.readAsDataURL(file);
