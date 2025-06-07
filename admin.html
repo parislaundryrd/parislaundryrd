@@ -12,6 +12,34 @@
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
   <script src="./js/menu.js" defer></script>
+
+  <style>
+  .icon-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .icon-input-container input[type="text"] {
+    flex: 1;
+  }
+  
+  .icon-input-container button {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .icon-input-container button:hover {
+    background-color: #45a049;
+  }
+</style>
+
+
 </head>
 
 <body>
@@ -97,8 +125,14 @@
               <label for="preciolibras">Precio por Libra:</label>
               <input type="number" id="preciolibrasAdd"><br>
 
-              <label for="icon">Icono:</label>
-              <input type="text" id="iconAdd">
+              <!-- En el modal de añadir servicio (dentro de hamperFieldsAdd) -->
+<label for="iconAdd">Icono:</label>
+<div class="icon-input-container">
+  <input type="text" id="iconAdd" readonly style="display: none;">
+  <div id="iconPreviewAdd" class="no-image">Sin imagen</div>
+  <input type="file" id="iconFileAdd" accept="image/*" style="display: none;">
+  <button type="button" onclick="document.getElementById('iconFileAdd').click()">Subir imagen</button>
+</div>
               <p>
 
                 <label for="consumo"><strong>Consumo del inventario:</strong></label>
@@ -122,8 +156,14 @@
               <label for="precioOtroServicio">Precio:</label>
               <input type="number" id="precioOtroServicioAdd"><br>
 
-              <label for="iconOtroServicio">Icono:</label>
-              <input type="text" id="iconOtroServicioAdd">
+<!-- En el modal de añadir servicio (dentro de otherServiceFieldsAdd) -->
+<label for="iconOtroServicioAdd">Icono:</label>
+<div class="icon-input-container">
+  <input type="text" id="iconOtroServicioAdd" readonly style="display: none;">
+  <div id="iconPreviewOtroServicioAdd" class="no-image">Sin imagen</div>
+  <input type="file" id="iconFileOtroServicioAdd" accept="image/*" style="display: none;">
+  <button type="button" onclick="document.getElementById('iconFileOtroServicioAdd').click()">Subir imagen</button>
+</div>
               <p>
 
                 <label for="consumoOtroServicio"><strong>Consumo del inventario:</strong></label>
@@ -174,8 +214,14 @@
             <label for="preciolibras">Precio por Libra:</label>
             <input type="number" id="preciolibrasHamper"><br>
 
-            <label for="icon">Icono:</label>
-            <input type="text" id="iconHamper">
+<!-- En el modal de editar hamper -->
+<label for="iconHamper">Icono:</label>
+<div class="icon-input-container">
+  <input type="text" id="iconHamper" readonly style="display: none;">
+  <div id="iconPreviewHamper" class="no-image">Sin imagen</div>
+  <input type="file" id="iconFileHamper" accept="image/*" style="display: none;">
+  <button type="button" onclick="document.getElementById('iconFileHamper').click()">Subir imagen</button>
+</div>
             <p>
 
               <label for="consumo"><strong>Consumo del inventario:</strong></label>
@@ -219,8 +265,14 @@
             <label for="precioOtroServicio">Precio:</label>
             <input type="number" id="precioOtroServicioEdit"><br>
 
-            <label for="iconOtroServicio">Icono:</label>
-            <input type="text" id="iconOtroServicioEdit"><br>
+<!-- En el modal de editar otro servicio -->
+<label for="iconOtroServicioEdit">Icono:</label>
+<div class="icon-input-container">
+  <input type="text" id="iconOtroServicioEdit" readonly style="display: none;">
+  <div id="iconPreviewOtroServicioEdit" class="no-image">Sin imagen</div>
+  <input type="file" id="iconFileOtroServicioEdit" accept="image/*" style="display: none;">
+  <button type="button" onclick="document.getElementById('iconFileOtroServicioEdit').click()">Subir imagen</button>
+</div>
             <p>
 
               <label for="consumoOtroServicio"><strong>Consumo del inventario:</strong></label>
@@ -350,7 +402,6 @@
   </div>
 
   <script>
-
 // Función para detectar si es un dispositivo táctil
 function isTouchDevice() {
   return (('ontouchstart' in window) ||
@@ -363,949 +414,787 @@ if (isTouchDevice()) {
   document.documentElement.classList.add('touch-device');
 }
 
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
+  authDomain: "paris-laundry.firebaseapp.com",
+  projectId: "paris-laundry",
+  storageBucket: "paris-laundry.appspot.com",
+  messagingSenderId: "1022712814457",
+  appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
+};
 
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
-      authDomain: "paris-laundry.firebaseapp.com",
-      projectId: "paris-laundry",
-      storageBucket: "paris-laundry.appspot.com",
-      messagingSenderId: "1022712814457",
-      appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
-    };
+const hamperList = document.getElementById("hamperList");
+const otherServiceList = document.getElementById("otherServiceList");
+const addServiceModal = document.getElementById("addServiceModal");
+const editHamperModal = document.getElementById("editHamperModal");
+const editOtherServiceModal = document.getElementById("editOtherServiceModal");
 
-    // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+// Función para manejar la selección de archivos
+function setupFileInput(inputElement, textElement, previewElement) {
+  inputElement.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      // Limitar tamaño a 1MB
+      if (file.size > 1024 * 1024) {
+        alert('La imagen debe pesar menos de 1MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const base64String = event.target.result;
+        textElement.value = base64String;
+        previewElement.innerHTML = `<img src="${base64String}" class="image-preview">`;
+        previewElement.classList.remove('no-image');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
 
-    const hamperList = document.getElementById("hamperList");
-    const otherServiceList = document.getElementById("otherServiceList");
-    const addServiceModal = document.getElementById("addServiceModal");
-    const editHamperModal = document.getElementById("editHamperModal");
-    const editOtherServiceModal = document.getElementById("editOtherServiceModal");
+// Configurar todos los inputs de archivo al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+  // Modal de añadir hamper
+  setupFileInput(
+    document.getElementById('iconFileAdd'),
+    document.getElementById('iconAdd'),
+    document.getElementById('iconPreviewAdd')
+  );
+  
+  // Modal de añadir otro servicio
+  setupFileInput(
+    document.getElementById('iconFileOtroServicioAdd'),
+    document.getElementById('iconOtroServicioAdd'),
+    document.getElementById('iconPreviewOtroServicioAdd')
+  );
+  
+  // Modal de editar hamper
+  setupFileInput(
+    document.getElementById('iconFileHamper'),
+    document.getElementById('iconHamper'),
+    document.getElementById('iconPreviewHamper')
+  );
+  
+  // Modal de editar otro servicio
+  setupFileInput(
+    document.getElementById('iconFileOtroServicioEdit'),
+    document.getElementById('iconOtroServicioEdit'),
+    document.getElementById('iconPreviewOtroServicioEdit')
+  );
+});
 
-    /// Cargar Hampers
-    const loadHampers = () => {
-      db.collection("servicio")
-        .where("tipo", "==", "hamper")
-        .get()
-        .then((snapshot) => {
-          const hampers = [];
-          snapshot.forEach((doc) => {
-            hampers.push({ id: doc.id, ...doc.data() });
-          });
+/// Cargar Hampers
+const loadHampers = () => {
+  db.collection("servicio")
+    .where("tipo", "==", "hamper")
+    .get()
+    .then((snapshot) => {
+      const hampers = [];
+      snapshot.forEach((doc) => {
+        hampers.push({ id: doc.id, ...doc.data() });
+      });
 
-          hampers.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
+      hampers.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
 
-          hamperList.innerHTML = "";
-          hampers.forEach((data) => {
-            const hamperDiv = document.createElement("div");
-            hamperDiv.setAttribute("data-id", data.id); // Establecer un atributo data-id
-            hamperDiv.innerHTML = `
+      hamperList.innerHTML = "";
+      hampers.forEach((data) => {
+        const hamperDiv = document.createElement("div");
+        hamperDiv.setAttribute("data-id", data.id);
+        hamperDiv.innerHTML = `
           <h3>${data.nombre}</h3>
-          <img src="./img/icon/${data.icon}" alt="${data.nombre}">
+          <img src="${data.icon}" alt="${data.nombre}">
           <p>Precio: <strong>RD$${data.precio}</strong></p>
           <p>Libras Mínimas: <strong>${data.librasmin}</strong></p>
           <p>Libras Máximas: <strong>${data.librasmax}</strong></p>
           <p>Precio por Libra: <strong>RD$${data.preciolibras}</strong></p>
           <button onclick="editHamper('${data.id}')">Editar</button>
         `;
-            hamperList.appendChild(hamperDiv);
-          });
-
-          // Inicializar SortableJS
-          new Sortable(hamperList, {
-            animation: 150,
-            onEnd: (evt) => {
-              updateHamperOrder();
-            },
-            // Configuración para deshabilitar touch
-            supportPointer: false,
-            touchStartThreshold: 0,
-            forceFallback: true,
-            fallbackTolerance: 0,
-            draggable: "> div",
-            delay: isTouchDevice() ? 10000 : 0,
-            delayOnTouchOnly: true
-          });
-        })
-        .catch((error) => {
-          console.error("Error al cargar hampers: ", error);
-        });
-    };
-
-
-
-
-
-    // Variables para almacenar los valores originales de "Otro Servicio"
-    let originalOtroServicio = {};
-
-    // Cargar "Otro Servicio" desde Firestore y almacenar valores originales
-    const loadOtherService = (id) => {
-      return db.collection("servicio").doc(id).get().then((doc) => {
-        if (doc.exists) {
-          originalOtroServicio = doc.data(); // Almacenar valores originales
-        }
+        hamperList.appendChild(hamperDiv);
       });
+
+      // Inicializar SortableJS
+      new Sortable(hamperList, {
+        animation: 150,
+        onEnd: (evt) => {
+          updateHamperOrder();
+        },
+        supportPointer: false,
+        touchStartThreshold: 0,
+        forceFallback: true,
+        fallbackTolerance: 0,
+        draggable: "> div",
+        delay: isTouchDevice() ? 10000 : 0,
+        delayOnTouchOnly: true
+      });
+    })
+    .catch((error) => {
+      console.error("Error al cargar hampers: ", error);
+    });
+};
+
+// Variables para almacenar los valores originales de "Otro Servicio"
+let originalOtroServicio = {};
+
+// Función para formatear el consumo de inventario
+const formatConsumo = (consumos) => {
+  return consumos.map(consumo => `ID: ${consumo.id}, Cantidad: ${consumo.cantidad}`).join(", ");
+};
+
+// Cargar Otros Servicios
+const loadOtherServices = () => {
+  db.collection("servicio")
+    .where("tipo", "==", "otroservicio")
+    .get()
+    .then((snapshot) => {
+      const otherServices = [];
+      snapshot.forEach((doc) => {
+        otherServices.push({ id: doc.id, ...doc.data() });
+      });
+
+      otherServices.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
+
+      otherServiceList.innerHTML = "";
+      otherServices.forEach((data) => {
+        const serviceDiv = document.createElement("div");
+        serviceDiv.setAttribute("data-id", data.id);
+        serviceDiv.innerHTML = `
+          <h3>${data.nombre}</h3>
+          <img src="${data.icon}" alt="${data.nombre}">
+          <p>Precio: <strong>RD$${data.precio}</strong></p>
+          <button onclick="editOtherService('${data.id}')">Editar</button>
+        `;
+        otherServiceList.appendChild(serviceDiv);
+      });
+
+      // Inicializar SortableJS
+      new Sortable(otherServiceList, {
+        animation: 150,
+        onEnd: (evt) => {
+          updateOtherServiceOrder();
+        },
+        supportPointer: false,
+        touchStartThreshold: 0,
+        forceFallback: true,
+        fallbackTolerance: 0,
+        draggable: "> div",
+        delay: isTouchDevice() ? 10000 : 0,
+        delayOnTouchOnly: true
+      });
+    })
+    .catch((error) => {
+      console.error("Error al cargar otros servicios: ", error);
+    });
+};
+
+// Función para actualizar el orden de los Hampers en Firestore
+const updateHamperOrder = () => {
+  const hampers = Array.from(hamperList.children);
+  hampers.forEach((hamper, index) => {
+    const id = hamper.getAttribute("data-id");
+    db.collection("servicio").doc(id).update({
+      OrdenNumHamper: index + 1,
+    }).catch((error) => {
+      console.error("Error al actualizar el orden del hamper: ", error);
+    });
+  });
+};
+
+// Función para actualizar el orden de los Otros Servicios en Firestore
+const updateOtherServiceOrder = () => {
+  const otherServices = Array.from(otherServiceList.children);
+  otherServices.forEach((service, index) => {
+    const id = service.getAttribute("data-id");
+    db.collection("servicio").doc(id).update({
+      OrdenNumServicio: index + 1,
+    }).catch((error) => {
+      console.error("Error al actualizar el orden del otro servicio: ", error);
+    });
+  });
+};
+
+// Cargar Productos para el Select de Consumo
+const loadProducts = (selectElement) => {
+  db.collection("productos").get().then((snapshot) => {
+    selectElement.innerHTML = "";
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    defaultOption.textContent = "Selecciona un producto";
+    selectElement.appendChild(defaultOption);
+    snapshot.forEach((doc) => {
+      const product = doc.data();
+      const option = document.createElement("option");
+      option.value = product.id;
+      option.textContent = `${product.nombre} (ID: ${product.id})`;
+      selectElement.appendChild(option);
+    });
+  });
+};
+
+// Arreglo para almacenar los consumos seleccionados
+let consumosSeleccionados = [];
+
+// Función para actualizar la lista de consumos
+const updateConsumoList = () => {
+  const consumoList = document.getElementById("consumoList");
+  consumoList.innerHTML = "";
+  consumosSeleccionados.forEach((consumo) => {
+    const consumoDiv = document.createElement("div");
+    consumoDiv.innerHTML = `ID: <strong>${consumo.id}</strong>, Cantidad: <strong>${consumo.cantidad}</strong>`;
+
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "Eliminar";
+    removeButton.onclick = () => {
+      consumosSeleccionados = consumosSeleccionados.filter(c => c.id !== consumo.id);
+      updateConsumoList();
     };
 
-    // Función para formatear el consumo de inventario
-    const formatConsumo = (consumos) => {
-      return consumos.map(consumo => `ID: ${consumo.id}, Cantidad: ${consumo.cantidad}`).join(", ");
+    consumoDiv.appendChild(removeButton);
+    consumoList.appendChild(consumoDiv);
+  });
+};
+
+// Función para actualizar la lista de consumos en otro servicio
+const updateConsumoListOtroServicio = () => {
+  const consumoListOtroServicio = document.getElementById("consumoListOtroServicio");
+  consumoListOtroServicio.innerHTML = "";
+  consumosSeleccionados.forEach((consumo) => {
+    const consumoDiv = document.createElement("div");
+    consumoDiv.innerHTML = `ID: <strong>${consumo.id}</strong>, Cantidad: <strong>${consumo.cantidad}</strong>`;
+
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "Eliminar";
+    removeButton.onclick = () => {
+      consumosSeleccionados = consumosSeleccionados.filter(c => c.id !== consumo.id);
+      updateConsumoListOtroServicio();
     };
 
-    // Registrar "Otro Servicio Añadido" en el historial
-    const registrarOtroServicioAñadido = (nombre, precio, consumo) => {
-      return db.collection("historialAdmin").add({
-        accion: "Otro Servicio Añadido",
+    consumoDiv.appendChild(removeButton);
+    consumoListOtroServicio.appendChild(consumoDiv);
+  });
+};
+
+// Función para actualizar la lista de consumos en editar
+const updateEditConsumoList = (consumos, listElement) => {
+  listElement.innerHTML = "";
+  consumos.forEach((consumo) => {
+    const consumoDiv = document.createElement("div");
+    consumoDiv.innerHTML = `ID: <strong>${consumo.id}</strong>, Cantidad: <strong>${consumo.cantidad}</strong>`;
+
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "Eliminar";
+    removeButton.onclick = () => {
+      consumosSeleccionados = consumosSeleccionados.filter(c => c.id !== consumo.id);
+      updateEditConsumoList(consumosSeleccionados, listElement);
+    };
+
+    consumoDiv.appendChild(removeButton);
+    listElement.appendChild(consumoDiv);
+  });
+};
+
+// Función para añadir un "hamper"
+const addHamper = async (nombre, precio, librasmin, librasmax, preciolibras, icon, consumo) => {
+  try {
+    const docRef = await db.collection("servicio").add({
+      nombre: nombre,
+      precio: precio,
+      librasmin: librasmin,
+      librasmax: librasmax,
+      preciolibras: preciolibras,
+      icon: icon,
+      consumo: consumo,
+      tipo: "hamper"
+    });
+
+    // Registrar en el historial
+    await db.collection("historialAdmin").add({
+      accion: "Hamper Añadido",
+      nombre: nombre,
+      precio: precio,
+      librasmin: librasmin,
+      librasmax: librasmax,
+      preciolibras: preciolibras,
+      icon: "Imagen en base64", // No almacenar toda la imagen en el historial
+      "consumo de inventario": formatConsumo(consumo),
+      fecha: new Date()
+    });
+
+    return docRef.id;
+  } catch (error) {
+    console.error("Error al añadir el hamper: ", error);
+    throw error;
+  }
+};
+
+// Función para añadir un "Otro Servicio"
+const addOtherService = async (nombre, precio, icon, consumo) => {
+  try {
+    const docRef = await db.collection("servicio").add({
+      nombre: nombre,
+      precio: precio,
+      icon: icon,
+      consumo: consumo,
+      tipo: "otroservicio"
+    });
+
+    // Registrar en el historial
+    await db.collection("historialAdmin").add({
+      accion: "Otro Servicio Añadido",
+      nombre: nombre,
+      precio: precio,
+      icon: "Imagen en base64", // No almacenar toda la imagen en el historial
+      "consumo de inventario": formatConsumo(consumo),
+      fecha: new Date()
+    });
+
+    return docRef.id;
+  } catch (error) {
+    console.error("Error al añadir Otro Servicio: ", error);
+    throw error;
+  }
+};
+
+// Abrir modal para agregar servicio
+document.getElementById("addServiceButton").addEventListener("click", () => {
+  addServiceModal.style.display = "block";
+  loadProducts(document.getElementById("consumoAdd"));
+  loadProducts(document.getElementById("consumoOtroServicioAdd"));
+});
+
+// Cerrar modal de agregar servicio
+document.getElementById("closeAddModal").onclick = function () {
+  addServiceModal.style.display = "none";
+};
+
+// Mostrar campos según el tipo de servicio seleccionado
+document.getElementById("serviceTypeAdd").addEventListener("change", function () {
+  const selectedType = this.value;
+
+  // Reiniciar los campos de entrada
+  document.getElementById("nombreAdd").value = "";
+  document.getElementById("precioAdd").value = "";
+  document.getElementById("librasminAdd").value = "";
+  document.getElementById("librasmaxAdd").value = "";
+  document.getElementById("preciolibrasAdd").value = "";
+  document.getElementById("iconAdd").value = "";
+  document.getElementById("iconFileAdd").value = "";
+
+  // Reiniciar los campos de consumo
+  consumosSeleccionados = [];
+  updateConsumoList();
+  updateConsumoListOtroServicio();
+
+  if (selectedType === "hamper") {
+    document.getElementById("hamperFieldsAdd").style.display = "block";
+    document.getElementById("otherServiceFieldsAdd").style.display = "none";
+  } else if (selectedType === "otroservicio") {
+    document.getElementById("hamperFieldsAdd").style.display = "none";
+    document.getElementById("otherServiceFieldsAdd").style.display = "block";
+  }
+});
+
+// Función para agregar consumo en agregar servicio
+document.getElementById("addConsumoButton").addEventListener("click", () => {
+  const selectedValue = document.getElementById("consumoAdd").value;
+  const cantidad = parseInt(document.getElementById("cantidadConsumoAdd").value);
+  if (selectedValue && cantidad > 0 && !consumosSeleccionados.some(c => c.id === selectedValue)) {
+    consumosSeleccionados.push({ id: selectedValue, cantidad: cantidad });
+    updateConsumoList();
+
+    // Reiniciar el select y el input de cantidad
+    document.getElementById("consumoAdd").value = "";
+    document.getElementById("cantidadConsumoAdd").value = "";
+    document.getElementById("consumoAdd").selectedIndex = 0;
+  } else {
+    alert("Consumo ya agregado, no seleccionado o cantidad inválida.");
+  }
+});
+
+// Función para agregar consumo en agregar otro servicio
+document.getElementById("addConsumoOtroServicioButton").addEventListener("click", () => {
+  const selectedValue = document.getElementById("consumoOtroServicioAdd").value;
+  const cantidad = parseInt(document.getElementById("cantidadOtroServicioAdd").value);
+  if (selectedValue && cantidad > 0 && !consumosSeleccionados.some(c => c.id === selectedValue)) {
+    consumosSeleccionados.push({ id: selectedValue, cantidad: cantidad });
+    updateConsumoListOtroServicio();
+
+    // Reiniciar el select y el input de cantidad
+    document.getElementById("consumoOtroServicioAdd").value = "";
+    document.getElementById("cantidadOtroServicioAdd").value = "";
+    document.getElementById("consumoOtroServicioAdd").selectedIndex = 0;
+  } else {
+    alert("Consumo ya agregado, no seleccionado o cantidad inválida.");
+  }
+});
+
+// Agregar nuevo servicio
+document.getElementById("addServiceForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const serviceType = document.getElementById("serviceTypeAdd").value;
+  const nombre = serviceType === "hamper" ? document.getElementById("nombreAdd").value : document.getElementById("nombreOtroServicioAdd").value;
+  const precio = serviceType === "hamper" ? parseFloat(document.getElementById("precioAdd").value) : parseFloat(document.getElementById("precioOtroServicioAdd").value);
+  const librasmin = serviceType === "hamper" ? parseInt(document.getElementById("librasminAdd").value) : null;
+  const librasmax = serviceType === "hamper" ? parseInt(document.getElementById("librasmaxAdd").value) : null;
+  const preciolibras = serviceType === "hamper" ? parseFloat(document.getElementById("preciolibrasAdd").value) : null;
+  const icon = serviceType === "hamper" ? document.getElementById("iconAdd").value : document.getElementById("iconOtroServicioAdd").value;
+  const consumo = consumosSeleccionados;
+
+  if (nombre && precio) {
+    try {
+      if (serviceType === "hamper") {
+        await addHamper(nombre, precio, librasmin, librasmax, preciolibras, icon, consumo);
+      } else {
+        await addOtherService(nombre, precio, icon, consumo);
+      }
+      alert("Servicio añadido correctamente");
+      loadHampers();
+      loadOtherServices();
+      addServiceModal.style.display = "none";
+    } catch (error) {
+      console.error("Error al añadir el servicio: ", error);
+      alert("Hubo un error al añadir el servicio. Por favor, intenta de nuevo.");
+    }
+  } else {
+    alert("Por favor, complete los campos obligatorios: Nombre y Precio.");
+  }
+});
+
+// Editar Hamper
+const editHamper = (id) => {
+  db.collection("servicio").doc(id).get().then((doc) => {
+    const data = doc.data();
+    document.getElementById("hamperId").value = id;
+    document.getElementById("nombreHamper").value = data.nombre;
+    document.getElementById("precioHamper").value = data.precio;
+    document.getElementById("librasminHamper").value = data.librasmin;
+    document.getElementById("librasmaxHamper").value = data.librasmax;
+    document.getElementById("preciolibrasHamper").value = data.preciolibras;
+    document.getElementById("iconHamper").value = data.icon;
+    document.getElementById("iconPreviewHamper").innerHTML = data.icon 
+  ? `<img src="${data.icon}" class="image-preview" style="height: 64px;">` 
+  : '<div class="no-image">Sin imagen</div>';
+
+    // Cargar consumos existentes
+    consumosSeleccionados = data.consumo || [];
+    updateEditConsumoList(consumosSeleccionados, document.getElementById("consumoListHamper"));
+
+    loadProducts(document.getElementById("consumoHamper"));
+
+    editHamperModal.style.display = "block";
+  });
+};
+
+// Cerrar modal de editar hamper
+document.getElementById("closeEditHamperModal").onclick = function () {
+  editHamperModal.style.display = "none";
+};
+
+// Función para agregar consumo en editar hamper
+document.getElementById("addConsumoHamperButton").addEventListener("click", () => {
+  const selectedValue = document.getElementById("consumoHamper").value;
+  const cantidad = parseInt(document.getElementById("cantidadHamper").value);
+  if (selectedValue && cantidad > 0 && !consumosSeleccionados.some(c => c.id === selectedValue)) {
+    consumosSeleccionados.push({ id: selectedValue, cantidad: cantidad });
+    updateEditConsumoList(consumosSeleccionados, document.getElementById("consumoListHamper"));
+
+    // Reiniciar el select y el input de cantidad
+    document.getElementById("consumoHamper").value = "";
+    document.getElementById("cantidadHamper").value = "";
+    document.getElementById("consumoHamper").selectedIndex = 0;
+  } else {
+    alert("Consumo ya agregado, no seleccionado o cantidad inválida.");
+  }
+});
+
+// Función para eliminar un "hamper"
+const deleteHamper = async (id) => {
+  try {
+    const doc = await db.collection("servicio").doc(id).get();
+    const data = doc.data();
+
+    // Formatear el consumo de inventario
+    const consumoFormateado = formatConsumo(data.consumo || []);
+
+    // Eliminar el servicio
+    await db.collection("servicio").doc(id).delete();
+
+    // Registrar en el historial
+    await db.collection("historialAdmin").add({
+      accion: "Hamper Eliminado",
+      nombre: data.nombre,
+      precio: data.precio,
+      "Libras Mínimas": data.librasmin,
+      "Libras Máximas": data.librasmax,
+      "Precio por Libra": data.preciolibras,
+      "consumo de inventario": consumoFormateado,
+      fecha: firebase.firestore.Timestamp.now()
+    });
+
+    alert("Hamper eliminado correctamente");
+    loadHampers();
+    document.getElementById("editHamperModal").style.display = "none";
+  } catch (error) {
+    console.error("Error al eliminar el hamper: ", error);
+    alert("Hubo un error al eliminar el hamper. Por favor, intenta de nuevo.");
+  }
+};
+
+// Eliminar hamper
+document.getElementById("deleteHamperButton").addEventListener("click", () => {
+  const id = document.getElementById("hamperId").value;
+  if (confirm("¿Está seguro de que desea eliminar este hamper?")) {
+    deleteHamper(id);
+  }
+});
+
+// Guardar cambios en el hamper
+document.getElementById("editHamperForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const id = document.getElementById("hamperId").value;
+  const nombre = document.getElementById("nombreHamper").value;
+  const precio = parseFloat(document.getElementById("precioHamper").value);
+  const librasmin = parseInt(document.getElementById("librasminHamper").value);
+  const librasmax = parseInt(document.getElementById("librasmaxHamper").value);
+  const preciolibras = parseFloat(document.getElementById("preciolibrasHamper").value);
+  const icon = document.getElementById("iconHamper").value;
+  const consumo = consumosSeleccionados;
+
+  try {
+    // Obtener los datos originales del hamper antes de la actualización
+    const doc = await db.collection("servicio").doc(id).get();
+    const originalData = doc.data();
+
+    // Identificar cambios
+    const cambios = [];
+    if (nombre !== originalData.nombre) {
+      cambios.push(`Nombre: de '${originalData.nombre}' a '${nombre}'`);
+    }
+    if (precio !== originalData.precio) {
+      cambios.push(`Precio: de '${originalData.precio}' a '${precio}'`);
+    }
+    if (librasmin !== originalData.librasmin) {
+      cambios.push(`Libras Mínimas: de '${originalData.librasmin}' a '${librasmin}'`);
+    }
+    if (librasmax !== originalData.librasmax) {
+      cambios.push(`Libras Máximas: de '${originalData.librasmax}' a '${librasmax}'`);
+    }
+    if (preciolibras !== originalData.preciolibras) {
+      cambios.push(`Precio por Libra: de '${originalData.preciolibras}' a '${preciolibras}'`);
+    }
+
+    // Formatear el consumo de inventario
+    const consumoFormateadoOriginal = formatConsumo(originalData.consumo || []);
+    const consumoFormateadoNuevo = formatConsumo(consumo || []);
+    if (JSON.stringify(consumo) !== JSON.stringify(originalData.consumo)) {
+      cambios.push(`Consumo de inventario: de '${consumoFormateadoOriginal}' a '${consumoFormateadoNuevo}'`);
+    }
+
+    // Actualizar el servicio en Firestore
+    await db.collection("servicio").doc(id).update({
+      nombre: nombre,
+      precio: precio,
+      librasmin: librasmin,
+      librasmax: librasmax,
+      preciolibras: preciolibras,
+      icon: icon,
+      consumo: consumo
+    });
+
+    // Registrar en el historial
+    await db.collection("historialAdmin").add({
+      accion: "Hamper Actualizado",
+      nombre: nombre,
+      cambio: cambios.join(", "),
+      fecha: firebase.firestore.Timestamp.now()
+    });
+
+    alert("Hamper actualizado correctamente");
+    editHamperModal.style.display = "none";
+    loadHampers();
+  } catch (error) {
+    console.error("Error al actualizar el hamper: ", error);
+    alert("Hubo un error al actualizar el hamper. Por favor, intenta de nuevo.");
+  }
+});
+
+// Editar Otro Servicio
+const editOtherService = (id) => {
+  db.collection("servicio").doc(id).get().then((doc) => {
+    if (doc.exists) {
+      const data = doc.data();
+      originalOtroServicio = { ...data };
+      consumosSeleccionados = [...data.consumo];
+
+      document.getElementById("otherServiceId").value = id;
+      document.getElementById("nombreOtroServicioEdit").value = data.nombre;
+      document.getElementById("precioOtroServicioEdit").value = data.precio;
+      document.getElementById("iconOtroServicioEdit").value = data.icon;
+      document.getElementById("iconPreviewOtroServicioEdit").innerHTML = data.icon 
+  ? `<img src="${data.icon}" class="image-preview" style="height: 64px;">` 
+  : '<div class="no-image">Sin imagen</div>';
+
+      updateEditConsumoList(consumosSeleccionados, document.getElementById("consumoListOtroServicioEdit"));
+
+      loadProducts(document.getElementById("consumoOtroServicioEdit"));
+
+      editOtherServiceModal.style.display = "block";
+    } else {
+      console.error("El servicio no existe.");
+    }
+  }).catch((error) => {
+    console.error("Error al cargar el servicio: ", error);
+  });
+};
+
+// Eliminar otro servicio
+document.getElementById("deleteOtherServiceButton").addEventListener("click", async () => {
+  const otherServiceId = document.getElementById("otherServiceId").value;
+
+  if (confirm("¿Está seguro de que desea eliminar este servicio?")) {
+    try {
+      const servicio = await db.collection("servicio").doc(otherServiceId).get();
+      const servicioData = servicio.data();
+
+      const consumoFormateado = servicioData.consumo
+        .map(consumo => `ID: ${consumo.id}, Cantidad: ${consumo.cantidad}`)
+        .join(", ");
+
+      await db.collection("servicio").doc(otherServiceId).delete();
+
+      await db.collection("historialAdmin").add({
+        accion: "Otro Servicio Eliminado",
+        nombre: servicioData.nombre,
+        "consumo de inventario": consumoFormateado,
+        precio: servicioData.precio,
+        fecha: new Date()
+      });
+
+      alert("Servicio eliminado correctamente");
+      editOtherServiceModal.style.display = "none";
+      loadOtherServices();
+    } catch (error) {
+      console.error("Error al eliminar el servicio: ", error);
+    }
+  }
+});
+
+// Cerrar modal de editar otro servicio
+document.getElementById("closeEditOtherServiceModal").onclick = function () {
+  editOtherServiceModal.style.display = "none";
+};
+
+// Función para agregar consumo en editar otro servicio
+document.getElementById("addConsumoOtroServicioEditButton").addEventListener("click", () => {
+  const selectedValue = document.getElementById("consumoOtroServicioEdit").value;
+  const cantidad = parseInt(document.getElementById("cantidadOtroServicioEdit").value);
+
+  if (selectedValue && cantidad > 0) {
+    const existingIndex = consumosSeleccionados.findIndex(c => c.id === selectedValue);
+
+    if (existingIndex !== -1) {
+      consumosSeleccionados[existingIndex].cantidad += cantidad;
+    } else {
+      consumosSeleccionados.push({ id: selectedValue, cantidad: cantidad });
+    }
+
+    updateEditConsumoList(consumosSeleccionados, document.getElementById("consumoListOtroServicioEdit"));
+
+    document.getElementById("consumoOtroServicioEdit").value = "";
+    document.getElementById("cantidadOtroServicioEdit").value = "";
+    document.getElementById("consumoOtroServicioEdit").selectedIndex = 0;
+  } else {
+    alert("Por favor, seleccione un producto y una cantidad válida.");
+  }
+});
+
+// Función para comparar consumos
+const compareConsumo = (consumo1, consumo2) => {
+  if (consumo1.length !== consumo2.length) return false;
+
+  const mapConsumo1 = new Map();
+  const mapConsumo2 = new Map();
+
+  consumo1.forEach(item => {
+    mapConsumo1.set(item.id, item.cantidad);
+  });
+
+  consumo2.forEach(item => {
+    mapConsumo2.set(item.id, item.cantidad);
+  });
+
+  for (const [id, cantidad] of mapConsumo1) {
+    if (mapConsumo2.get(id) !== cantidad) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+// Guardar cambios en el otro servicio
+document.getElementById("editOtherServiceForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const otherServiceId = document.getElementById("otherServiceId").value;
+  const nombre = document.getElementById("nombreOtroServicioEdit").value;
+  const precio = parseFloat(document.getElementById("precioOtroServicioEdit").value);
+  const icon = document.getElementById("iconOtroServicioEdit").value;
+  const consumo = consumosSeleccionados;
+
+  // Verificar si hay cambios
+  const cambios = [];
+  if (nombre !== originalOtroServicio.nombre) {
+    cambios.push(`Nombre: de '${originalOtroServicio.nombre}' a '${nombre}'`);
+  }
+  if (precio !== originalOtroServicio.precio) {
+    cambios.push(`Precio: de '${originalOtroServicio.precio}' a '${precio}'`);
+  }
+  if (icon !== originalOtroServicio.icon) {
+    cambios.push(`Icono: de '${originalOtroServicio.icon}' a '${icon}'`);
+  }
+  if (!compareConsumo(consumo, originalOtroServicio.consumo)) {
+    cambios.push(`Consumo: de '${formatConsumo(originalOtroServicio.consumo)}' a '${formatConsumo(consumo)}'`);
+  }
+
+  if (cambios.length > 0) {
+    try {
+      await db.collection("servicio").doc(otherServiceId).update({
         nombre: nombre,
         precio: precio,
-        "consumo de inventario": formatConsumo(consumo),
-        fecha: new Date()
+        icon: icon,
+        consumo: consumo
       });
-    };
 
-    // Registrar "Otro Servicio Eliminado" en el historial
-    const registrarOtroServicioEliminado = (nombre) => {
-      return db.collection("historialAdmin").add({
-        accion: "Otro Servicio Eliminado",
-        nombre: nombre,
-        fecha: new Date()
-      });
-    };
-
-    // Registrar "Otro Servicio Actualizado" en el historial
-    const registrarOtroServicioActualizado = (nombre, cambios) => {
-      return db.collection("historialAdmin").add({
+      await db.collection("historialAdmin").add({
         accion: "Otro Servicio Actualizado",
         nombre: nombre,
         cambio: cambios.join(", "),
         fecha: new Date()
       });
-    };
 
-
-
-
-
-
-    // Función para añadir un "Otro Servicio"
-    const addOtherService = async (nombre, precio, icon, consumo) => {
-      try {
-        const docRef = await db.collection("servicio").add({
-          nombre: nombre,
-          precio: precio,
-          icon: icon, // Incluir el campo "icon"
-          consumo: consumo,
-          tipo: "otroservicio"
-        });
-
-        // Registrar en el historial (solo una vez)
-        await db.collection("historialAdmin").add({
-          accion: "Otro Servicio Añadido",
-          nombre: nombre,
-          precio: precio,
-          icon: icon, // Incluir el campo "icon" en el historial si es necesario
-          "consumo de inventario": formatConsumo(consumo),
-          fecha: new Date()
-        });
-
-        return docRef.id; // Retornar el ID del nuevo servicio
-      } catch (error) {
-        console.error("Error al añadir Otro Servicio: ", error);
-        throw error;
-      }
-    };
-
-
-    // Función para eliminar un "Otro Servicio"
-    const deleteOtherService = async (id) => {
-      try {
-        const doc = await db.collection("servicio").doc(id).get();
-        const data = doc.data();
-
-        // Registrar en el historial
-        await db.collection("historialAdmin").add({
-          accion: "Otro Servicio Eliminado",
-          nombre: data.nombre,
-          precio: data.precio,
-          "consumo de inventario": formatConsumo(data.consumo),
-          fecha: new Date()
-        });
-
-        // Eliminar el servicio
-        await db.collection("servicio").doc(id).delete();
-      } catch (error) {
-        console.error("Error al eliminar Otro Servicio: ", error);
-        throw error;
-      }
-    };
-
-
-
-    // Función para editar y guardar cambios en "Otro Servicio"
-    const saveOtherServiceChanges = async (id, nombre, precio, consumo) => {
-      try {
-        const doc = await db.collection("servicio").doc(id).get();
-        const data = doc.data();
-
-        // Identificar cambios
-        const cambios = [];
-        if (nombre !== data.nombre) {
-          cambios.push(`Nombre: de '${data.nombre}' a '${nombre}'`);
-        }
-        if (precio !== data.precio) {
-          cambios.push(`Precio: de '${data.precio}' a '${precio}'`);
-        }
-        if (JSON.stringify(consumo) !== JSON.stringify(data.consumo)) {
-          cambios.push(`Consumo de inventario: de '${formatConsumo(data.consumo)}' a '${formatConsumo(consumo)}'`);
-        }
-
-        if (cambios.length > 0) {
-          // Registrar en el historial
-          await db.collection("historialAdmin").add({
-            accion: "Otro Servicio Actualizado",
-            nombre: nombre,
-            cambio: cambios.join(", "),
-            fecha: new Date()
-          });
-
-          // Actualizar el servicio
-          await db.collection("servicio").doc(id).update({
-            nombre: nombre,
-            precio: precio,
-            consumo: consumo
-          });
-        } else {
-          alert("No se realizaron cambios.");
-        }
-      } catch (error) {
-        console.error("Error al actualizar Otro Servicio: ", error);
-        throw error;
-      }
-    };
-
-
-
-
-    // Cargar Otros Servicios
-    const loadOtherServices = () => {
-      db.collection("servicio")
-        .where("tipo", "==", "otroservicio")
-        .get()
-        .then((snapshot) => {
-          const otherServices = [];
-          snapshot.forEach((doc) => {
-            otherServices.push({ id: doc.id, ...doc.data() });
-          });
-
-          otherServices.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
-
-          otherServiceList.innerHTML = "";
-          otherServices.forEach((data) => {
-            const serviceDiv = document.createElement("div");
-            serviceDiv.setAttribute("data-id", data.id); // Establecer un atributo data-id
-            serviceDiv.innerHTML = `
-          <h3>${data.nombre}</h3>
-          <img src="./img/icon/${data.icon}" alt="${data.nombre}" style="width: 50px; height: 50px;">
-          <p>Precio: <strong>RD$${data.precio}</strong></p>
-          <button onclick="editOtherService('${data.id}')">Editar</button>
-        `;
-            otherServiceList.appendChild(serviceDiv);
-          });
-
-          // Inicializar SortableJS
-          new Sortable(otherServiceList, {
-            animation: 150,
-            onEnd: (evt) => {
-              updateOtherServiceOrder();
-            },
-            // Configuración para deshabilitar touch
-            supportPointer: false,
-            touchStartThreshold: 0,
-            forceFallback: true,
-            fallbackTolerance: 0,
-            draggable: "> div",
-            delay: isTouchDevice() ? 10000 : 0,
-            delayOnTouchOnly: true
-          });
-        })
-        .catch((error) => {
-          console.error("Error al cargar otros servicios: ", error);
-        });
-    };
-
-    // Función para actualizar el orden de los Hampers en Firestore
-    const updateHamperOrder = () => {
-      const hampers = Array.from(hamperList.children);
-      hampers.forEach((hamper, index) => {
-        const id = hamper.getAttribute("data-id");
-        db.collection("servicio").doc(id).update({
-          OrdenNumHamper: index + 1, // Actualizar el orden
-        }).catch((error) => {
-          console.error("Error al actualizar el orden del hamper: ", error);
-        });
-      });
-    };
-
-    // Función para actualizar el orden de los Otros Servicios en Firestore
-    const updateOtherServiceOrder = () => {
-      const otherServices = Array.from(otherServiceList.children);
-      otherServices.forEach((service, index) => {
-        const id = service.getAttribute("data-id");
-        db.collection("servicio").doc(id).update({
-          OrdenNumServicio: index + 1, // Actualizar el orden
-        }).catch((error) => {
-          console.error("Error al actualizar el orden del otro servicio: ", error);
-        });
-      });
-    };
-
-
-
-    // Cargar Productos para el Select de Consumo
-    const loadProducts = (selectElement) => {
-      db.collection("productos").get().then((snapshot) => {
-        selectElement.innerHTML = ""; // Limpiar el select antes de agregar opciones
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        defaultOption.textContent = "Selecciona un producto";
-        selectElement.appendChild(defaultOption);
-        snapshot.forEach((doc) => {
-          const product = doc.data();
-          const option = document.createElement("option");
-          option.value = product.id; // Usar el campo "id" del documento
-          option.textContent = `${product.nombre} (ID: ${product.id})`; // Mostrar el nombre y el id
-          selectElement.appendChild(option);
-        });
-      });
-    };
-
-    // Abrir modal para agregar servicio
-    document.getElementById("addServiceButton").addEventListener("click", () => {
-      addServiceModal.style.display = "block";
-      loadProducts(document.getElementById("consumoAdd"));
-      loadProducts(document.getElementById("consumoOtroServicioAdd"));
-    });
-
-    // Cerrar modal de agregar servicio
-    document.getElementById("closeAddModal").onclick = function () {
-      addServiceModal.style.display = "none";
-    };
-
-    // Mostrar campos según el tipo de servicio seleccionado
-    document.getElementById("serviceTypeAdd").addEventListener("change", function () {
-      const selectedType = this.value;
-
-      // Reiniciar los campos de entrada, pero no el select
-      document.getElementById("nombreAdd").value = "";
-      document.getElementById("precioAdd").value = "";
-      document.getElementById("librasminAdd").value = "";
-      document.getElementById("librasmaxAdd").value = "";
-      document.getElementById("preciolibrasAdd").value = "";
-      document.getElementById("iconAdd").value = "";
-
-      // Reiniciar los campos de consumo
-      consumosSeleccionados = []; // Reiniciar la lista de consumos
-      updateConsumoList(); // Actualizar la lista visualmente
-      updateConsumoListOtroServicio(); // Asegurarse de que se actualice también para otro servicio
-
-      if (selectedType === "hamper") {
-        document.getElementById("hamperFieldsAdd").style.display = "block";
-        document.getElementById("otherServiceFieldsAdd").style.display = "none";
-      } else if (selectedType === "otroservicio") {
-        document.getElementById("hamperFieldsAdd").style.display = "none";
-        document.getElementById("otherServiceFieldsAdd").style.display = "block";
-      }
-    });
-
-    // Abrir modal para agregar servicio
-    document.getElementById("addServiceButton").addEventListener("click", () => {
-      addServiceModal.style.display = "block";
-      loadProducts(document.getElementById("consumoAdd"));
-      loadProducts(document.getElementById("consumoOtroServicioAdd"));
-
-      // Reiniciar el formulario y ocultar campos
-      document.getElementById("addServiceForm").reset();
-      document.getElementById("hamperFieldsAdd").style.display = "none";
-      document.getElementById("otherServiceFieldsAdd").style.display = "none";
-      consumosSeleccionados = []; // Reiniciar la lista de consumos
-      updateConsumoList(); // Actualizar la lista visualmente
-    });
-
-    // Arreglo para almacenar los consumos seleccionados
-    let consumosSeleccionados = [];
-
-    // Función para agregar consumo en agregar servicio
-    document.getElementById("addConsumoButton").addEventListener("click", () => {
-      const selectedValue = document.getElementById("consumoAdd").value;
-      const cantidad = parseInt(document.getElementById("cantidadConsumoAdd").value);
-      if (selectedValue && cantidad > 0 && !consumosSeleccionados.some(c => c.id === selectedValue)) {
-        consumosSeleccionados.push({ id: selectedValue, cantidad: cantidad });
-        updateConsumoList();
-
-        // Reiniciar el select y el input de cantidad
-        document.getElementById("consumoAdd").value = "";
-        document.getElementById("cantidadConsumoAdd").value = "";
-        document.getElementById("consumoAdd").selectedIndex = 0; // Seleccionar la opción por defecto
-      } else {
-        alert("Consumo ya agregado, no seleccionado o cantidad inválida.");
-      }
-    });
-
-    // Función para agregar consumo en agregar otro servicio
-    document.getElementById("addConsumoOtroServicioButton").addEventListener("click", () => {
-      const selectedValue = document.getElementById("consumoOtroServicioAdd").value;
-      const cantidad = parseInt(document.getElementById("cantidadOtroServicioAdd").value);
-      if (selectedValue && cantidad > 0 && !consumosSeleccionados.some(c => c.id === selectedValue)) {
-        consumosSeleccionados.push({ id: selectedValue, cantidad: cantidad });
-        updateConsumoListOtroServicio();
-
-        // Reiniciar el select y el input de cantidad
-        document.getElementById("consumoOtroServicioAdd").value = "";
-        document.getElementById("cantidadOtroServicioAdd").value = "";
-        document.getElementById("consumoOtroServicioAdd").selectedIndex = 0; // Seleccionar la opción por defecto
-      } else {
-        alert("Consumo ya agregado, no seleccionado o cantidad inválida.");
-      }
-    });
-
-    // Función para actualizar la lista de consumos
-    const updateConsumoList = () => {
-      const consumoList = document.getElementById("consumoList");
-      consumoList.innerHTML = ""; // Limpiar la lista
-      consumosSeleccionados.forEach((consumo) => {
-        const consumoDiv = document.createElement("div");
-        // Usar innerHTML para permitir etiquetas HTML
-        consumoDiv.innerHTML = `ID: <strong>${consumo.id}</strong>, Cantidad: <strong>${consumo.cantidad}</strong>`;
-
-        const removeButton = document.createElement("button");
-        removeButton.textContent = "Eliminar";
-        removeButton.onclick = () => {
-          consumosSeleccionados = consumosSeleccionados.filter(c => c.id !== consumo.id);
-          updateConsumoList();
-        };
-
-        consumoDiv.appendChild(removeButton);
-        consumoList.appendChild(consumoDiv);
-      });
-    };
-
-    // Función para actualizar la lista de consumos en otro servicio
-    const updateConsumoListOtroServicio = () => {
-      const consumoListOtroServicio = document.getElementById("consumoListOtroServicio");
-      consumoListOtroServicio.innerHTML = ""; // Limpiar la lista
-      consumosSeleccionados.forEach((consumo) => {
-        const consumoDiv = document.createElement("div");
-        // Usar innerHTML para permitir etiquetas HTML
-        consumoDiv.innerHTML = `ID: <strong>${consumo.id}</strong>, Cantidad: <strong>${consumo.cantidad}</strong>`;
-
-        const removeButton = document.createElement("button");
-        removeButton.textContent = "Eliminar";
-        removeButton.onclick = () => {
-          consumosSeleccionados = consumosSeleccionados.filter(c => c.id !== consumo.id);
-          updateConsumoListOtroServicio();
-        };
-
-        consumoDiv.appendChild(removeButton);
-        consumoListOtroServicio.appendChild(consumoDiv);
-      });
-    };
-
-    // Función para obtener el número más alto de OrdenNumHamper
-    const getMaxHamperOrder = async () => {
-      const snapshot = await db.collection("servicio").get(); // Obtener todos los documentos
-      let maxOrder = 0;
-
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.tipo === "hamper" && data.OrdenNumHamper > maxOrder) {
-          maxOrder = data.OrdenNumHamper; // Actualizar el máximo si es mayor
-        }
-      });
-
-      return maxOrder; // Retornar el número más alto encontrado
-    };
-
-    // Función para obtener el número más alto de OrdenNumServicio
-    const getMaxOtherServiceOrder = async () => {
-      const snapshot = await db.collection("servicio").get(); // Obtener todos los documentos
-      let maxOrder = 0;
-
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.tipo === "otroservicio" && data.OrdenNumServicio > maxOrder) {
-          maxOrder = data.OrdenNumServicio; // Actualizar el máximo si es mayor
-        }
-      });
-
-      return maxOrder; // Retornar el número más alto encontrado
-    };
-
-
-    // Función para añadir un "hamper"
-    const addHamper = async (nombre, precio, librasmin, librasmax, preciolibras, icon, consumo) => {
-      try {
-        const docRef = await db.collection("servicio").add({
-          nombre: nombre,
-          precio: precio,
-          librasmin: librasmin,
-          librasmax: librasmax,
-          preciolibras: preciolibras,
-          icon: icon,
-          consumo: consumo,
-          tipo: "hamper"
-        });
-
-        // Registrar en el historial
-        await db.collection("historialAdmin").add({
-          accion: "Hamper Añadido",
-          nombre: nombre,
-          precio: precio,
-          librasmin: librasmin,
-          librasmax: librasmax,
-          preciolibras: preciolibras,
-          icon: icon,
-          "consumo de inventario": formatConsumo(consumo),
-          fecha: new Date()
-        });
-
-        return docRef.id; // Retornar el ID del nuevo hamper
-      } catch (error) {
-        console.error("Error al añadir el hamper: ", error);
-        throw error; // Lanzar el error para manejarlo en el evento de envío
-      }
-    };
-
-    // Agregar nuevo servicio
-    document.getElementById("addServiceForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const serviceType = document.getElementById("serviceTypeAdd").value; // Obtener el tipo de servicio
-      const nombre = serviceType === "hamper" ? document.getElementById("nombreAdd").value : document.getElementById("nombreOtroServicioAdd").value;
-      const precio = serviceType === "hamper" ? parseFloat(document.getElementById("precioAdd").value) : parseFloat(document.getElementById("precioOtroServicioAdd").value);
-      const librasmin = serviceType === "hamper" ? parseInt(document.getElementById("librasminAdd").value) : null; // Capturar libras mínimas
-      const librasmax = serviceType === "hamper" ? parseInt(document.getElementById("librasmaxAdd").value) : null; // Capturar libras máximas
-      const preciolibras = serviceType === "hamper" ? parseFloat(document.getElementById("preciolibrasAdd").value) : null; // Capturar precio por libra
-      const icon = serviceType === "hamper" ? document.getElementById("iconAdd").value : document.getElementById("iconOtroServicioAdd").value; // Capturar el valor del icono
-      const consumo = consumosSeleccionados; // Array de consumos seleccionados
-
-      // Solo verificar que nombre y precio estén presentes
-      if (nombre && precio) {
-        try {
-          if (serviceType === "hamper") {
-            // Lógica para añadir un hamper
-            await addHamper(nombre, precio, librasmin, librasmax, preciolibras, icon, consumo);
-          } else {
-            // Lógica para añadir otro servicio
-            await addOtherService(nombre, precio, icon, consumo);
-          }
-          alert("Servicio añadido correctamente");
-          loadHampers(); // Actualizar la lista de hampers inmediatamente
-          addServiceModal.style.display = "none"; // Cerrar el modal
-        } catch (error) {
-          console.error("Error al añadir el servicio: ", error);
-          alert("Hubo un error al añadir el servicio. Por favor, intenta de nuevo.");
-        }
-      } else {
-        alert("Por favor, complete los campos obligatorios: Nombre y Precio.");
-      }
-    });
-
-
-
-    // Editar Hamper
-    const editHamper = (id) => {
-      db.collection("servicio").doc(id).get().then((doc) => {
-        const data = doc.data();
-        document.getElementById("hamperId").value = id;
-        document.getElementById("nombreHamper").value = data.nombre;
-        document.getElementById("precioHamper").value = data.precio;
-        document.getElementById("librasminHamper").value = data.librasmin;
-        document.getElementById("librasmaxHamper").value = data.librasmax;
-        document.getElementById("preciolibrasHamper").value = data.preciolibras;
-        document.getElementById("iconHamper").value = data.icon;
-
-        // Cargar consumos existentes
-        consumosSeleccionados = data.consumo || [];
-        updateEditConsumoList(consumosSeleccionados, document.getElementById("consumoListHamper"));
-
-        loadProducts(document.getElementById("consumoHamper"));
-
-        editHamperModal.style.display = "block"; // Mostrar el modal de editar hamper
-      });
-    };
-
-    // Cerrar modal de editar hamper
-    document.getElementById("closeEditHamperModal").onclick = function () {
-      editHamperModal.style.display = "none";
-    };
-
-    // Función para agregar consumo en editar hamper
-    document.getElementById("addConsumoHamperButton").addEventListener("click", () => {
-      const selectedValue = document.getElementById("consumoHamper").value;
-      const cantidad = parseInt(document.getElementById("cantidadHamper").value);
-      if (selectedValue && cantidad > 0 && !consumosSeleccionados.some(c => c.id === selectedValue)) {
-        consumosSeleccionados.push({ id: selectedValue, cantidad: cantidad });
-        updateEditConsumoList(consumosSeleccionados, document.getElementById("consumoListHamper"));
-
-        // Reiniciar el select y el input de cantidad
-        document.getElementById("consumoHamper").value = "";
-        document.getElementById("cantidadHamper").value = "";
-        document.getElementById("consumoHamper").selectedIndex = 0; // Seleccionar la opción por defecto
-      } else {
-        alert("Consumo ya agregado, no seleccionado o cantidad inválida.");
-      }
-    });
-
-
-
-
-    // Función para actualizar la lista de consumos en editar
-    const updateEditConsumoList = (consumos, listElement) => {
-      listElement.innerHTML = ""; // Limpiar la lista
-      consumos.forEach((consumo) => {
-        const consumoDiv = document.createElement("div");
-        consumoDiv.innerHTML = `ID: <strong>${consumo.id}</strong>, Cantidad: <strong>${consumo.cantidad}</strong>`;
-
-        const removeButton = document.createElement("button");
-        removeButton.textContent = "Eliminar";
-        removeButton.onclick = () => {
-          consumosSeleccionados = consumosSeleccionados.filter(c => c.id !== consumo.id);
-          updateEditConsumoList(consumosSeleccionados, listElement);
-        };
-
-        consumoDiv.appendChild(removeButton);
-        listElement.appendChild(consumoDiv);
-      });
-    };
-
-
-
-    // Guardar cambios en el hamper
-    // Función para guardar cambios en el hamper
-    document.getElementById("editHamperForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const id = document.getElementById("hamperId").value;
-      const nombre = document.getElementById("nombreHamper").value;
-      const precio = parseFloat(document.getElementById("precioHamper").value);
-      const librasmin = parseInt(document.getElementById("librasminHamper").value);
-      const librasmax = parseInt(document.getElementById("librasmaxHamper").value);
-      const preciolibras = parseFloat(document.getElementById("preciolibrasHamper").value);
-      const icon = document.getElementById("iconHamper").value;
-      const consumo = consumosSeleccionados; // Array de consumos seleccionados
-
-      try {
-        // Obtener los datos originales del hamper antes de la actualización
-        const doc = await db.collection("servicio").doc(id).get();
-        const originalData = doc.data();
-
-        // Identificar cambios
-        const cambios = [];
-        if (nombre !== originalData.nombre) {
-          cambios.push(`Nombre: de '${originalData.nombre}' a '${nombre}'`);
-        }
-        if (precio !== originalData.precio) {
-          cambios.push(`Precio: de '${originalData.precio}' a '${precio}'`);
-        }
-        if (librasmin !== originalData.librasmin) {
-          cambios.push(`Libras Mínimas: de '${originalData.librasmin}' a '${librasmin}'`);
-        }
-        if (librasmax !== originalData.librasmax) {
-          cambios.push(`Libras Máximas: de '${originalData.librasmax}' a '${librasmax}'`);
-        }
-        if (preciolibras !== originalData.preciolibras) {
-          cambios.push(`Precio por Libra: de '${originalData.preciolibras}' a '${preciolibras}'`);
-        }
-
-        // Formatear el consumo de inventario
-        const consumoFormateadoOriginal = formatConsumo(originalData.consumo || []);
-        const consumoFormateadoNuevo = formatConsumo(consumo || []);
-        if (JSON.stringify(consumo) !== JSON.stringify(originalData.consumo)) {
-          cambios.push(`Consumo de inventario: de '${consumoFormateadoOriginal}' a '${consumoFormateadoNuevo}'`);
-        }
-
-        // Actualizar el servicio en Firestore
-        await db.collection("servicio").doc(id).update({
-          nombre: nombre,
-          precio: precio,
-          librasmin: librasmin,
-          librasmax: librasmax,
-          preciolibras: preciolibras,
-          icon: icon,
-          consumo: consumo
-        });
-
-        // Registrar en el historial
-        await db.collection("historialAdmin").add({
-          accion: "Hamper Actualizado",
-          nombre: nombre,
-          cambio: cambios.join(", "),
-          fecha: firebase.firestore.Timestamp.now() // Guardar la fecha como timestamp
-        });
-
-        alert("Hamper actualizado correctamente");
-        editHamperModal.style.display = "none"; // Cerrar el modal
-        loadHampers(); // Recargar la lista de hampers
-      } catch (error) {
-        console.error("Error al actualizar el hamper: ", error);
-        alert("Hubo un error al actualizar el hamper. Por favor, intenta de nuevo.");
-      }
-    });
-
-
-
-
-    // Función para eliminar un "hamper"
-    const deleteHamper = async (id) => {
-      try {
-        const doc = await db.collection("servicio").doc(id).get();
-        const data = doc.data();
-
-        // Formatear el consumo de inventario
-        const consumoFormateado = formatConsumo(data.consumo || []);
-
-        // Eliminar el servicio
-        await db.collection("servicio").doc(id).delete();
-
-        // Registrar en el historial
-        await db.collection("historialAdmin").add({
-          accion: "Hamper Eliminado",
-          nombre: data.nombre,
-          precio: data.precio,
-          "Libras Mínimas": data.librasmin,
-          "Libras Máximas": data.librasmax,
-          "Precio por Libra": data.preciolibras,
-          "consumo de inventario": consumoFormateado,
-          fecha: firebase.firestore.Timestamp.now() // Guardar la fecha como timestamp
-        });
-
-        alert("Hamper eliminado correctamente");
-        loadHampers(); // Recargar la lista de hampers
-        document.getElementById("editHamperModal").style.display = "none"; // Cerrar el modal
-      } catch (error) {
-        console.error("Error al eliminar el hamper: ", error);
-        alert("Hubo un error al eliminar el hamper. Por favor, intenta de nuevo.");
-      }
-    };
-
-    // Ejemplo de cómo podrías llamar a la función deleteHamper
-    document.getElementById("deleteHamperButton").addEventListener("click", () => {
-      const id = document.getElementById("hamperId").value; // Obtener el ID del hamper a eliminar
-      if (confirm("¿Está seguro de que desea eliminar este hamper?")) {
-        deleteHamper(id);
-      }
-    });
-
-
-
-
-
-    // Editar Otro Servicio
-    const editOtherService = (id) => {
-      db.collection("servicio").doc(id).get().then((doc) => {
-        if (doc.exists) {
-          const data = doc.data();
-          originalOtroServicio = { ...data }; // Guardar los datos originales
-          consumosSeleccionados = [...data.consumo]; // Inicializar consumosSeleccionados con los consumos actuales
-
-          // Llenar los campos del modal con los datos del servicio
-          document.getElementById("otherServiceId").value = id;
-          document.getElementById("nombreOtroServicioEdit").value = data.nombre;
-          document.getElementById("precioOtroServicioEdit").value = data.precio;
-          document.getElementById("iconOtroServicioEdit").value = data.icon;
-
-          // Mostrar los consumos existentes
-          updateEditConsumoList(consumosSeleccionados, document.getElementById("consumoListOtroServicioEdit"));
-
-          // Cargar productos en el select de consumo
-          loadProducts(document.getElementById("consumoOtroServicioEdit"));
-
-          // Mostrar el modal
-          editOtherServiceModal.style.display = "block";
-        } else {
-          console.error("El servicio no existe.");
-        }
-      }).catch((error) => {
-        console.error("Error al cargar el servicio: ", error);
-      });
-    };
-
-
-
-
-
-    document.getElementById("deleteOtherServiceButton").addEventListener("click", async () => {
-      const otherServiceId = document.getElementById("otherServiceId").value;
-
-      if (confirm("¿Está seguro de que desea eliminar este servicio?")) {
-        try {
-          // Obtener los datos del servicio antes de eliminarlo
-          const servicio = await db.collection("servicio").doc(otherServiceId).get();
-          const servicioData = servicio.data();
-
-          // Formatear los consumos de inventario
-          const consumoFormateado = servicioData.consumo
-            .map(consumo => `ID: ${consumo.id}, Cantidad: ${consumo.cantidad}`)
-            .join(", ");
-
-          // Eliminar el servicio de Firestore
-          await db.collection("servicio").doc(otherServiceId).delete();
-
-          // Registrar la eliminación en el historial, incluyendo el nombre, precio y consumo de inventario
-          await db.collection("historialAdmin").add({
-            accion: "Otro Servicio Eliminado",
-            nombre: servicioData.nombre, // Nombre del servicio eliminado
-            "consumo de inventario": consumoFormateado, // Consumo de inventario formateado
-            precio: servicioData.precio, // Precio del servicio eliminado
-            fecha: new Date()
-          });
-
-          alert("Servicio eliminado correctamente");
-          editOtherServiceModal.style.display = "none"; // Cerrar el modal
-          loadOtherServices(); // Recargar la lista de servicios
-        } catch (error) {
-          console.error("Error al eliminar el servicio: ", error);
-        }
-      }
-    });
-
-
-
-
-
-    // Cerrar modal de editar otro servicio
-    document.getElementById("closeEditOtherServiceModal").onclick = function () {
+      alert("Cambios guardados correctamente");
       editOtherServiceModal.style.display = "none";
-    };
+      loadOtherServices();
+    } catch (error) {
+      console.error("Error al guardar los cambios: ", error);
+    }
+  } else {
+    alert("No se realizaron cambios.");
+  }
+});
 
-    // Función para agregar consumo en editar otro servicio
-    document.getElementById("addConsumoOtroServicioEditButton").addEventListener("click", () => {
-      const selectedValue = document.getElementById("consumoOtroServicioEdit").value;
-      const cantidad = parseInt(document.getElementById("cantidadOtroServicioEdit").value);
-
-      if (selectedValue && cantidad > 0) {
-        // Verificar si el producto ya está en la lista
-        const existingIndex = consumosSeleccionados.findIndex(c => c.id === selectedValue);
-
-        if (existingIndex !== -1) {
-          // Si el producto ya existe, actualizar la cantidad
-          consumosSeleccionados[existingIndex].cantidad += cantidad;
-        } else {
-          // Si el producto no existe, añadirlo
-          consumosSeleccionados.push({ id: selectedValue, cantidad: cantidad });
-        }
-
-        // Actualizar la lista visual
-        updateEditConsumoList(consumosSeleccionados, document.getElementById("consumoListOtroServicioEdit"));
-
-        // Reiniciar el select y el input de cantidad
-        document.getElementById("consumoOtroServicioEdit").value = "";
-        document.getElementById("cantidadOtroServicioEdit").value = "";
-        document.getElementById("consumoOtroServicioEdit").selectedIndex = 0; // Seleccionar la opción por defecto
-      } else {
-        alert("Por favor, seleccione un producto y una cantidad válida.");
-      }
-    });
-
-
-
-
-    const compareConsumo = (consumo1, consumo2) => {
-      if (consumo1.length !== consumo2.length) return false;
-
-      // Crear un mapa para comparar los consumos
-      const mapConsumo1 = new Map();
-      const mapConsumo2 = new Map();
-
-      // Llenar el mapa con los consumos del primer array
-      consumo1.forEach(item => {
-        mapConsumo1.set(item.id, item.cantidad);
-      });
-
-      // Llenar el mapa con los consumos del segundo array
-      consumo2.forEach(item => {
-        mapConsumo2.set(item.id, item.cantidad);
-      });
-
-      // Comparar los mapas
-      for (const [id, cantidad] of mapConsumo1) {
-        if (mapConsumo2.get(id) !== cantidad) {
-          return false;
-        }
-      }
-
-      return true;
-    };
-
-
-
-
-    // Guardar cambios en el otro servicio
-    document.getElementById("editOtherServiceForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const otherServiceId = document.getElementById("otherServiceId").value;
-      const nombre = document.getElementById("nombreOtroServicioEdit").value;
-      const precio = parseFloat(document.getElementById("precioOtroServicioEdit").value);
-      const icon = document.getElementById("iconOtroServicioEdit").value;
-      const consumo = consumosSeleccionados; // Array de consumos seleccionados
-
-      // Verificar si hay cambios
-      const cambios = [];
-      if (nombre !== originalOtroServicio.nombre) {
-        cambios.push(`Nombre: de '${originalOtroServicio.nombre}' a '${nombre}'`);
-      }
-      if (precio !== originalOtroServicio.precio) {
-        cambios.push(`Precio: de '${originalOtroServicio.precio}' a '${precio}'`);
-      }
-      if (icon !== originalOtroServicio.icon) {
-        cambios.push(`Icono: de '${originalOtroServicio.icon}' a '${icon}'`);
-      }
-      if (!compareConsumo(consumo, originalOtroServicio.consumo)) {
-        cambios.push(`Consumo: de '${formatConsumo(originalOtroServicio.consumo)}' a '${formatConsumo(consumo)}'`);
-      }
-
-      if (cambios.length > 0) {
-        try {
-          // Actualizar el servicio en Firestore
-          await db.collection("servicio").doc(otherServiceId).update({
-            nombre: nombre,
-            precio: precio,
-            icon: icon,
-            consumo: consumo
-          });
-
-          // Registrar los cambios en el historial
-          await db.collection("historialAdmin").add({
-            accion: "Otro Servicio Actualizado",
-            nombre: nombre,
-            cambio: cambios.join(", "), // Unir los cambios en un solo mensaje
-            fecha: new Date()
-          });
-
-          alert("Cambios guardados correctamente");
-          editOtherServiceModal.style.display = "none"; // Cerrar el modal
-          loadOtherServices(); // Recargar la lista de servicios
-        } catch (error) {
-          console.error("Error al guardar los cambios: ", error);
-        }
-      } else {
-        alert("No se realizaron cambios.");
-      }
-    });
-
-
-
-    // Cargar Hampers y Otros Servicios al iniciar
-    loadHampers();
-    loadOtherServices();
-
+// Cargar Hampers y Otros Servicios al iniciar
+loadHampers();
+loadOtherServices();
 
 
 
