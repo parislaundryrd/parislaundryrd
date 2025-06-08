@@ -318,10 +318,11 @@
     .login-container {
         background: #ffffff00;
         box-shadow: 0 0 20px rgb(0 0 0 / 0%);
-        margin: 10px;
+        margin: 0px;
         max-height: calc(100vh - 20px);
         overflow-y: auto;
         height: calc(100vh - 20px);
+        padding: 24px 14px 10px 14px;
     }
 
             .input-group input {
@@ -349,7 +350,21 @@
                 border-radius: 10px;
                 white-space: nowrap;
             }
+
+                    .input-group input {
+            padding: 12px 15px;
         }
+
+        button#loginBtn {
+            padding: 12px;
+        }
+        }
+
+        @media screen and (max-height: 550px) {
+    .footer2 {
+        display: none;
+    }
+}
 
 
 
