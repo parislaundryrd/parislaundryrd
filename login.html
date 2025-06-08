@@ -305,69 +305,6 @@
         }
 
 
-
-
-        /* Media queries para móvil */
-        @media screen and (max-width: 500px) {
-            body {
-                padding: 0;
-                min-height: 100vh;
-                height: 100vh;
-            }
-
-    .login-container {
-        background: #ffffff00;
-        box-shadow: 0 0 20px rgb(0 0 0 / 0%);
-        margin: 0px;
-        max-height: calc(100vh - 20px);
-        overflow-y: auto;
-        height: calc(100vh - 20px);
-        padding: 24px 14px 10px 14px;
-    }
-
-            .input-group input {
-                background: #ffffffbd;
-                font-size: 16px;
-                /* Evita zoom en iOS */
-            }
-
-            .footer {
-                display: none;
-            }
-
-            .footer2 {
-                display: block;
-                position: fixed;
-                bottom: 10px;
-                left: 50%;
-                transform: translateX(-50%);
-                text-align: center;
-                color: #414141;
-                font-size: 14px;
-                z-index: 11;
-                background: rgb(255 255 255 / 0%);
-                padding: 5px 10px;
-                border-radius: 10px;
-                white-space: nowrap;
-            }
-
-                    .input-group input {
-            padding: 12px 15px;
-        }
-
-        button#loginBtn {
-            padding: 12px;
-        }
-        }
-
-        @media screen and (max-height: 550px) {
-    .footer2 {
-        display: none;
-    }
-}
-
-
-
         /* Prevenir zoom en inputs en iOS */
         @media screen and (-webkit-min-device-pixel-ratio: 0) {
 
@@ -390,6 +327,69 @@
                 font-size: 16px;
             }
         }
+
+        /* Media queries para móvil */
+        @media screen and (max-width: 500px) {
+            body {
+                padding: 0;
+                min-height: 100vh;
+                height: 100vh;
+            }
+
+    .login-container {
+        background: #ffffff00;
+        box-shadow: 0 0 20px rgb(0 0 0 / 0%);
+        margin: 0px;
+        max-height: calc(100vh - 20px);
+        overflow-y: auto;
+        height: calc(100vh - 20px);
+        padding: 24px 30px 10px 30px;
+    }
+
+            .input-group input {
+                background: #ffffffbd;
+                font-size: 16px;
+                /* Evita zoom en iOS */
+            padding: 14px 15px;
+        }
+
+            }
+
+            .footer {
+                display: none;
+            }
+
+            .footer2 {
+                display: block;
+                position: fixed;
+                bottom: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                text-align: center;
+                color: #414141;
+                font-size: 14px;
+                z-index: 11;
+                background: rgb(255 255 255 / 0%);
+                padding: 5px 10px;
+                border-radius: 10px;
+                white-space: nowrap;
+            }
+
+
+        button#loginBtn {
+            padding: 12px;
+        }
+        }
+
+        @media screen and (max-height: 550px) {
+    .footer2 {
+        display: none;
+    }
+}
+
+
+
+
     </style>
 </head>
 
