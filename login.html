@@ -304,6 +304,9 @@
             }
         }
 
+
+
+
         /* Media queries para móvil */
         @media screen and (max-width: 500px) {
             body {
@@ -312,13 +315,14 @@
                 height: 100vh;
             }
 
-            .login-container {
-                background: #ffffff00;
-                box-shadow: 0 0 20px rgb(0 0 0 / 0%);
-                margin: 10px;
-                max-height: calc(100vh - 20px);
-                overflow-y: auto;
-            }
+    .login-container {
+        background: #ffffff00;
+        box-shadow: 0 0 20px rgb(0 0 0 / 0%);
+        margin: 10px;
+        max-height: calc(100vh - 20px);
+        overflow-y: auto;
+        height: calc(100vh - 20px);
+    }
 
             .input-group input {
                 background: #ffffffbd;
@@ -347,26 +351,7 @@
             }
         }
 
-        /* Media queries para pantallas muy pequeñas */
-        @media screen and (max-height: 600px) {
-            .login-container {
-                padding: 15px 20px 10px 20px;
-            }
 
-            h1 {
-                margin-bottom: 20px;
-                font-size: 1.5em;
-            }
-
-            .input-group {
-                margin-bottom: 15px;
-            }
-
-            .footer {
-                margin-top: 20px;
-                font-size: 12px;
-            }
-        }
 
         /* Prevenir zoom en inputs en iOS */
         @media screen and (-webkit-min-device-pixel-ratio: 0) {
