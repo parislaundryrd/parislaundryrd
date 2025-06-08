@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Login - Paris Laundry</title>
     <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
     <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
@@ -12,19 +12,28 @@
     <script src="./js/app.js"></script>
     <script src="./js/menu.js" defer></script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background: #000000;
+            background: linear-gradient(45deg, #f0c8e8, #a5d0f5);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(45deg, #f0c8e8, #a5d0f5);
+            position: relative;
         }
 
         .login-container {
-            position: absolute;
             width: 100%;
             max-width: 460px;
             padding: 24px 30px 10px 30px;
@@ -32,8 +41,10 @@
             border-radius: 29px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
+            position: relative;
+            z-index: 10;
+            margin: 20px;
         }
-
 
         .logo-login {
             text-align: center;
@@ -42,6 +53,7 @@
 
         .logo-login img {
             max-width: 150px;
+            height: auto;
         }
 
         h1 {
@@ -98,7 +110,7 @@
 
         .footer {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 30px;
             color: #777;
             font-size: 14px;
             display: block;
@@ -109,13 +121,14 @@
         }
 
         .bubbles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
             z-index: 0;
             overflow: hidden;
             top: 0;
             left: 0;
+            pointer-events: none;
         }
 
         .bubble {
@@ -286,19 +299,31 @@
             }
 
             100% {
-                bottom: 1080px;
+                bottom: 100vh;
                 transform: translateX(-200px);
             }
         }
 
+        /* Media queries para móvil */
         @media screen and (max-width: 500px) {
+            body {
+                padding: 0;
+                min-height: 100vh;
+                height: 100vh;
+            }
+
             .login-container {
                 background: #ffffff00;
                 box-shadow: 0 0 20px rgb(0 0 0 / 0%);
+                margin: 10px;
+                max-height: calc(100vh - 20px);
+                overflow-y: auto;
             }
 
             .input-group input {
                 background: #ffffffbd;
+                font-size: 16px;
+                /* Evita zoom en iOS */
             }
 
             .footer {
@@ -307,12 +332,62 @@
 
             .footer2 {
                 display: block;
-                position: absolute;
+                position: fixed;
+                bottom: 10px;
+                left: 50%;
+                transform: translateX(-50%);
                 text-align: center;
-                margin-top: 50px;
-                color: #777;
+                color: #414141;
+                font-size: 14px;
+                z-index: 11;
+                background: rgb(255 255 255 / 0%);
+                padding: 5px 10px;
+                border-radius: 10px;
+                white-space: nowrap;
+            }
+        }
+
+        /* Media queries para pantallas muy pequeñas */
+        @media screen and (max-height: 600px) {
+            .login-container {
+                padding: 15px 20px 10px 20px;
+            }
+
+            h1 {
+                margin-bottom: 20px;
+                font-size: 1.5em;
+            }
+
+            .input-group {
+                margin-bottom: 15px;
+            }
+
+            .footer {
+                margin-top: 20px;
                 font-size: 12px;
-                bottom: 4px;
+            }
+        }
+
+        /* Prevenir zoom en inputs en iOS */
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+
+            select,
+            textarea,
+            input[type="text"],
+            input[type="password"],
+            input[type="datetime"],
+            input[type="datetime-local"],
+            input[type="date"],
+            input[type="month"],
+            input[type="time"],
+            input[type="week"],
+            input[type="number"],
+            input[type="email"],
+            input[type="url"],
+            input[type="search"],
+            input[type="tel"],
+            input[type="color"] {
+                font-size: 16px;
             }
         }
     </style>
@@ -418,9 +493,10 @@
             Paris Laundry &copy; 2025 - Developed by J.P.
         </div>
     </div>
-            <div class="footer2">
-            Paris Laundry &copy; 2025 - Developed by J.P.
-        </div>
+
+    <div class="footer2">
+        Paris Laundry &copy; 2025 - Developed by J.P.
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
