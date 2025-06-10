@@ -227,14 +227,15 @@ h1 {
 .search-container input {
     position: relative;
     height: 100%;
-    width: calc(100% - 60px);
-    margin: 0 auto;
-    padding: 0px 0px 0px 50px;
+    width: calc(12% - 60px);
+    margin: 0px 6px;
+    padding: 0px 0px 0px 46px;
     border: none;
     border-radius: 40px;
     background: #ffffff;
     font-size: 17px;
     box-shadow: 0px 1px 7px -2px rgb(20 20 20 / 28%);
+    animation: barbig1 1s 2s forwards;
 }
 
 .search-container input:focus {
@@ -562,11 +563,6 @@ h1 {
     flex-shrink: 0;
 }
 
-.carousel-item:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-}
-
 .carousel-item::before {
     content: '';
     position: absolute;
@@ -622,15 +618,15 @@ h1 {
 
 .item-2 {
     background-image: url('../img/background_02.jpg');
-    }
+}
 
 .item-3 {
     background-image: url('../img/background_03.jpg');
-    }
+}
 
 .item-4 {
     background-image: url('../img/background_04.jpg');
-    }
+}
 
 /* Indicadores de scroll (opcional) */
 .scroll-indicators {
@@ -641,8 +637,12 @@ h1 {
     display: flex;
     gap: 8px;
     z-index: 3;
-    opacity: 1;
     transition: opacity 0.3s ease;
+    background: #00000000;
+    padding: 2px;
+    border-radius: 13px;
+    opacity: 0;
+    animation: indicator1 1s 1.5s forwards;
 }
 
 .scroll-indicators.hidden {
@@ -680,6 +680,19 @@ h1 {
         transform: translateY(0) scale(1);
     }
 }
+
+
+@keyframes barbig1 {
+    0% {
+        width: calc(12% - 60px);
+    }
+
+    100% {
+        width: calc(100% - 60px);
+    }
+}
+
+
 
 .carousel-item {
     opacity: 0;
@@ -732,4 +745,22 @@ h1 {
         height: 260px;
     }
 
+}
+
+@media screen and (max-width: 500px) {
+    .carousel-item {
+        min-width: 135px;
+        height: 200px;
+        border-radius: 10px;
+    }
+}
+
+@keyframes indicator1 {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
