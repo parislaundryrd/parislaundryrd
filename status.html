@@ -8,29 +8,287 @@
     <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
     <link rel="stylesheet" href="./css/styles_1.css">
     <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
+    <script src="./js/app.js"></script>
+
+    <style>
+        .bubbles {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            width: 40px;
+            height: 40px;
+            background: #81cfff52;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: rise 10s infinite ease-in;
+            box-shadow: 10px 7px 22px -2px rgb(255 255 255) inset, -1px -1px 13px 13px rgb(255 155 243 / 37%) inset;
+        }
+
+        .bubbleDestello1 {
+            position: absolute;
+            height: 17%;
+            width: 17%;
+            left: 23%;
+            top: 18%;
+            background: #ffffff;
+            border-radius: 100%;
+            filter: blur(3px);
+        }
+
+        .bubbleDestello2 {
+            position: absolute;
+            height: 20%;
+            width: 19%;
+            left: 57%;
+            top: 66%;
+            background: #ffffff;
+            border-radius: 100%;
+            filter: blur(8px);
+        }
+
+        .bubbleDestello3 {
+            position: absolute;
+            height: 9%;
+            width: 9%;
+            left: 21%;
+            top: 37%;
+            background: #ffffffab;
+            border-radius: 100%;
+            filter: blur(2px);
+        }
+
+        .bubble:nth-child(1) {
+            width: 40px;
+            height: 40px;
+            left: 10%;
+            animation-duration: 8s;
+            animation-delay: -2s;
+        }
+
+        .bubble:nth-child(2) {
+            width: 20px;
+            height: 20px;
+            left: 20%;
+            animation-duration: 5s;
+            animation-delay: -4s;
+        }
+
+        .bubble:nth-child(3) {
+            width: 50px;
+            height: 50px;
+            left: 35%;
+            animation-duration: 7s;
+            animation-delay: -1s;
+        }
+
+        .bubble:nth-child(4) {
+            width: 80px;
+            height: 80px;
+            left: 50%;
+            animation-duration: 11s;
+            animation-delay: -6s;
+        }
+
+        .bubble:nth-child(5) {
+            width: 35px;
+            height: 35px;
+            left: 55%;
+            animation-duration: 6s;
+            animation-delay: -3s;
+        }
+
+        .bubble:nth-child(6) {
+            width: 45px;
+            height: 45px;
+            left: 65%;
+            animation-duration: 8s;
+            animation-delay: -5s;
+        }
+
+        .bubble:nth-child(7) {
+            width: 90px;
+            height: 90px;
+            left: 70%;
+            animation-duration: 12s;
+            animation-delay: -8s;
+        }
+
+        .bubble:nth-child(8) {
+            width: 25px;
+            height: 25px;
+            left: 80%;
+            animation-duration: 6s;
+            animation-delay: -2.5s;
+        }
+
+        .bubble:nth-child(9) {
+            width: 15px;
+            height: 15px;
+            left: 70%;
+            animation-duration: 5s;
+            animation-delay: -3.5s;
+        }
+
+        .bubble:nth-child(10) {
+            width: 90px;
+            height: 90px;
+            left: 25%;
+            animation-duration: 10s;
+            animation-delay: -7s;
+        }
+
+        .bubble:nth-child(11) {
+            width: 30px;
+            height: 30px;
+            left: 15%;
+            animation-duration: 9s;
+            animation-delay: -4.5s;
+        }
+
+        .bubble:nth-child(12) {
+            width: 60px;
+            height: 60px;
+            left: 85%;
+            animation-duration: 13s;
+            animation-delay: -9s;
+        }
+
+        .bubble:nth-child(13) {
+            width: 25px;
+            height: 25px;
+            left: 40%;
+            animation-duration: 7s;
+            animation-delay: -5.5s;
+        }
+
+        .bubble:nth-child(14) {
+            width: 75px;
+            height: 75px;
+            left: 5%;
+            animation-duration: 14s;
+            animation-delay: -10s;
+        }
+
+        @keyframes rise {
+            0% {
+                bottom: -100px;
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translate(100px);
+            }
+
+            100% {
+                bottom: 100vh;
+                transform: translateX(-200px);
+            }
+        }
+    </style>
+
 </head>
 
 <body>
-    <div class="container_background">
-        <div class="logo_background">
-            <img src="./img/Paris Laundry 1.png" alt="Logo">
 
-            <a href="#"></a>
-            <a href="#" style="top: 55px;background-image: url(./img/icon/whatsapp1.png);"></a>
+    <div class="master_box">
+        <section class="sticky">
+            <div class="bubbles">
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+                <div class="bubble">
+                    <div class="bubbleDestello1"></div>
+                    <div class="bubbleDestello2"></div>
+                    <div class="bubbleDestello3"></div>
+                </div>
+            </div>
+        </section>
 
-            <button id="themeToggle"></button>
-        </div>
-    </div>
+        <div class="container_master">
+
+            <div class="container_logo">
+                <h1>Bievenido!</h1>
+            </div>
+
+            <div class="container_logo">
+                <img src="./img/Paris Laundry 1.png">
+            </div>
 
 
-
-
-    <div class="container_master">
-
-
-
-        <div class="container_body">
             <div class="box_search-container">
                 <div class="search-container">
                     <!-- <input type="text" id="searchInput" placeholder="Consulta tu ropa con tu ID..." /> -->
@@ -40,140 +298,200 @@
                 <div id="message" style="color: red; display: none;"></div>
             </div>
 
-            <!-- Contenido -->
-            <div class="contenido">
-
-                
 
 
 
 
-                <div class="parrafo" style="display: inline-flex;flex-direction: column;align-items: center;">
-                    <h2 style="text-align: center;">Horario de Atención</h2>
 
-                    <div style="display: inline-flex;flex-direction: row;align-items: center;gap: 10px;">
-                        <img src="./img/icon/reloj1.png" style="height: 75px;">
-                        <p><strong>📅 Lunes a Viernes:</strong> 8:00AM - 8:00PM<br>
-                            <strong>📅 Sábados:</strong> 8:30AM - 7:00PM<br>
-                            <strong>🚫 Domingos:</strong> No laborable
-                        </p>
-                    </div>
+  <div class="container_cube_2">
+        <div class="carousel-container" id="carousel">
+            <div class="carousel-item item-1">
+                <div class="item-content">
+                    <h3 class="item-title">Aventura Tropical</h3>
+                    <p class="item-description">Descubre paisajes exóticos y experiencias únicas en destinos paradisíacos alrededor del mundo.</p>
                 </div>
-
-                <div class="parrafo">
-                    <h2 style="text-align: center;">¿Cómo Funciona?</h2>
-                    <p>Somos una lavandería tipo Laundry. Nos traes tu ropa sucia y te la entregamos limpia, doblada y
-                        perfumada, ¡todo el mismo día!</p>
-
-                    <h3>Servicios:</h3>
-
-                    <p>✔️ Lavado<br>
-                        ✔️ Secado<br>
-                        ✔️ Doblado<br>
-                        ✔️ Ropa en general<br>
-                        ✔️ <strong>Especiales:</strong> Sábanas, toallas, colchas, manteles y cortinas</p>
-                </div>
-
-
-                <div class="toggle-container">
-                    <h4 class="toggle-header">Productos Utilizados ➕</h4>
-                    <div class="toggle-content">
-                        <p>🧴 Detergente<br>
-                            🧴 Suavizante<br>
-                            🧴 Fundas perfumadas<br>
-                            🧴 Perlas aromatizantes<br>
-                            🧴 Blanqueador<br>
-                            🧴 Desmanchante<br>
-                            🧴 Tratamiento para moho y óxido</p>
-                    </div>
-                </div>
-
-                <div class="toggle-container">
-                    <h4 class="toggle-header">Preguntas Frecuentes ➕</h4>
-                    <div class="toggle-content">
-                        <p><strong>🔹¿Tiempo de entrega?</strong><br>
-                            Aproximadamente 2 - 3 horas, dependiendo del volumen de órdenes en turno.</p>
-
-                        <p><strong>🔹¿Hasta qué hora se reciben órdenes para entrega el mismo día?</strong><br>
-                            Hasta las 5:00 PM.</p>
-
-                        <p><strong>🔹¿Puedo elegir solo lavar o solo secar?</strong><br>
-                            Sí, puedes optar por:<br>
-                            ✔️ Lavado y secado<br>
-                            ✔️ Solo secado<br>
-                            ✔️ Lavado y exprimido</p>
-
-                        <p><strong>🔹¿Las órdenes se entregan dobladas y empacadas?</strong><br>
-                            Sí, todas las órdenes se entregan dobladas y empacadas.</p>
-
-                        <p><strong>🔹¿Puedo quedarme a dividir mi ropa?</strong><br>
-                            Sí, si prefieres dividir tu ropa, puedes hacerlo antes del lavado.</p>
-
-                        <p><strong>🔹¿Puedo traer mi propio detergente?</strong><br>
-                            Sí, en caso de alergias, puedes traer tu propio detergente. No obstante, contamos con
-                            productos
-                            especializados para pieles sensibles.</p>
-                    </div>
-                </div>
-
-
-                <div class="toggle-container">
-                    <h4 class="toggle-header">Información Importante ➕</h4>
-                    <div class="toggle-content">
-
-                        <h3>No procesamos:</h3>
-                        <p>❌ Alfombras<br>
-                            ❌ Cojines<br>
-                            ❌ Peluches<br>
-                            ❌ Ropa de animales / mascotas<br>
-                            ❌ Sacos de acampar</p>
-
-                        <h3>No usamos:</h3>
-                        <p>❌ Detergente rayado o en pasta</p>
-                    </div>
-                </div>
-
-
-
-
-                <div class="parrafo" style="padding: 0px 7px;">
-                    <h2 style="text-align: center;">Visítanos!</h2>
-                    <p><strong>Estamos ubicados en:</strong> Santo Domingo Este, Sector Alma Rosa, Calle Club Activo
-                        2030
-                        #24, 2do nivel.</p>
-
-                    <!-- Start Map -->
-                    <iframe class="map-iframe"
-                        src="https://maps.google.com/maps?q=18.4955583597753, -69.85320459280894&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                        allowfullscreen="" loading="lazy">
-                    </iframe>
-                    <!-- End Map -->
-                </div>
-
-
             </div>
-            <!-- Contenido FIN -->
 
-            <div class="container_down">
-
-                <h3>Siguenos en:</h3>
-
-                <div class="cubeSocial">
-                    <a href="#"></a>
-                    <a href="#"></a>
-                    <a href="#"></a>
+            <div class="carousel-item item-2">
+                <div class="item-content">
+                    <h3 class="item-title">Tecnología Futura</h3>
+                    <p class="item-description">Explora las últimas innovaciones tecnológicas que están transformando nuestro mundo digital.</p>
                 </div>
-
-                <img src="./img/Paris Laundry 1.png" style="height: 130px;">
-
-                <p>© 2025 ParisLaundryRD. Todos los derechos reservados.<br> Desarrollado por José Polanco.</p>
             </div>
+
+            <div class="carousel-item item-3">
+                <div class="item-content">
+                    <h3 class="item-title">Arte & Creatividad</h3>
+                    <p class="item-description">Sumérgete en un universo de colores, formas y expresiones artísticas contemporáneas.</p>
+                </div>
+            </div>
+
+            <div class="carousel-item item-4">
+                <div class="item-content">
+                    <h3 class="item-title">Gastronomía Premium</h3>
+                    <p class="item-description">Degusta sabores excepcionales y descubre la alta cocina en su máxima expresión culinaria.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="scroll-indicators">
+            <div class="indicator active"></div>
+            <div class="indicator"></div>
+            <div class="indicator"></div>
+            <div class="indicator"></div>
+        </div>
+    </div>
+
+
+
+
+
+
+
 
         </div>
 
 
-    </div>
+        <div class="container_master" style="display: none;">
 
+            <div class="container_body">
+
+
+                <!-- Contenido -->
+                <div class="contenido">
+
+
+
+
+
+
+                    <div class="parrafo" style="display: inline-flex;flex-direction: column;align-items: center;">
+                        <h2 style="text-align: center;">Horario de Atención</h2>
+
+                        <div style="display: inline-flex;flex-direction: row;align-items: center;gap: 10px;">
+                            <img src="./img/icon/reloj1.png" style="height: 75px;">
+                            <p><strong>📅 Lunes a Viernes:</strong> 8:00AM - 8:00PM<br>
+                                <strong>📅 Sábados:</strong> 8:30AM - 7:00PM<br>
+                                <strong>🚫 Domingos:</strong> No laborable
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="parrafo">
+                        <h2 style="text-align: center;">¿Cómo Funciona?</h2>
+                        <p>Somos una lavandería tipo Laundry. Nos traes tu ropa sucia y te la entregamos limpia, doblada
+                            y
+                            perfumada, ¡todo el mismo día!</p>
+
+                        <h3>Servicios:</h3>
+
+                        <p>✔️ Lavado<br>
+                            ✔️ Secado<br>
+                            ✔️ Doblado<br>
+                            ✔️ Ropa en general<br>
+                            ✔️ <strong>Especiales:</strong> Sábanas, toallas, colchas, manteles y cortinas</p>
+                    </div>
+
+
+                    <div class="toggle-container">
+                        <h4 class="toggle-header">Productos Utilizados ➕</h4>
+                        <div class="toggle-content">
+                            <p>🧴 Detergente<br>
+                                🧴 Suavizante<br>
+                                🧴 Fundas perfumadas<br>
+                                🧴 Perlas aromatizantes<br>
+                                🧴 Blanqueador<br>
+                                🧴 Desmanchante<br>
+                                🧴 Tratamiento para moho y óxido</p>
+                        </div>
+                    </div>
+
+                    <div class="toggle-container">
+                        <h4 class="toggle-header">Preguntas Frecuentes ➕</h4>
+                        <div class="toggle-content">
+                            <p><strong>🔹¿Tiempo de entrega?</strong><br>
+                                Aproximadamente 2 - 3 horas, dependiendo del volumen de órdenes en turno.</p>
+
+                            <p><strong>🔹¿Hasta qué hora se reciben órdenes para entrega el mismo día?</strong><br>
+                                Hasta las 5:00 PM.</p>
+
+                            <p><strong>🔹¿Puedo elegir solo lavar o solo secar?</strong><br>
+                                Sí, puedes optar por:<br>
+                                ✔️ Lavado y secado<br>
+                                ✔️ Solo secado<br>
+                                ✔️ Lavado y exprimido</p>
+
+                            <p><strong>🔹¿Las órdenes se entregan dobladas y empacadas?</strong><br>
+                                Sí, todas las órdenes se entregan dobladas y empacadas.</p>
+
+                            <p><strong>🔹¿Puedo quedarme a dividir mi ropa?</strong><br>
+                                Sí, si prefieres dividir tu ropa, puedes hacerlo antes del lavado.</p>
+
+                            <p><strong>🔹¿Puedo traer mi propio detergente?</strong><br>
+                                Sí, en caso de alergias, puedes traer tu propio detergente. No obstante, contamos con
+                                productos
+                                especializados para pieles sensibles.</p>
+                        </div>
+                    </div>
+
+
+                    <div class="toggle-container">
+                        <h4 class="toggle-header">Información Importante ➕</h4>
+                        <div class="toggle-content">
+
+                            <h3>No procesamos:</h3>
+                            <p>❌ Alfombras<br>
+                                ❌ Cojines<br>
+                                ❌ Peluches<br>
+                                ❌ Ropa de animales / mascotas<br>
+                                ❌ Sacos de acampar</p>
+
+                            <h3>No usamos:</h3>
+                            <p>❌ Detergente rayado o en pasta</p>
+                        </div>
+                    </div>
+
+
+
+
+                    <div class="parrafo" style="padding: 0px 7px;">
+                        <h2 style="text-align: center;">Visítanos!</h2>
+                        <p><strong>Estamos ubicados en:</strong> Santo Domingo Este, Sector Alma Rosa, Calle Club Activo
+                            2030
+                            #24, 2do nivel.</p>
+
+                        <!-- Start Map -->
+                        <iframe class="map-iframe"
+                            src="https://maps.google.com/maps?q=18.4955583597753, -69.85320459280894&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                            allowfullscreen="" loading="lazy">
+                        </iframe>
+                        <!-- End Map -->
+                    </div>
+
+
+                </div>
+                <!-- Contenido FIN -->
+
+                <div class="container_down">
+
+                    <h3>Siguenos en:</h3>
+
+                    <div class="cubeSocial">
+                        <a href="#"></a>
+                        <a href="#"></a>
+                        <a href="#"></a>
+                    </div>
+
+                    <img src="./img/Paris Laundry 1.png" style="height: 130px;">
+
+                    <p>© 2025 ParisLaundryRD. Todos los derechos reservados.<br> Desarrollado por José Polanco.</p>
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
 
     <!-- Modal único para mostrar el estado -->
     <div id="statusModal" class="modal">
@@ -263,6 +581,10 @@
                     </div>
 
                 </div>
+                <!-- Contenido para "Pagado Listo" FIN -->
+
+
+
             </div>
 
             <div class="modal_preview_factura_down">
@@ -274,19 +596,7 @@
     </div>
 
     <script>
-        // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
-            authDomain: "paris-laundry.firebaseapp.com",
-            projectId: "paris-laundry",
-            storageBucket: "paris-laundry.appspot.com",
-            messagingSenderId: "1022712814457",
-            appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
-        };
 
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
         const statusModal = document.getElementById("statusModal");
         const closeStatusModal = document.getElementById("closeStatusModal");
@@ -443,38 +753,60 @@
 
 
 <script>
-const themeToggleButton = document.getElementById('themeToggle');
+        // Script para indicadores de scroll (opcional)
+        const carousel = document.getElementById('carousel');
+        const indicators = document.querySelectorAll('.indicator');
 
-// Función para aplicar el tema guardado
-const applySavedTheme = () => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-theme');
-    } else {
-        document.body.classList.remove('dark-theme');
-    }
-};
+        carousel.addEventListener('scroll', () => {
+            const scrollLeft = carousel.scrollLeft;
+            const itemWidth = carousel.querySelector('.carousel-item').offsetWidth + 20; // incluye gap
+            const activeIndex = Math.round(scrollLeft / itemWidth);
 
-// Llamar a la función para aplicar el tema guardado al cargar la página
-applySavedTheme();
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === activeIndex);
+            });
+        });
 
-themeToggleButton.addEventListener('click', () => {
-    // Aplicar transición
-    document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
-    const containerBody = document.querySelector('.container_body');
-    containerBody.style.transition = 'background 0.3s ease';
-    
-    // Alternar la clase dark-theme
-    document.body.classList.toggle('dark-theme');
+        // Función para navegar por toque/swipe en móviles
+        let isDown = false;
+        let startX;
+        let scrollLeftStart;
 
-    // Cambiar el texto del botón según el tema
-    if (document.body.classList.contains('dark-theme')) {
-        localStorage.setItem('theme', 'dark'); // Guardar la preferencia en localStorage
-    } else {
-        localStorage.setItem('theme', 'light'); // Guardar la preferencia en localStorage
-    }
-});
-</script>
+        carousel.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - carousel.offsetLeft;
+            scrollLeftStart = carousel.scrollLeft;
+        });
+
+        carousel.addEventListener('mouseleave', () => {
+            isDown = false;
+        });
+
+        carousel.addEventListener('mouseup', () => {
+            isDown = false;
+        });
+
+        carousel.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - carousel.offsetLeft;
+            const walk = (x - startX) * 2;
+            carousel.scrollLeft = scrollLeftStart - walk;
+        });
+
+        // Touch events para móviles
+        carousel.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].pageX - carousel.offsetLeft;
+            scrollLeftStart = carousel.scrollLeft;
+        });
+
+        carousel.addEventListener('touchmove', (e) => {
+            const x = e.touches[0].pageX - carousel.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            carousel.scrollLeft = scrollLeftStart - walk;
+        });
+    </script>
+
 
 
 </body>
