@@ -756,38 +756,52 @@
         // Script mejorado para indicadores de scroll
         const carousel = document.getElementById('carousel');
         const indicators = document.querySelectorAll('.indicator');
+        const indicatorsContainer = document.querySelector('.scroll-indicators');
 
         function updateIndicators() {
             const scrollLeft = carousel.scrollLeft;
             const scrollWidth = carousel.scrollWidth;
             const clientWidth = carousel.clientWidth;
-            const itemWidth = carousel.querySelector('.carousel-item').offsetWidth;
-            const gap = 20;
-            const totalItemWidth = itemWidth + gap;
             
-            // Calcular el índice basado en qué elemento está más visible
+            // Ocultar indicadores si todos los elementos están visibles
+            if (scrollWidth <= clientWidth + 5) { // +5 para margen de error
+                indicatorsContainer.classList.add('hidden');
+                return;
+            } else {
+                indicatorsContainer.classList.remove('hidden');
+            }
+
             let activeIndex = 0;
-            const items = carousel.querySelectorAll('.carousel-item');
             
-            items.forEach((item, index) => {
-                const itemRect = item.getBoundingClientRect();
-                const containerRect = carousel.getBoundingClientRect();
-                
-                // Calcular qué porcentaje del item está visible
-                const itemLeft = itemRect.left - containerRect.left;
-                const itemRight = itemRect.right - containerRect.left;
-                const visibleWidth = Math.min(itemRight, containerRect.width) - Math.max(itemLeft, 0);
-                const visibilityPercentage = visibleWidth / itemRect.width;
-                
-                // Si el item está visible más del 50%, es el elemento activo
-                if (visibilityPercentage > 0.5) {
-                    activeIndex = index;
-                }
-            });
-            
-            // Para asegurar que el último elemento se detecte correctamente
-            if (scrollLeft + clientWidth >= scrollWidth - 10) {
+            // Detectar el primer elemento (posición inicial)
+            if (scrollLeft <= 10) { // Margen de error para la posición inicial
+                activeIndex = 0;
+            }
+            // Detectar el último elemento (posición final)
+            else if (scrollLeft + clientWidth >= scrollWidth - 10) {
                 activeIndex = indicators.length - 1;
+            }
+            // Detectar elementos intermedios
+            else {
+                const items = carousel.querySelectorAll('.carousel-item');
+                let maxVisibility = 0;
+                
+                items.forEach((item, index) => {
+                    const itemRect = item.getBoundingClientRect();
+                    const containerRect = carousel.getBoundingClientRect();
+                    
+                    // Calcular qué porcentaje del item está visible
+                    const itemLeft = itemRect.left - containerRect.left;
+                    const itemRight = itemRect.right - containerRect.left;
+                    const visibleWidth = Math.min(itemRight, containerRect.width) - Math.max(itemLeft, 0);
+                    const visibilityPercentage = visibleWidth / itemRect.width;
+                    
+                    // El elemento con mayor visibilidad es el activo
+                    if (visibilityPercentage > maxVisibility) {
+                        maxVisibility = visibilityPercentage;
+                        activeIndex = index;
+                    }
+                });
             }
 
             indicators.forEach((indicator, index) => {
@@ -795,7 +809,13 @@
             });
         }
 
+        // Función para detectar cambios de tamaño de ventana
+        function checkWindowResize() {
+            updateIndicators();
+        }
+
         carousel.addEventListener('scroll', updateIndicators);
+        window.addEventListener('resize', checkWindowResize);
 
         // Función mejorada para navegación por toque/swipe
         let isDown = false;
@@ -870,10 +890,16 @@
             touchScrollStart = 0;
         }, { passive: true });
 
-        // Inicializar indicadores al cargar
-        setTimeout(updateIndicators, 100);
+        // Inicializar indicadores al cargar y después de las animaciones
+        setTimeout(() => {
+            updateIndicators();
+        }, 100);
+        
+        // Verificar nuevamente después de que terminen las animaciones de entrada
+        setTimeout(() => {
+            updateIndicators();
+        }, 1500);
     </script>
-
 
 
 </body>
