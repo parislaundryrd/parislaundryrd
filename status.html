@@ -304,7 +304,7 @@
 
 
   <div class="container_cube_2">
-        <div class="carousel-container" id="carousel">
+<div class="carousel-container" id="carousel">
             <div class="carousel-item item-1">
                 <div class="item-content">
                     <h3 class="item-title">Aventura Tropical</h3>
@@ -752,59 +752,126 @@
     </script>
 
 
-<script>
-        // Script para indicadores de scroll (opcional)
+ <script>
+        // Script mejorado para indicadores de scroll
         const carousel = document.getElementById('carousel');
         const indicators = document.querySelectorAll('.indicator');
 
-        carousel.addEventListener('scroll', () => {
+        function updateIndicators() {
             const scrollLeft = carousel.scrollLeft;
-            const itemWidth = carousel.querySelector('.carousel-item').offsetWidth + 20; // incluye gap
-            const activeIndex = Math.round(scrollLeft / itemWidth);
+            const scrollWidth = carousel.scrollWidth;
+            const clientWidth = carousel.clientWidth;
+            const itemWidth = carousel.querySelector('.carousel-item').offsetWidth;
+            const gap = 20;
+            const totalItemWidth = itemWidth + gap;
+            
+            // Calcular el índice basado en qué elemento está más visible
+            let activeIndex = 0;
+            const items = carousel.querySelectorAll('.carousel-item');
+            
+            items.forEach((item, index) => {
+                const itemRect = item.getBoundingClientRect();
+                const containerRect = carousel.getBoundingClientRect();
+                
+                // Calcular qué porcentaje del item está visible
+                const itemLeft = itemRect.left - containerRect.left;
+                const itemRight = itemRect.right - containerRect.left;
+                const visibleWidth = Math.min(itemRight, containerRect.width) - Math.max(itemLeft, 0);
+                const visibilityPercentage = visibleWidth / itemRect.width;
+                
+                // Si el item está visible más del 50%, es el elemento activo
+                if (visibilityPercentage > 0.5) {
+                    activeIndex = index;
+                }
+            });
+            
+            // Para asegurar que el último elemento se detecte correctamente
+            if (scrollLeft + clientWidth >= scrollWidth - 10) {
+                activeIndex = indicators.length - 1;
+            }
 
             indicators.forEach((indicator, index) => {
                 indicator.classList.toggle('active', index === activeIndex);
             });
-        });
+        }
 
-        // Función para navegar por toque/swipe en móviles
+        carousel.addEventListener('scroll', updateIndicators);
+
+        // Función mejorada para navegación por toque/swipe
         let isDown = false;
         let startX;
         let scrollLeftStart;
+        let velocity = 0;
+        let lastX = 0;
+        let lastTime = 0;
 
         carousel.addEventListener('mousedown', (e) => {
+            e.preventDefault();
             isDown = true;
+            carousel.style.cursor = 'grabbing';
             startX = e.pageX - carousel.offsetLeft;
             scrollLeftStart = carousel.scrollLeft;
+            lastX = e.pageX;
+            lastTime = Date.now();
+            velocity = 0;
         });
 
         carousel.addEventListener('mouseleave', () => {
             isDown = false;
+            carousel.style.cursor = 'grab';
         });
 
         carousel.addEventListener('mouseup', () => {
             isDown = false;
+            carousel.style.cursor = 'grab';
         });
 
         carousel.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             e.preventDefault();
+            
+            const currentTime = Date.now();
+            const deltaTime = currentTime - lastTime;
+            const deltaX = e.pageX - lastX;
+            
+            if (deltaTime > 0) {
+                velocity = deltaX / deltaTime;
+            }
+            
             const x = e.pageX - carousel.offsetLeft;
-            const walk = (x - startX) * 2;
+            const walk = (x - startX);
             carousel.scrollLeft = scrollLeftStart - walk;
+            
+            lastX = e.pageX;
+            lastTime = currentTime;
         });
 
-        // Touch events para móviles
+        // Touch events mejorados para móviles
+        let touchStartX = 0;
+        let touchScrollStart = 0;
+
         carousel.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].pageX - carousel.offsetLeft;
-            scrollLeftStart = carousel.scrollLeft;
-        });
+            touchStartX = e.touches[0].pageX;
+            touchScrollStart = carousel.scrollLeft;
+        }, { passive: true });
 
         carousel.addEventListener('touchmove', (e) => {
-            const x = e.touches[0].pageX - carousel.offsetLeft;
-            const walk = (x - startX) * 1.5;
-            carousel.scrollLeft = scrollLeftStart - walk;
-        });
+            if (!touchStartX) return;
+            
+            const touchX = e.touches[0].pageX;
+            const diffX = touchStartX - touchX;
+            
+            // Scroll lineal sin inercia adicional
+            carousel.scrollLeft = touchScrollStart + diffX;
+        }, { passive: true });
+
+        carousel.addEventListener('touchend', () => {
+            touchStartX = 0;
+            touchScrollStart = 0;
+        }, { passive: true });
+
+        // Inicializar indicadores al cargar
+        setTimeout(updateIndicators, 100);
     </script>
 
 
