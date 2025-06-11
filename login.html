@@ -486,14 +486,46 @@
 
         <div id="errorMsg" class="error"></div>
 
-        <div class="footer">
-            Paris Laundry &copy; 2025 - Developed by J.P.
-        </div>
-    </div>
+<div class="footer">
+    Paris Laundry &copy; <span id="currentYear"></span> - Developed by J.P.
+</div>
 
-    <div class="footer2">
-        Paris Laundry &copy; 2025 - Developed by J.P.
-    </div>
+<div class="footer2">
+    Paris Laundry &copy; <span id="currentYearMobile"></span> - Developed by J.P.
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verificar si Firebase ya está inicializado
+        if (typeof firebase !== 'undefined' && firebase.firestore) {
+            // Obtener la fecha del servidor de Firebase
+            const db = firebase.firestore();
+            db.collection("metadata").doc("serverTime") // Usamos una colección ficticia
+                .get()
+                .then((doc) => {
+                    // El timestamp del servidor se obtiene incluso si el documento no existe
+                    const serverTimestamp = firebase.firestore.Timestamp.now().toDate();
+                    const currentYear = serverTimestamp.getFullYear();
+                    
+                    // Actualizar los footers
+                    document.getElementById('currentYear').textContent = currentYear;
+                    document.getElementById('currentYearMobile').textContent = currentYear;
+                })
+                .catch((error) => {
+                    console.error("Error al obtener la fecha del servidor:", error);
+                    // Fallback: usar la fecha local si Firebase falla
+                    const localYear = new Date().getFullYear();
+                    document.getElementById('currentYear').textContent = localYear;
+                    document.getElementById('currentYearMobile').textContent = localYear;
+                });
+        } else {
+            // Fallback: usar la fecha local si Firebase no está disponible
+            const localYear = new Date().getFullYear();
+            document.getElementById('currentYear').textContent = localYear;
+            document.getElementById('currentYearMobile').textContent = localYear;
+        }
+    });
+</script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {

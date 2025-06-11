@@ -9,13 +9,17 @@
   <link rel="stylesheet" href="./css/styles_facturacion.css">
   <link rel="stylesheet" href="./css/styles_menu.css">
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
-  <script src="./js/menu - empleados.js" defer></script>
+  <script src="./js/app.js"></script>
+  <script src="./js/menu.js" defer></script>
 </head>
 
 
 <body>
-  <div class="MasterBox0">
+
+
+  <div class="MasterBox0" style="display: none;">
 
     <laundry-menu></laundry-menu>
 
@@ -36,9 +40,11 @@
               <strong>Dirección:</strong> <br>
 
               <strong><br>Delivery:</strong>
-              <br><span style="display: flex; justify-content: space-between;"><span>Sin delivery:</span><span>RD$0</span></span><br>
-              
-              <span style="display: flex; justify-content: space-between;"><strong>Total:</strong><strong>RD$0.00</strong></span>
+              <br><span style="display: flex; justify-content: space-between;"><span>Sin
+                  delivery:</span><span>RD$0</span></span><br>
+
+              <span
+                style="display: flex; justify-content: space-between;"><strong>Total:</strong><strong>RD$0.00</strong></span>
             </p>
           </div>
 
@@ -314,22 +320,11 @@
 
 
   </div>
+  </div>
 
 
   <script>
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
-      authDomain: "paris-laundry.firebaseapp.com",
-      projectId: "paris-laundry",
-      storageBucket: "paris-laundry.appspot.com",
-      messagingSenderId: "1022712814457",
-      appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
-    };
 
-    // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
     const serviceSelection = document.getElementById("serviceSelection");
     const deliverySelection = document.getElementById("deliverySelection");
@@ -349,71 +344,71 @@
     }
 
     // Cargar servicios, productos y empleados
-   const loadServices = () => {
-  db.collection("servicio").onSnapshot((snapshot) => {
-    serviceSelection.innerHTML = "";
-    otrosServiciosContainer.innerHTML = "";
-    hamperContainer.innerHTML = "";
-    otrosServiciosDisplay.innerHTML = "";
+    const loadServices = () => {
+      db.collection("servicio").onSnapshot((snapshot) => {
+        serviceSelection.innerHTML = "";
+        otrosServiciosContainer.innerHTML = "";
+        hamperContainer.innerHTML = "";
+        otrosServiciosDisplay.innerHTML = "";
 
-    const hampersArray = [];
-    const otrosServiciosArray = [];
+        const hampersArray = [];
+        const otrosServiciosArray = [];
 
-    snapshot.forEach((doc) => {
-      const data = doc.data();
+        snapshot.forEach((doc) => {
+          const data = doc.data();
 
-      if (data.tipo === "hamper") {
-        hampersArray.push({ id: doc.id, ...data });
-      }
+          if (data.tipo === "hamper") {
+            hampersArray.push({ id: doc.id, ...data });
+          }
 
-      if (data.tipo === "otroservicio") {
-        otrosServiciosArray.push({ id: doc.id, ...data });
-      }
-    });
+          if (data.tipo === "otroservicio") {
+            otrosServiciosArray.push({ id: doc.id, ...data });
+          }
+        });
 
-    // Ordenar hampers por OrdenNumHamper
-    hampersArray.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
+        // Ordenar hampers por OrdenNumHamper
+        hampersArray.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
 
-    // Ordenar otros servicios por OrdenNumServicio
-    otrosServiciosArray.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
+        // Ordenar otros servicios por OrdenNumServicio
+        otrosServiciosArray.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
 
-    // Mostrar hampers ordenados
-    hampersArray.forEach((data) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.innerHTML = `
+        // Mostrar hampers ordenados
+        hampersArray.forEach((data) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.innerHTML = `
         <div><img src="${data.icon}" alt="${data.nombre}"></div>
         <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>
       `;
-      button.dataset.value = data.precio;
-      button.dataset.name = data.nombre;
-      button.dataset.librasmin = data.librasmin;
-      button.dataset.librasmax = data.librasmax;
-      button.dataset.preciolibras = data.preciolibras;
-      button.addEventListener("click", () => {
-        addHamper(data);
-      });
-      serviceSelection.appendChild(button);
-    });
+          button.dataset.value = data.precio;
+          button.dataset.name = data.nombre;
+          button.dataset.librasmin = data.librasmin;
+          button.dataset.librasmax = data.librasmax;
+          button.dataset.preciolibras = data.preciolibras;
+          button.addEventListener("click", () => {
+            addHamper(data);
+          });
+          serviceSelection.appendChild(button);
+        });
 
-    // Mostrar otros servicios ordenados
-    otrosServiciosArray.forEach((data) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.innerHTML = `
+        // Mostrar otros servicios ordenados
+        otrosServiciosArray.forEach((data) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.innerHTML = `
         <div><img src="${data.icon}" alt="${data.nombre}"></div>
         <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>
       `;
-      button.dataset.value = data.precio;
-      button.dataset.name = data.nombre;
-      button.dataset.icon = data.icon;
-      button.addEventListener("click", () => {
-        addOtherService(data, button);
+          button.dataset.value = data.precio;
+          button.dataset.name = data.nombre;
+          button.dataset.icon = data.icon;
+          button.addEventListener("click", () => {
+            addOtherService(data, button);
+          });
+          otrosServiciosContainer.appendChild(button);
+        });
       });
-      otrosServiciosContainer.appendChild(button);
-    });
-  });
-};
+    };
 
     const addOtherService = (data, button) => {
       const existingService = otrosServiciosDisplay.querySelector(`div[data-name="${data.nombre}"]`);
@@ -499,16 +494,16 @@
       updateInvoicePreview();
     };
 
-   const addHamper = (data) => {
-  // Verifica si ya hay 30 hampers
-  if (hampers.length >= 30) {
-    alert("No puedes agregar más de 30 hampers por factura.");
-    return;
-  }
+    const addHamper = (data) => {
+      // Verifica si ya hay 30 hampers
+      if (hampers.length >= 30) {
+        alert("No puedes agregar más de 30 hampers por factura.");
+        return;
+      }
 
-  const hamperDiv = document.createElement("div");
-  hamperDiv.classList.add("hamper");
-  hamperDiv.innerHTML = `
+      const hamperDiv = document.createElement("div");
+      hamperDiv.classList.add("hamper");
+      hamperDiv.innerHTML = `
     <h3>${data.nombre}</h3>
     <img src="${data.icon}" alt="${data.nombre}">
     <h5>Cantidad de Libras</h5>
@@ -1150,221 +1145,221 @@ ${asumirPor !== "desactivado" ? `
     });
 
     const processInvoice = async (status, isPartialPayment = false, partialAmount = 0) => {
-  // Si el estado es "pago pendiente", no se necesita un método de pago
-  let paymentMethod = status === "pago pendiente" ? "Pago Pendiente" : document.querySelector(".payment-button.active").value;
+      // Si el estado es "pago pendiente", no se necesita un método de pago
+      let paymentMethod = status === "pago pendiente" ? "Pago Pendiente" : document.querySelector(".payment-button.active").value;
 
-  const deliveryOption = deliverySelection.querySelector("button.active");
-  const deliveryPrice = deliveryOption ? deliveryOption.dataset.value : "0";
+      const deliveryOption = deliverySelection.querySelector("button.active");
+      const deliveryPrice = deliveryOption ? deliveryOption.dataset.value : "0";
 
-  // Obtener el subtotal
-  let subtotal = 0;
+      // Obtener el subtotal
+      let subtotal = 0;
 
-  // Calcular el total de los hampers
-  hampers.forEach(hamper => {
-    const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
-    subtotal += price; // Sumar al subtotal
-  });
+      // Calcular el total de los hampers
+      hampers.forEach(hamper => {
+        const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
+        subtotal += price; // Sumar al subtotal
+      });
 
-  // Calcular el total de otros servicios
-  otrosServicios.forEach(item => {
-    const count = parseInt(item.input.value) || 0;
-    subtotal += count * item.price; // Sumar al subtotal
-  });
+      // Calcular el total de otros servicios
+      otrosServicios.forEach(item => {
+        const count = parseInt(item.input.value) || 0;
+        subtotal += count * item.price; // Sumar al subtotal
+      });
 
-  // Calcular el total de productos adicionales
-  const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
-  selectedProducts.forEach(product => {
-    const quantity = parseInt(product.value) || 0;
-    const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
-    subtotal += quantity * productPrice; // Sumar al subtotal
-  });
+      // Calcular el total de productos adicionales
+      const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+      selectedProducts.forEach(product => {
+        const quantity = parseInt(product.value) || 0;
+        const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+        subtotal += quantity * productPrice; // Sumar al subtotal
+      });
 
-  // Obtener el precio del delivery
-  const selectedDelivery = deliverySelection.querySelector("button.active");
-  const deliveryPriceValue = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
-  subtotal += deliveryPriceValue; // Incluir delivery en el subtotal
+      // Obtener el precio del delivery
+      const selectedDelivery = deliverySelection.querySelector("button.active");
+      const deliveryPriceValue = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
+      subtotal += deliveryPriceValue; // Incluir delivery en el subtotal
 
-  // Calcular el ITBIS
-  const itbis = (asumirPor !== "desactivado") ? subtotal * itbisPercentage : 0; // Calcular ITBIS solo si no está desactivado
+      // Calcular el ITBIS
+      const itbis = (asumirPor !== "desactivado") ? subtotal * itbisPercentage : 0; // Calcular ITBIS solo si no está desactivado
 
-  // Calcular el total a pagar
-  const total = (asumirPor === "empresa") ? subtotal : subtotal + itbis; // Ajustar el total según asumirPor
+      // Calcular el total a pagar
+      const total = (asumirPor === "empresa") ? subtotal : subtotal + itbis; // Ajustar el total según asumirPor
 
-  // Si el método de pago es Efectivo, obtener el monto recibido y calcular el cambio
-  let amountReceived = 0;
-  let changeAmount = 0;
-  let remainingBalance = 0;
+      // Si el método de pago es Efectivo, obtener el monto recibido y calcular el cambio
+      let amountReceived = 0;
+      let changeAmount = 0;
+      let remainingBalance = 0;
 
-  if (isPartialPayment) {
-    amountReceived = partialAmount;
-    remainingBalance = total - partialAmount;
-  } else if (paymentMethod === "Efectivo") {
-    amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
-    changeAmount = amountReceived - total;
-  } else if (paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") {
-    // Para transferencia/tarjeta sin abono, el monto recibido es el total
-    amountReceived = total;
-  }
+      if (isPartialPayment) {
+        amountReceived = partialAmount;
+        remainingBalance = total - partialAmount;
+      } else if (paymentMethod === "Efectivo") {
+        amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+        changeAmount = amountReceived - total;
+      } else if (paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") {
+        // Para transferencia/tarjeta sin abono, el monto recibido es el total
+        amountReceived = total;
+      }
 
-  const invoiceData = {
-    id: generateNewInvoiceId(await getLastInvoiceId()),
-    clientName: document.getElementById("clientName").value.trim(),
-    clientPhone: document.getElementById("clientPhone").value.replace(/-/g, ''),
-    clientAddress: document.getElementById("clientAddress").value.trim(),
-    NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
-    selectedServices: hampers.map(hamper => {
-      const weight = parseInt(hamper.weightInput.value);
-      const librasMin = parseInt(hamper.data.librasmin);
-      const librasMax = parseInt(hamper.data.librasmax);
+      const invoiceData = {
+        id: generateNewInvoiceId(await getLastInvoiceId()),
+        clientName: document.getElementById("clientName").value.trim(),
+        clientPhone: document.getElementById("clientPhone").value.replace(/-/g, ''),
+        clientAddress: document.getElementById("clientAddress").value.trim(),
+        NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
+        selectedServices: hampers.map(hamper => {
+          const weight = parseInt(hamper.weightInput.value);
+          const librasMin = parseInt(hamper.data.librasmin);
+          const librasMax = parseInt(hamper.data.librasmax);
 
-      return {
-        name: hamper.data.nombre,
-        weight: weight,
-        price: hamper.priceDisplay.textContent.replace('Precio: RD$', ''),
-        priceXlbs: hamper.data.preciolibras,
-        hamperComplete: (weight >= librasMin && weight <= librasMax) ? "yes" : "no"
+          return {
+            name: hamper.data.nombre,
+            weight: weight,
+            price: hamper.priceDisplay.textContent.replace('Precio: RD$', ''),
+            priceXlbs: hamper.data.preciolibras,
+            hamperComplete: (weight >= librasMin && weight <= librasMax) ? "yes" : "no"
+          };
+        }),
+
+        otrosServicios: otrosServicios.map(item => ({
+          name: item.name,
+          count: parseInt(item.input.value) || 0,
+          price: item.price
+        })).filter(item => item.count > 0),
+        deliveryOption: deliveryOption ? [{
+          name: deliveryOption.dataset.name,
+          price: deliveryPrice
+        }] : [{ name: "Sin Delivery", price: "0" }],
+        selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
+          name: product.closest('.product-item').querySelector('div').textContent,
+          quantity: parseInt(product.value) || 0,
+          price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
+        })).filter(product => product.quantity > 0),
+        total: total,
+        paymentMethod: paymentMethod,
+        status: status,
+        amountReceived: amountReceived,
+        changeAmount: changeAmount,
+        remainingBalance: remainingBalance,
+        abonoFact: isPartialPayment ? "yes" : "", // Cambiado a cadena vacía para no abonos
+        amountReceivedAbono1er: isPartialPayment ? partialAmount : 0, // Nuevo campo para el monto del primer abono
+        amountReceivedAbono1erMethod: isPartialPayment ? paymentMethod : "",
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        ITBISmonto: itbis
       };
-    }),
 
-    otrosServicios: otrosServicios.map(item => ({
-      name: item.name,
-      count: parseInt(item.input.value) || 0,
-      price: item.price
-    })).filter(item => item.count > 0),
-    deliveryOption: deliveryOption ? [{
-      name: deliveryOption.dataset.name,
-      price: deliveryPrice
-    }] : [{ name: "Sin Delivery", price: "0" }],
-    selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
-      name: product.closest('.product-item').querySelector('div').textContent,
-      quantity: parseInt(product.value) || 0,
-      price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', ''))
-    })).filter(product => product.quantity > 0),
-    total: total,
-    paymentMethod: paymentMethod,
-    status: status,
-    amountReceived: amountReceived,
-    changeAmount: changeAmount,
-    remainingBalance: remainingBalance,
-    abonoFact: isPartialPayment ? "yes" : "", // Cambiado a cadena vacía para no abonos
-    amountReceivedAbono1er: isPartialPayment ? partialAmount : 0, // Nuevo campo para el monto del primer abono
-    amountReceivedAbono1erMethod: isPartialPayment ? paymentMethod : "",
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    ITBISmonto: itbis
-  };
+      try {
+        const invoiceRef = await db.collection("facturas").add(invoiceData);
+        const invoiceDoc = await invoiceRef.get();
+        const invoiceId = invoiceDoc.data().id;
+        document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
 
-  try {
-    const invoiceRef = await db.collection("facturas").add(invoiceData);
-    const invoiceDoc = await invoiceRef.get();
-    const invoiceId = invoiceDoc.data().id;
-    document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
-
-    // ========== [NUEVO CÓDIGO AÑADIDO] ==========
-    // Función para detectar productos básicos (insensible a mayúsculas/acentos)
-    const esProductoBasico = (nombre) => 
-      nombre.normalize("NFD")
+        // ========== [NUEVO CÓDIGO AÑADIDO] ==========
+        // Función para detectar productos básicos (insensible a mayúsculas/acentos)
+        const esProductoBasico = (nombre) =>
+          nombre.normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
             .toLowerCase()
             .includes('basico');
 
-    // Calcular total de productos no básicos
-    let totalProductos = 0;
-    const productosInputs = Array.from(productSelection.querySelectorAll(".productInput"));
-    
-    productosInputs.forEach(input => {
-      const cantidad = parseInt(input.value) || 0;
-      if (cantidad > 0) {
-        const nombreProducto = input.closest('.product-item').querySelector('div').textContent;
-        if (!esProductoBasico(nombreProducto)) {
-          totalProductos += cantidad;
+        // Calcular total de productos no básicos
+        let totalProductos = 0;
+        const productosInputs = Array.from(productSelection.querySelectorAll(".productInput"));
+
+        productosInputs.forEach(input => {
+          const cantidad = parseInt(input.value) || 0;
+          if (cantidad > 0) {
+            const nombreProducto = input.closest('.product-item').querySelector('div').textContent;
+            if (!esProductoBasico(nombreProducto)) {
+              totalProductos += cantidad;
+            }
+          }
+        });
+
+        // Registrar en ventaproductos solo si hay productos válidos
+        if (totalProductos > 0) {
+          const nombreEmpleado = document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text;
+
+          await db.collection("ventaproductos").doc(nombreEmpleado).set({
+            empleado: nombreEmpleado,
+            monto: firebase.firestore.FieldValue.increment(totalProductos)
+          }, { merge: true });
         }
-      }
-    });
+        // ========== [FIN DE NUEVO CÓDIGO] ==========
 
-    // Registrar en ventaproductos solo si hay productos válidos
-    if (totalProductos > 0) {
-      const nombreEmpleado = document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text;
-      
-      await db.collection("ventaproductos").doc(nombreEmpleado).set({
-        empleado: nombreEmpleado,
-        monto: firebase.firestore.FieldValue.increment(totalProductos)
-      }, { merge: true });
-    }
-    // ========== [FIN DE NUEVO CÓDIGO] ==========
-
-    // Actualizar inventario de productos adicionales basado en el array "consumo" de los hampers
-    for (const hamper of hampers) {
-      for (const item of hamper.consumo) {
-        const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-        if (!productDoc.empty) {
-          const productRef = productDoc.docs[0].ref;
-          const productData = productDoc.docs[0].data();
-          const newQuantity = productData.cantidad - item.cantidad;
-          await productRef.update({ cantidad: newQuantity });
-        }
-      }
-    }
-
-    // Actualizar inventario de productos adicionales basado en el array "consumo" de los "otroservicio"
-    for (const servicio of otrosServicios) {
-      const cantidadServicio = parseInt(servicio.input.value) || 0;
-      if (cantidadServicio > 0) {
-        for (const item of servicio.consumo) {
-          const productDoc = await db.collection("productos").where("id", "==", item.id).get();
-          if (!productDoc.empty) {
-            const productRef = productDoc.docs[0].ref;
-            const productData = productDoc.docs[0].data();
-            const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
-            await productRef.update({ cantidad: newQuantity });
+        // Actualizar inventario de productos adicionales basado en el array "consumo" de los hampers
+        for (const hamper of hampers) {
+          for (const item of hamper.consumo) {
+            const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+            if (!productDoc.empty) {
+              const productRef = productDoc.docs[0].ref;
+              const productData = productDoc.docs[0].data();
+              const newQuantity = productData.cantidad - item.cantidad;
+              await productRef.update({ cantidad: newQuantity });
+            }
           }
         }
-      }
-    }
 
-    // Actualizar inventario de productos seleccionados manualmente
-    for (const product of selectedProducts) {
-      const quantity = parseInt(product.value) || 0;
-      if (quantity > 0) {
-        const productName = product.closest('.product-item').querySelector('div').textContent;
-        const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
-        if (!productDoc.empty) {
-          const productRef = productDoc.docs[0].ref;
-          const productData = productDoc.docs[0].data();
-          const newQuantity = productData.cantidad - quantity;
-          await productRef.update({ cantidad: newQuantity });
+        // Actualizar inventario de productos adicionales basado en el array "consumo" de los "otroservicio"
+        for (const servicio of otrosServicios) {
+          const cantidadServicio = parseInt(servicio.input.value) || 0;
+          if (cantidadServicio > 0) {
+            for (const item of servicio.consumo) {
+              const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+              if (!productDoc.empty) {
+                const productRef = productDoc.docs[0].ref;
+                const productData = productDoc.docs[0].data();
+                const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
+                await productRef.update({ cantidad: newQuantity });
+              }
+            }
+          }
         }
+
+        // Actualizar inventario de productos seleccionados manualmente
+        for (const product of selectedProducts) {
+          const quantity = parseInt(product.value) || 0;
+          if (quantity > 0) {
+            const productName = product.closest('.product-item').querySelector('div').textContent;
+            const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
+            if (!productDoc.empty) {
+              const productRef = productDoc.docs[0].ref;
+              const productData = productDoc.docs[0].data();
+              const newQuantity = productData.cantidad - quantity;
+              await productRef.update({ cantidad: newQuantity });
+            }
+          }
+        }
+
+        disablePaymentButtons();
+        document.getElementById("cashPaymentOptions").classList.add("hidden");
+
+        showProcessedInvoiceModal(
+          document.getElementById("modalInvoiceDetails").innerHTML,
+          paymentMethod,
+          amountReceived,
+          changeAmount,
+          status,
+          isPartialPayment,
+          partialAmount,
+          remainingBalance
+        );
+
+        clearSelections();
+        document.getElementById("billingForm").reset();
+        document.getElementById("amountReceived").value = "";
+        document.getElementById("partialAmount").value = "";
+        document.getElementById("changeAmount").textContent = "";
+        document.getElementById("empleado").selectedIndex = 0;
+        updateInvoicePreview();
+
+      } catch (error) {
+        console.error("Error al guardar la factura: ", error);
+        alert("Hubo un problema al procesar la factura. Inténtalo de nuevo.");
       }
-    }
 
-    disablePaymentButtons();
-    document.getElementById("cashPaymentOptions").classList.add("hidden");
-
-    showProcessedInvoiceModal(
-      document.getElementById("modalInvoiceDetails").innerHTML,
-      paymentMethod,
-      amountReceived,
-      changeAmount,
-      status,
-      isPartialPayment,
-      partialAmount,
-      remainingBalance
-    );
-
-    clearSelections();
-    document.getElementById("billingForm").reset();
-    document.getElementById("amountReceived").value = "";
-    document.getElementById("partialAmount").value = "";
-    document.getElementById("changeAmount").textContent = "";
-    document.getElementById("empleado").selectedIndex = 0;
-    updateInvoicePreview();
-
-  } catch (error) {
-    console.error("Error al guardar la factura: ", error);
-    alert("Hubo un problema al procesar la factura. Inténtalo de nuevo.");
-  }
-
-  document.getElementById("confirmationModal").classList.add("hidden");
-};
+      document.getElementById("confirmationModal").classList.add("hidden");
+    };
 
 
 
@@ -1625,143 +1620,143 @@ ${asumirPor !== "desactivado" ? `
 
 
 
-  // Añadir la biblioteca QRious en el head del documento
-(function loadQriousScript() {
-  if (!window.QRious) {
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
-    script.async = true;
-    document.head.appendChild(script);
-  }
-})();
-
-document.getElementById("printInvoiceButton").addEventListener("click", () => {
-  printInvoice();
-});
-
-const printInvoice = () => {
-  const invoiceDetails = document.getElementById("processedInvoiceDetails").innerHTML;
-  const invoiceId = document.getElementById("invoiceIdDisplay").textContent; // Obtener el ID de la factura
-
-  // Cargar primero la imagen para asegurarnos de que esté disponible antes de imprimir
-  const logoImg = new Image();
-  logoImg.onload = () => {
-    // Una vez que la imagen se cargue, procedemos con la impresión
-    proceedWithPrinting(invoiceDetails, invoiceId, logoImg);
-  };
-
-  logoImg.onerror = () => {
-    // Si hay un error al cargar la imagen, intentamos con una ruta alternativa
-    console.warn("Error al cargar el logo. Intentando ruta alternativa...");
-    logoImg.src = "../logo1.png"; // Intentar con una ruta relativa alternativa
-
-    // Si después de un tiempo prudente sigue sin cargar, imprimimos sin logo
-    setTimeout(() => {
-      if (!logoImg.complete || logoImg.naturalHeight === 0) {
-        console.error("No se pudo cargar el logo. Imprimiendo sin logo.");
-        proceedWithPrinting(invoiceDetails, invoiceId, null);
+    // Añadir la biblioteca QRious en el head del documento
+    (function loadQriousScript() {
+      if (!window.QRious) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
+        script.async = true;
+        document.head.appendChild(script);
       }
-    }, 1000);
-  };
+    })();
 
-  // Intentar primero con la ruta directa
-  logoImg.src = "./img/logo1_impresion.png";
-};
+    document.getElementById("printInvoiceButton").addEventListener("click", () => {
+      printInvoice();
+    });
 
-const proceedWithPrinting = (invoiceDetails, invoiceId, logoImg) => {
-  const printWindow = window.open('', '', 'height=600,width=800');
+    const printInvoice = () => {
+      const invoiceDetails = document.getElementById("processedInvoiceDetails").innerHTML;
+      const invoiceId = document.getElementById("invoiceIdDisplay").textContent; // Obtener el ID de la factura
 
-  // Obtener la fecha y hora actual en formato AM/PM    
-  const now = new Date();
-  const hours = now.getHours() % 12 || 12;
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-  const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
+      // Cargar primero la imagen para asegurarnos de que esté disponible antes de imprimir
+      const logoImg = new Image();
+      logoImg.onload = () => {
+        // Una vez que la imagen se cargue, procedemos con la impresión
+        proceedWithPrinting(invoiceDetails, invoiceId, logoImg);
+      };
 
-  // Reemplazar "Peso: X lbs" por "1 hamper" si está dentro del rango
-  const modifiedDetails = invoiceDetails.replace(/Peso: (\d+) lbs/g, (match, weight) => {
-    const weightNum = parseInt(weight);
-    const hamperData = hampers.find(hamper => parseInt(hamper.weightInput.value) === weightNum);
-    if (hamperData) {
-      const librasMin = parseInt(hamperData.data.librasmin);
-      const librasMax = parseInt(hamperData.data.librasmax);
-      return (weightNum >= librasMin && weightNum <= librasMax) ? "1 hamper" : match;
-    }
-    return match;
-  });
+      logoImg.onerror = () => {
+        // Si hay un error al cargar la imagen, intentamos con una ruta alternativa
+        console.warn("Error al cargar el logo. Intentando ruta alternativa...");
+        logoImg.src = "../logo1.png"; // Intentar con una ruta relativa alternativa
 
-  // Preparar el logo para la ventana de impresión
-  let logoHtml = '';
+        // Si después de un tiempo prudente sigue sin cargar, imprimimos sin logo
+        setTimeout(() => {
+          if (!logoImg.complete || logoImg.naturalHeight === 0) {
+            console.error("No se pudo cargar el logo. Imprimiendo sin logo.");
+            proceedWithPrinting(invoiceDetails, invoiceId, null);
+          }
+        }, 1000);
+      };
 
-  if (logoImg && logoImg.complete && logoImg.naturalHeight !== 0) {
-    // Si la imagen se cargó correctamente, la convertimos a base64 para asegurar que se imprima
-    try {
-      // Crear un canvas para convertir la imagen a base64
-      const canvas = document.createElement('canvas');
-      canvas.width = logoImg.width;
-      canvas.height = logoImg.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(logoImg, 0, 0);
+      // Intentar primero con la ruta directa
+      logoImg.src = "./img/logo1_impresion.png";
+    };
 
-      // Convertir a base64
-      const dataUrl = canvas.toDataURL('image/png');
+    const proceedWithPrinting = (invoiceDetails, invoiceId, logoImg) => {
+      const printWindow = window.open('', '', 'height=600,width=800');
 
-      // Crear el HTML para la imagen
-      logoHtml = `<img src="${dataUrl}" alt="Logo de Paris Laundry RD" style="">`;
-    } catch (e) {
-      console.error("Error al convertir la imagen a base64", e);
-      // Usar la imagen directamente como fallback
-      logoHtml = `<img src="${logoImg.src}" alt="Logo de Paris Laundry RD" style="">`;
-    }
-  } else {
-    // Si no se pudo cargar la imagen, usar un texto como respaldo
-    logoHtml = `<div style="border: 1px solid #ccc; padding: 10px; text-align: center;">
+      // Obtener la fecha y hora actual en formato AM/PM    
+      const now = new Date();
+      const hours = now.getHours() % 12 || 12;
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+      const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
+
+      // Reemplazar "Peso: X lbs" por "1 hamper" si está dentro del rango
+      const modifiedDetails = invoiceDetails.replace(/Peso: (\d+) lbs/g, (match, weight) => {
+        const weightNum = parseInt(weight);
+        const hamperData = hampers.find(hamper => parseInt(hamper.weightInput.value) === weightNum);
+        if (hamperData) {
+          const librasMin = parseInt(hamperData.data.librasmin);
+          const librasMax = parseInt(hamperData.data.librasmax);
+          return (weightNum >= librasMin && weightNum <= librasMax) ? "1 hamper" : match;
+        }
+        return match;
+      });
+
+      // Preparar el logo para la ventana de impresión
+      let logoHtml = '';
+
+      if (logoImg && logoImg.complete && logoImg.naturalHeight !== 0) {
+        // Si la imagen se cargó correctamente, la convertimos a base64 para asegurar que se imprima
+        try {
+          // Crear un canvas para convertir la imagen a base64
+          const canvas = document.createElement('canvas');
+          canvas.width = logoImg.width;
+          canvas.height = logoImg.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(logoImg, 0, 0);
+
+          // Convertir a base64
+          const dataUrl = canvas.toDataURL('image/png');
+
+          // Crear el HTML para la imagen
+          logoHtml = `<img src="${dataUrl}" alt="Logo de Paris Laundry RD" style="">`;
+        } catch (e) {
+          console.error("Error al convertir la imagen a base64", e);
+          // Usar la imagen directamente como fallback
+          logoHtml = `<img src="${logoImg.src}" alt="Logo de Paris Laundry RD" style="">`;
+        }
+      } else {
+        // Si no se pudo cargar la imagen, usar un texto como respaldo
+        logoHtml = `<div style="border: 1px solid #ccc; padding: 10px; text-align: center;">
               <span style="font-size: 20px; font-weight: bold;">PARIS LAUNDRY RD</span>
             </div>`;
-  }
-
-  // Crear URL para consultar estado de la ropa
-  const trackingUrl = `www.midominio.com/#id-${invoiceId}`;
-  
-  // Generar código QR localmente con QRious
-  const qrCanvas = document.createElement('canvas');
-  qrCanvas.width = 100;
-  qrCanvas.height = 100;
-  
-  // Esperar a que la biblioteca QRious esté cargada
-  const generateQR = () => {
-    if (window.QRious) {
-      const qr = new QRious({
-        element: qrCanvas,
-        value: 'https://' + trackingUrl,
-        size: 100
-      });
-      return qrCanvas.toDataURL('image/png');
-    } else {
-      // Si QRious no está cargado, esperamos 100ms y volvemos a intentar
-      return null;
-    }
-  };
-  
-  // Intentar generar el QR o usar un texto alternativo
-  let qrDataUrl = generateQR();
-  
-  // Si la biblioteca no está lista, esperar un poco y reintentar una vez
-  if (!qrDataUrl && typeof QRious === 'undefined') {
-    setTimeout(() => {
-      const retryQrDataUrl = generateQR();
-      if (retryQrDataUrl) {
-        // Si en el segundo intento se consigue generar el QR, actualizar la imagen
-        const qrImg = printWindow.document.querySelector('.qr-code img');
-        if (qrImg) {
-          qrImg.src = retryQrDataUrl;
-        }
       }
-    }, 200); // Esperar 200ms antes de reintentar
-  }
 
-  printWindow.document.write(`
+      // Crear URL para consultar estado de la ropa
+      const trackingUrl = `www.midominio.com/#id-${invoiceId}`;
+
+      // Generar código QR localmente con QRious
+      const qrCanvas = document.createElement('canvas');
+      qrCanvas.width = 100;
+      qrCanvas.height = 100;
+
+      // Esperar a que la biblioteca QRious esté cargada
+      const generateQR = () => {
+        if (window.QRious) {
+          const qr = new QRious({
+            element: qrCanvas,
+            value: 'https://' + trackingUrl,
+            size: 100
+          });
+          return qrCanvas.toDataURL('image/png');
+        } else {
+          // Si QRious no está cargado, esperamos 100ms y volvemos a intentar
+          return null;
+        }
+      };
+
+      // Intentar generar el QR o usar un texto alternativo
+      let qrDataUrl = generateQR();
+
+      // Si la biblioteca no está lista, esperar un poco y reintentar una vez
+      if (!qrDataUrl && typeof QRious === 'undefined') {
+        setTimeout(() => {
+          const retryQrDataUrl = generateQR();
+          if (retryQrDataUrl) {
+            // Si en el segundo intento se consigue generar el QR, actualizar la imagen
+            const qrImg = printWindow.document.querySelector('.qr-code img');
+            if (qrImg) {
+              qrImg.src = retryQrDataUrl;
+            }
+          }
+        }, 200); // Esperar 200ms antes de reintentar
+      }
+
+      printWindow.document.write(`
 <html>
 <head>
   <title>Factura</title>
@@ -1898,12 +1893,12 @@ const proceedWithPrinting = (invoiceDetails, invoiceId, logoImg) => {
       
       <!-- Código QR -->
       <!-- <div class="qr-code">
-          ${qrDataUrl 
-            ? `<img src="${qrDataUrl}" alt="Código QR para seguimiento" style="width:100px; height:100px;">` 
-            : `<div style="width:100px; height:100px; margin:0 auto; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; text-align:center; font-size:10px;">
+          ${qrDataUrl
+          ? `<img src="${qrDataUrl}" alt="Código QR para seguimiento" style="width:100px; height:100px;">`
+          : `<div style="width:100px; height:100px; margin:0 auto; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; text-align:center; font-size:10px;">
                  Escanea el URL para seguimiento
                </div>`
-          }
+        }
       </div> -->
 
       <div style="width: 100%;margin-bottom: 0px;text-align: justify;">
@@ -1919,27 +1914,27 @@ const proceedWithPrinting = (invoiceDetails, invoiceId, logoImg) => {
 </html>
 `);
 
-  printWindow.document.close();
-  printWindow.focus();
+      printWindow.document.close();
+      printWindow.focus();
 
-  // Si tenemos el QR generado, imprimimos inmediatamente
-  if (qrDataUrl) {
-    setTimeout(() => {
-      printWindow.print();
-      setTimeout(() => {
-        printWindow.close();
-      }, 300);
-    }, 200);
-  } else {
-    // Si el QR aún no está listo, damos un poco más de tiempo para que se cargue la biblioteca
-    setTimeout(() => {
-      printWindow.print();
-      setTimeout(() => {
-        printWindow.close();
-      }, 300);
-    }, 500);
-  }
-};
+      // Si tenemos el QR generado, imprimimos inmediatamente
+      if (qrDataUrl) {
+        setTimeout(() => {
+          printWindow.print();
+          setTimeout(() => {
+            printWindow.close();
+          }, 300);
+        }, 200);
+      } else {
+        // Si el QR aún no está listo, damos un poco más de tiempo para que se cargue la biblioteca
+        setTimeout(() => {
+          printWindow.print();
+          setTimeout(() => {
+            printWindow.close();
+          }, 300);
+        }, 500);
+      }
+    };
 
 
 
