@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -9,13 +10,15 @@
   <link rel="stylesheet" href="./css/styles_facturas.css">
   <link rel="stylesheet" href="./css/styles_menu.css">
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
-  <script src="./js/menu - empleados.js" defer></script>
+  <script src="./js/app.js"></script>
+  <script src="./js/menu.js" defer></script>
 </head>
 
 <body>
 
-  <div class="MasterBox0">
+  <div class="MasterBox0" style="display: ;">
 
     <laundry-menu></laundry-menu>
 
@@ -218,18 +221,6 @@
   </div>
 
   <script>
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDdG-CP2kO3v-zkkjD17Wj028QJvjp54qY",
-      authDomain: "paris-laundry.firebaseapp.com",
-      projectId: "paris-laundry",
-      storageBucket: "paris-laundry.appspot.com",
-      messagingSenderId: "1022712814457",
-      appId: "1:1022712814457:web:7bddb47ed46bac22c32da8"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
     const invoicesBody = document.getElementById("invoicesBody");
     const invoiceModal = document.getElementById("invoiceModal");
