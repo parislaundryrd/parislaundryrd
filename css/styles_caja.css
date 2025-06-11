@@ -426,7 +426,7 @@ td:nth-child(1) {
     height: 40px;
     min-height: 40px;
     background: #30365a;
-    /* border-bottom: 1px solid rgb(221 221 221); */
+    border-bottom: 1px solid rgb(211 211 211);
     border-radius: 12px 12px 0px 0px;
 }
 

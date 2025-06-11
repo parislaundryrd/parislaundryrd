@@ -1,3 +1,20 @@
+
+    .auth-check {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: black;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 24px;
+    }
+
+
 /* MENU  */
 .BarraMenu {
     position: relative;
@@ -23,6 +40,16 @@
     margin-right: 10px;
     margin-left: 10px;
     font-size: 1.6em;
+}
+
+.BarraMenu h2 {
+    text-align: center;
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+    font-size: 9px;
+    font-weight: 100;
+    letter-spacing: 5px;
+    color: #5f5f5f;
 }
 
 .linediv {
@@ -429,6 +456,11 @@
         margin-left: 0px;
         margin-block-start: 0px;
         font-size: 1.2em;
+    }
+
+    .BarraMenu h2 {
+        font-size: 7px;
+        letter-spacing: 4px;
     }
 
     .close_btn {

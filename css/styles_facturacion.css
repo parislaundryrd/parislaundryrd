@@ -1,556 +1,556 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f0c8e8;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0c8e8;
 }
 
 button {
-    -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #clientName,
 #clientPhone,
 #clientAddress {
-    width: 100%;
-    padding: 10px 10px 10px 60px;
-    box-sizing: border-box;
-    border-radius: 14px;
-    border: none;
-    background: #f1d6ef;
-    color: #000000;
-    font-size: 19px;
-    position: relative;
-    -webkit-tap-highlight-color: transparent;
+  width: 100%;
+  padding: 10px 10px 10px 60px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: none;
+  background: #f1d6ef;
+  color: #000000;
+  font-size: 19px;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #clientName:focus,
 #clientPhone:focus,
 #clientAddress:focus {
-    outline: none;
-    border: 0px solid #00000000;
-    box-shadow: 0px 0px 0px 2px rgb(0 0 0);
+  outline: none;
+  border: 0px solid #00000000;
+  box-shadow: 0px 0px 0px 2px rgb(0 0 0);
 }
 
 .MasterBox0 {
-    position: relative;
-    top: 0px;
-    width: 100%;
-    margin: 0 auto;
-    max-width: 1500px;
-    background: #ffffff00;
+  position: relative;
+  top: 0px;
+  width: 100%;
+  margin: 0 auto;
+  max-width: 1500px;
+  background: #ffffff00;
 }
 
 .MasterBox {
-    display: flex;
-    width: 100%;
-    background: #ffffff00;
-    gap: 14px;
+  display: flex;
+  width: 100%;
+  background: #ffffff00;
+  gap: 14px;
 }
 
 
 
 /* Container */
 .container_formfactura {
-    width: 65%;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow-y: auto;
-    background: #ffffff;
-    height: calc(100vh - 74px);
-    display: flex;
-    flex-direction: column;
-    border-radius: 14px;
-    min-height: 130px;
+  width: 65%;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: #ffffff;
+  height: calc(100vh - 74px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  min-height: 130px;
 }
 
 .previewfactura_tittle h2 {
-    margin-block-start: 0px;
-    margin-block-end: 0px;
-    text-align: center;
-    color: #000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
+  margin-block-start: 0px;
+  margin-block-end: 0px;
+  text-align: center;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .previewfactura_body {
-    overflow: auto;
-    flex: 1;
-    padding: 0px 20px;
+  overflow: auto;
+  flex: 1;
+  padding: 0px 20px;
 }
 
 .previewfactura_down {
-    display: inline-flex;
-    width: 100%;
-    background: #ffffff00;
-    border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
-    flex-direction: column;
+  display: inline-flex;
+  width: 100%;
+  background: #ffffff00;
+  border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
+  flex-direction: column;
 }
 
 .previewfactura_down_space {
-    display: inline-flex;
-    width: 100%;
-    background: #ffffff00;
-    justify-content: space-between;
+  display: inline-flex;
+  width: 100%;
+  background: #ffffff00;
+  justify-content: space-between;
 }
 
 .button-list {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .button-list button {
-    padding: 7px 4px;
-    background: #ddd;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 21px;
-    box-shadow: 0px 0px 0px 2px rgba(231, 151, 215, 0) inset;
-    flex: 1 1 calc(20% - 10px);
-    gap: 5px;
+  padding: 7px 4px;
+  background: #ddd;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 21px;
+  box-shadow: 0px 0px 0px 2px rgba(231, 151, 215, 0) inset;
+  flex: 1 1 calc(20% - 10px);
+  gap: 5px;
 }
 
 /* Estilo para 5 botones por fila */
 .button-list:has(button:nth-child(5):last-child) button {
-    flex: 1 1 calc(20% - 10px);
-    /* 5 botones por fila */
+  flex: 1 1 calc(20% - 10px);
+  /* 5 botones por fila */
 }
 
 /* Estilo para 6 botones por fila, 3 arriba y 3 abajo */
 .button-list:has(button:nth-child(6)) button {
-    flex: 1 1 calc(33.333% - 10px);
-    /* 3 botones por fila */
+  flex: 1 1 calc(33.333% - 10px);
+  /* 3 botones por fila */
 }
 
 .button-list:has(button:nth-child(7)) button {
-    flex: 1 1 calc(25% - 10px);
-    /* 3 botones por fila */
+  flex: 1 1 calc(25% - 10px);
+  /* 3 botones por fila */
 }
 
 
 .button-list button:hover {
-    cursor: pointer;
-    background: #ebd8e3;
-    box-shadow: 0px 0px 0px 2px rgb(231 151 215) inset;
-    transition: 0.3s;
+  cursor: pointer;
+  background: #ebd8e3;
+  box-shadow: 0px 0px 0px 2px rgb(231 151 215) inset;
+  transition: 0.3s;
 }
 
 .button-list button:active {
-    cursor: pointer;
-    background: #ebd8e3;
-    box-shadow: 0px 0px 0px 2px rgb(231 151 215) inset;
-    transition: 0.3s;
-    transform: scale(0.95);
+  cursor: pointer;
+  background: #ebd8e3;
+  box-shadow: 0px 0px 0px 2px rgb(231 151 215) inset;
+  transition: 0.3s;
+  transform: scale(0.95);
 }
 
 .button-list button img {
-    width: 56px;
-    height: 56px;
-    border-radius: 10px;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
 }
 
 .button-list button.active {
-    background: #f1d6ef;
-    border-color: #edbbea;
-    color: black;
+  background: #f1d6ef;
+  border-color: #edbbea;
+  color: black;
 }
 
 
 
 .hamper,
 .otro-servicio {
-    padding: 10px;
-    border: 1px solid #8abadb;
-    border-radius: 12px;
-    background: #a9b6fb8a;
-    width: 32%;
-    position: relative;
-    display: inline-flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-direction: column;
-    width: 30%;
-    min-width: 230px;
+  padding: 10px;
+  border: 1px solid #8abadb;
+  border-radius: 12px;
+  background: #a9b6fb8a;
+  width: 32%;
+  position: relative;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  width: 30%;
+  min-width: 230px;
 }
 
 #hamperWeight,
 #itemWeight {
-    display: flex;
-    align-items: center;
-    margin: 5px 0;
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
 }
 
 #hamperWeight input,
 #itemWeight input {
-    width: 51px;
-    text-align: center;
-    margin: 0 7px;
-    padding: 4px 2px;
-    border-color: #969fb9;
-    border-radius: 5px;
-    border-style: solid;
-    border-width: 1px;
-    background: white;
+  width: 51px;
+  text-align: center;
+  margin: 0 7px;
+  padding: 4px 2px;
+  border-color: #969fb9;
+  border-radius: 5px;
+  border-style: solid;
+  border-width: 1px;
+  background: white;
 }
 
 .hamper,
 .otro-servicio {
-    flex: 1 1 calc(33.33% - 4px);
-    /* Toma 1/3 del ancho menos el espacio */
-    box-sizing: border-box;
-    /* Incluye padding y border en el ancho total */
+  flex: 1 1 calc(33.33% - 4px);
+  /* Toma 1/3 del ancho menos el espacio */
+  box-sizing: border-box;
+  /* Incluye padding y border en el ancho total */
 }
 
 /* Media query para ajustar a 2 elementos en pantallas más pequeñas */
 @media (max-width: 800px) {
 
-    .hamper,
-    .otro-servicio {
-        flex: 1 1 calc(50% - 4px);
-        /* Toma 1/2 del ancho menos el espacio */
-    }
+  .hamper,
+  .otro-servicio {
+      flex: 1 1 calc(50% - 4px);
+      /* Toma 1/2 del ancho menos el espacio */
+  }
 }
 
 /* Media query para ajustar a 1 elemento en pantallas muy pequeñas */
 @media (max-width: 500px) {
 
-    .hamper,
-    .otro-servicio {
-        flex: 1 1 100%;
-        /* Toma el 100% del ancho */
-    }
+  .hamper,
+  .otro-servicio {
+      flex: 1 1 100%;
+      /* Toma el 100% del ancho */
+  }
 }
 
 .product-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
 }
 
 .product-item {
-    display: grid;
-    grid-template-columns: 1.2fr 3fr 0.8fr;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    background: #f9f9f9;
-    align-items: center;
+  display: grid;
+  grid-template-columns: 1.2fr 3fr 0.8fr;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: #f9f9f9;
+  align-items: center;
 }
 
 .product-item div {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
 .product-item>div {
-    padding: 10px;
-    /* Espaciado interno para los elementos hijos */
+  padding: 10px;
+  /* Espaciado interno para los elementos hijos */
 }
 
 .product-item>div:not(:last-child) {
-    border-right: 1px solid #ddd;
-    /* Línea divisora a la derecha de cada columna, excepto la última */
+  border-right: 1px solid #ddd;
+  /* Línea divisora a la derecha de cada columna, excepto la última */
 }
 
 .productInput {
-    width: 50px;
-    text-align: center;
-    margin: 0 5px;
+  width: 50px;
+  text-align: center;
+  margin: 0 5px;
 }
 
 .product-header {
-    display: grid;
-    grid-template-columns: 1.2fr 3fr 0.8fr;
-    font-weight: bold;
-    margin-bottom: 0px;
-    text-align: center;
+  display: grid;
+  grid-template-columns: 1.2fr 3fr 0.8fr;
+  font-weight: bold;
+  margin-bottom: 0px;
+  text-align: center;
 }
 
 
 .panelfacturacion_body {
-    overflow: auto;
-    flex: 1;
-    padding: 20px 30px 60px 30px;
+  overflow: auto;
+  flex: 1;
+  padding: 20px 30px 60px 30px;
 }
 
 .panelfacturacion_tittle {
-    height: 40px;
-    min-height: 40px;
-    background: #ffffff00;
-    border-bottom: 1px solid rgb(221 221 221);
+  height: 40px;
+  min-height: 40px;
+  background: #ffffff00;
+  border-bottom: 1px solid rgb(221 221 221);
 }
 
 .panelfacturacion_tittle a {
-    background: #e1e1e1;
-    display: inline-flex;
-    color: #0077de;
-    text-decoration: none;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 5px;
-    border-radius: 9px;
-    margin: 5px;
-    transition: 0.3s;
-    cursor: pointer;
+  background: #e1e1e1;
+  display: inline-flex;
+  color: #0077de;
+  text-decoration: none;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 5px;
+  border-radius: 9px;
+  margin: 5px;
+  transition: 0.3s;
+  cursor: pointer;
 }
 
 .panelfacturacion_tittle a:hover {
-    background: #f1d6ef;
-    transition: 0.3s;
+  background: #f1d6ef;
+  transition: 0.3s;
 }
 
 .panelfacturacion_tittle img {
-    height: 16px;
+  height: 16px;
 }
 
 .panelfacturacion_tittle h2 {
-    margin-block-start: 0px;
-    margin-block-end: 0px;
-    text-align: center;
-    color: #000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 0px 140px;
+  margin-block-start: 0px;
+  margin-block-end: 0px;
+  text-align: center;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0px 140px;
 }
 
 #limpiarFactura2,
 #añadirFactura2 {
-    display: none;
+  display: none;
 }
 
 #limpiarFactura1 {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    border-radius: 12px 5px 5px 5px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  border-radius: 12px 5px 5px 5px;
 }
 
 #añadirFactura1 {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    border-radius: 5px 12px 5px 5px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  border-radius: 5px 12px 5px 5px;
 }
 
 
 .panelfacturacion_down {
-    width: 100%;
-    background: #ffffff00;
-    border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
+  width: 100%;
+  background: #ffffff00;
+  border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
 }
 
 .panelfacturacion_down_RWD {
-    display: none;
+  display: none;
 }
 
 .seleccionempeados {
-    display: inline-flex;
-    flex-direction: column;
-    padding: 4px 10px;
+  display: inline-flex;
+  flex-direction: column;
+  padding: 4px 10px;
 }
 
 .seleccionempeados label {
-    font-family: sans-serif;
-    padding: 0px 0px 0px 2px;
+  font-family: sans-serif;
+  padding: 0px 0px 0px 2px;
 }
 
 .seleccionempeados select {
-    cursor: pointer;
-    height: 27px;
-    background: #8bcdff;
-    border-radius: 6px;
-    border: none;
-    /*padding: 0px 100px 0px 4px;*/
+  cursor: pointer;
+  height: 27px;
+  background: #8bcdff;
+  border-radius: 6px;
+  border: none;
+  /*padding: 0px 100px 0px 4px;*/
 }
 
 .panelfacturacion_down p {
-    margin-block-start: 7px;
-    margin-block-end: 7px;
-    font-size: 14px;
-    text-align: center;
+  margin-block-start: 7px;
+  margin-block-end: 7px;
+  font-size: 14px;
+  text-align: center;
 }
 
 .nombre_div_telefono {
-    display: flex;
-    justify-content: space-between;
-    gap: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
 }
 
 
 .input-cantidad,
 .input-numeroContacto {
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    margin-top: 7px;
-    margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  margin-top: 7px;
+  margin-bottom: 20px;
 }
 
 #InputCantidades {
-    width: 51px;
-    text-align: center;
-    margin: 0 7px;
-    padding: 4px 2px;
-    border-color: #969fb9;
-    border-radius: 5px;
-    border-style: solid;
-    border-width: 1px;
-    background: white;
+  width: 51px;
+  text-align: center;
+  margin: 0 7px;
+  padding: 4px 2px;
+  border-color: #969fb9;
+  border-radius: 5px;
+  border-style: solid;
+  border-width: 1px;
+  background: white;
 }
 
 .cantidad-img {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    pointer-events: none;
-    background: #fdabf7;
-    color: #02cf14;
-    height: 100%;
-    padding: 0px 0px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 14px 0px 0px 14px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  pointer-events: none;
+  background: #fdabf7;
+  color: #02cf14;
+  height: 100%;
+  padding: 0px 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px 0px 0px 14px;
 }
 
 .cantidad-img img {
-    height: 30px;
-    margin: 10px;
+  height: 30px;
+  margin: 10px;
 }
 
 .hamper-master {
-    background: #f4e1f87a;
-    padding: 10px 10px;
-    margin: 10px 0px 0px 0px;
-    border-radius: 14px;
-    box-sizing: border-box;
+  background: #f4e1f87a;
+  padding: 10px 10px;
+  margin: 10px 0px 0px 0px;
+  border-radius: 14px;
+  box-sizing: border-box;
 }
 
 .hamper-master h2 {
-    margin-block-start: 0px;
+  margin-block-start: 0px;
 }
 
 #hamperContainer,
 #otrosServiciosDisplay {
-    position: relative;
-    width: 100%;
-    margin-top: 24px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 4px;
+  position: relative;
+  width: 100%;
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px;
 }
 
 #almohadaWeight img {
-    height: 102px;
-    margin: 14px;
+  height: 102px;
+  margin: 14px;
 }
 
 .btnalmohadas {
-    display: inline-flex;
+  display: inline-flex;
 }
 
 .almohada h3 {
-    margin-block-start: 0px;
-    margin-block-end: 0px;
+  margin-block-start: 0px;
+  margin-block-end: 0px;
 }
 
 .almohada p {
-    margin-block-start: 4px;
-    margin-block-end: 2px;
+  margin-block-start: 4px;
+  margin-block-end: 2px;
 }
 
 #pbold {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 #cerrarhamper,
 .removeOtherService {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    margin: 10px;
-    background: #f57979;
-    border: none;
-    padding: 4px 10px;
-    font-weight: bold;
-    color: #6f0d0d;
-    border-radius: 5px;
-    transition: 0.2s;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  margin: 10px;
+  background: #f57979;
+  border: none;
+  padding: 4px 10px;
+  font-weight: bold;
+  color: #6f0d0d;
+  border-radius: 5px;
+  transition: 0.2s;
 }
 
 #cerrarhamper:hover,
 .removeOtherService:hover {
-    cursor: pointer;
-    background: #d86161;
-    transition: 0.2s;
+  cursor: pointer;
+  background: #d86161;
+  transition: 0.2s;
 }
 
 .hamper img,
 .otro-servicio img {
-    height: 128px;
+  height: 128px;
 }
 
 .hamper p,
 .otro-servicio p {
-    margin-block-start: 4px;
-    margin-block-end: 2px;
-    font-weight: bold;
+  margin-block-start: 4px;
+  margin-block-end: 2px;
+  font-weight: bold;
 }
 
 .hamper h3,
 .otro-servicio h3 {
-    margin-block-start: 0px;
-    margin-block-end: 0px;
-    width: 75%;
-    text-align: center;
+  margin-block-start: 0px;
+  margin-block-end: 0px;
+  width: 75%;
+  text-align: center;
 }
 
 .hamper h5,
 .otro-servicio h5 {
-    margin-block-start: 10px;
-    margin-block-end: 0px;
+  margin-block-start: 10px;
+  margin-block-end: 0px;
 }
 
 #btnmenosmas {
-    border-radius: 100%;
-    border: none;
-    background: #434c65;
-    color: white;
-    padding: 2px 8px;
-    font-size: 21px;
-    transition: 0.2s;
-    font-family: monospace;
+  border-radius: 100%;
+  border: none;
+  background: #434c65;
+  color: white;
+  padding: 2px 8px;
+  font-size: 21px;
+  transition: 0.2s;
+  font-family: monospace;
 }
 
 #btnmenosmas:hover {
-    cursor: pointer;
-    transition: 0.2s;
-    background: #3a4258;
-    transform: scale(0.9);
+  cursor: pointer;
+  transition: 0.2s;
+  background: #3a4258;
+  transform: scale(0.9);
 }
 
 #productSelection {
-    display: grid;
-    gap: 10px;
+  display: grid;
+  gap: 10px;
 }
 
 .productTotal {
-    margin-top: 3px;
-    font-weight: bold;
+  margin-top: 3px;
+  font-weight: bold;
 }
 
 
@@ -560,66 +560,66 @@ button {
 
 
 .container_previewfactura {
-    width: 35%;
-    overflow-y: auto;
-    background: #ffffff00;
-    min-width: 255px;
+  width: 35%;
+  overflow-y: auto;
+  background: #ffffff00;
+  min-width: 255px;
 }
 
 #invoiceResult {
-    background: white;
-    border-radius: 14px;
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 104px);
-    min-height: 133px;
+  background: white;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 104px);
+  min-height: 133px;
 }
 
 .previewfactura_tittle {
-    height: 40px;
-    min-height: 40px;
-    background: #ffffff00;
-    border-bottom: 1px solid rgb(221 221 221);
+  height: 40px;
+  min-height: 40px;
+  background: #ffffff00;
+  border-bottom: 1px solid rgb(221 221 221);
 }
 
 .hidden {
-    display: none;
+  display: none;
 }
 
 .invoice-list {
-    list-style-type: none;
-    padding: 0;
+  list-style-type: none;
+  padding: 0;
 }
 
 .invoice-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
 }
 
 #processInvoice {
-    border: none;
-    background: #52e566;
-    padding: 10px;
-    margin: 10px;
-    border-radius: 9px;
-    font-family: sans-serif;
-    font-size: 15px;
-    font-weight: bold;
-    color: #0e2719;
-    transition: 0.3s;
+  border: none;
+  background: #52e566;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 9px;
+  font-family: sans-serif;
+  font-size: 15px;
+  font-weight: bold;
+  color: #0e2719;
+  transition: 0.3s;
 }
 
 #processInvoice:hover {
-    cursor: pointer;
-    border: none;
-    background: #41c052;
-    transition: 0.3s;
+  cursor: pointer;
+  border: none;
+  background: #41c052;
+  transition: 0.3s;
 }
 
 /* Preview Container FIN */
@@ -629,64 +629,64 @@ button {
 /* Delivery */
 
 #DeliveryButton {
-    flex: 1 1 calc(25% - 10px);
-    padding: 4px;
-    background: #ddd;
-    border-radius: 18px;
-    cursor: pointer;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: auto;
-    flex-direction: column;
-    transition: 0.3s;
-    box-shadow: 0px 0px 0px 2px #a1b3be inset;
-    border: none;
-    font-size: 16px;
-    font-weight: bold;
-    color: #292929;
+  flex: 1 1 calc(25% - 10px);
+  padding: 4px;
+  background: #ddd;
+  border-radius: 18px;
+  cursor: pointer;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  flex-direction: column;
+  transition: 0.3s;
+  box-shadow: 0px 0px 0px 2px #a1b3be inset;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: #292929;
 }
 
 #DeliveryButton:hover {
-    box-shadow: 0px 0px 0px 2px #57b1ec inset;
-    background: #dfe4eb;
+  box-shadow: 0px 0px 0px 2px #57b1ec inset;
+  background: #dfe4eb;
 }
 
 #DeliveryButton.active {
-    box-shadow: 0px 0px 0px 2px #57b1ec inset;
-    background: #eaecff;
-    transition: 0.3s;
-    color: black;
+  box-shadow: 0px 0px 0px 2px #57b1ec inset;
+  background: #eaecff;
+  transition: 0.3s;
+  color: black;
 }
 
 #DeliveryButton img {
-    width: 100%;
-    /* La imagen ocupa el 100% del ancho del botón */
-    height: auto;
-    /* La altura se ajusta automáticamente */
+  width: 100%;
+  /* La imagen ocupa el 100% del ancho del botón */
+  height: auto;
+  /* La altura se ajusta automáticamente */
 }
 
 #deliverySelection input {
-    font-size: 22px;
-    text-align: center;
-    border-radius: 8px;
-    border: none;
-    margin: 4px;
-    box-shadow: 0px 0px 0px 2px rgb(145 145 145) inset;
+  font-size: 22px;
+  text-align: center;
+  border-radius: 8px;
+  border: none;
+  margin: 4px;
+  box-shadow: 0px 0px 0px 2px rgb(145 145 145) inset;
 }
 
 /* Delivery FIN */
 
 
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 5px;
+  width: 8px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #00000041;
-    border-radius: 2px;
+  background: #00000041;
+  border-radius: 2px;
 }
 
 
@@ -694,28 +694,28 @@ button {
 /*  Cube Logo */
 
 .cube-logo {
-    margin-top: 14px;
-    height: 400px;
-    background: #ffffff8a;
-    border-radius: 14px;
-    transition: display 0.3s ease;
-    /* Para una transición suave */
+  margin-top: 14px;
+  height: 400px;
+  background: #ffffff8a;
+  border-radius: 14px;
+  transition: display 0.3s ease;
+  /* Para una transición suave */
 }
 
 .hidden {
-    display: none;
-    /* Clase para ocultar el elemento */
+  display: none;
+  /* Clase para ocultar el elemento */
 }
 
 .Logo-Paris-Laundry {
-    height: 100%;
-    width: 100%;
-    background-image: url(../img/Paris\ Laundry\ 1.png);
-    /* background-size: cover; */
-    /* background-size: 400px; */
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
+  height: 100%;
+  width: 100%;
+  background-image: url(../img/Paris\ Laundry\ 1.png);
+  /* background-size: cover; */
+  /* background-size: 400px; */
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /*  Cube Logo FIN */
@@ -727,303 +727,303 @@ button {
 /* modal_preview_factura_tittle */
 
 .modal {
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background-color: rgb(0 0 0 / 51%);
-    backdrop-filter: blur(12px);
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: rgb(0 0 0 / 51%);
+  backdrop-filter: blur(12px);
 }
 
 .modal-content {
-    background-color: #a6b9d56e;
-    width: 80%;
-    max-width: 970px;
-    border-radius: 10px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: inline-flex;
-    flex-direction: column;
-    max-height: calc(100% - 50px);
+  background-color: #a6b9d56e;
+  width: 80%;
+  max-width: 970px;
+  border-radius: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  flex-direction: column;
+  max-height: calc(100% - 50px);
 }
 
 .close-button {
-    position: absolute;
-    color: #ffffff;
-    right: 0px;
-    font-family: math;
-    font-size: 25px;
-    font-weight: bold;
-    background: red;
-    padding: 0px 15px;
-    border-radius: 7px;
-    margin: 6px;
+  position: absolute;
+  color: #ffffff;
+  right: 0px;
+  font-family: math;
+  font-size: 25px;
+  font-weight: bold;
+  background: red;
+  padding: 0px 15px;
+  border-radius: 7px;
+  margin: 6px;
 }
 
 .close-button:hover,
 .close-button:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 
 .modal_preview_factura_tittle {
-    min-height: 40px;
-    background: #ffffff;
-    border-bottom: 1px solid rgb(221 221 221);
-    border-radius: 12px 12px 0px 0px;
+  min-height: 40px;
+  background: #ffffff;
+  border-bottom: 1px solid rgb(221 221 221);
+  border-radius: 12px 12px 0px 0px;
 }
 
 .modal_preview_factura_tittle h2 {
-    margin-block-start: 0px;
-    margin-block-end: 0px;
-    text-align: center;
-    color: #000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 0px 60px;
+  margin-block-start: 0px;
+  margin-block-end: 0px;
+  text-align: center;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0px 60px;
 }
 
 .modal_preview_factura_body {
-    overflow: auto;
-    flex: 1;
-    padding: 20px 30px 60px 30px;
-    width: 100%;
-    max-width: 470px;
-    background: #ffffff;
-    margin: 17px auto;
-    border-radius: 5px;
+  overflow: auto;
+  flex: 1;
+  padding: 20px 30px 60px 30px;
+  width: 100%;
+  max-width: 470px;
+  background: #ffffff;
+  margin: 17px auto;
+  border-radius: 5px;
 }
 
 .modal_preview_factura_down {
-    width: 100%;
-    background: #ffffff;
-    border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
-    border-radius: 0px 0px 12px 12px;
+  width: 100%;
+  background: #ffffff;
+  border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
+  border-radius: 0px 0px 12px 12px;
 }
 
 .button-metodo-pago {
-    display: inline-flex;
-    justify-content: center;
-    box-sizing: border-box;
-    gap: 24px;
-    padding: 5px 40px;
-    width: 100%;
+  display: inline-flex;
+  justify-content: center;
+  box-sizing: border-box;
+  gap: 24px;
+  padding: 5px 40px;
+  width: 100%;
 }
 
 .button-metodo-pago button {
-    flex: 1 1 calc(50% - 10px);
-    padding: 14px 5px;
-    max-width: 170px;
-    background: #ddd;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.3s;
-    display: flex;
-    justify-content: center;
-    border-radius: 14px;
-    box-shadow: 0px 0px 0px 2px rgba(231, 151, 215, 0) inset;
-    font-size: 16px;
-    display: inline-block;
+  flex: 1 1 calc(50% - 10px);
+  padding: 14px 5px;
+  max-width: 170px;
+  background: #ddd;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s;
+  display: flex;
+  justify-content: center;
+  border-radius: 14px;
+  box-shadow: 0px 0px 0px 2px rgba(231, 151, 215, 0) inset;
+  font-size: 16px;
+  display: inline-block;
 }
 
 .button-metodo-pago button:hover {
-    background: #d0d0d0;
-    transition: 0.3s;
+  background: #d0d0d0;
+  transition: 0.3s;
 }
 
 .button-metodo-pago button span {
-    pointer-events: none;
+  pointer-events: none;
 }
 
 .button-metodo-pago button.active {
-    background: #a1cfff;
-    border: 1px solid #007cff26;
-    box-shadow: 3px 3px 11px 2px rgb(161 207 255);
+  background: #a1cfff;
+  border: 1px solid #007cff26;
+  box-shadow: 3px 3px 11px 2px rgb(161 207 255);
 }
 
 .cashPaymentOptions_master {
-    overflow: auto;
-    width: 100%;
-    background: #ffffff;
-    border-radius: 14px;
+  overflow: auto;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 14px;
 }
 
 .cube-montos {
-    font-size: 26px;
-    font-family: sans-serif;
-    max-width: 470px;
-    margin: 12px auto;
-    margin-bottom: 17px;
-    background: #bac5d59e;
-    padding: 10px 24px 10px 24px;
-    border-radius: 7px;
-    flex-direction: column;
-    gap: 7px;
+  font-size: 26px;
+  font-family: sans-serif;
+  max-width: 470px;
+  margin: 12px auto;
+  margin-bottom: 17px;
+  background: #bac5d59e;
+  padding: 10px 24px 10px 24px;
+  border-radius: 7px;
+  flex-direction: column;
+  gap: 7px;
 }
 
 #cashPaymentOptions input {
-    font-size: 24px;
-    font-weight: bold;
-    color: #000000;
-    width: 100px;
-    border-radius: 10px;
-    border: none;
-    background: #dcfbdf;
-    padding: 4px 2px 2px 10px;
-    box-shadow: 0px 0px 0px 1px rgb(33 159 47) inset;
-    transition: 0.3s;
+  font-size: 24px;
+  font-weight: bold;
+  color: #000000;
+  width: 100px;
+  border-radius: 10px;
+  border: none;
+  background: #dcfbdf;
+  padding: 4px 2px 2px 10px;
+  box-shadow: 0px 0px 0px 1px rgb(33 159 47) inset;
+  transition: 0.3s;
 }
 
 #cashPaymentOptions input:focus-visible {
-    outline: none;
-    /* Elimina el contorno negro */
+  outline: none;
+  /* Elimina el contorno negro */
 }
 
 #cashPaymentOptions input:focus {
-    transition: 0.3s;
-    box-shadow: 0px 0px 0px 1px rgb(33 159 47) inset, 0px 8px 20px -10px rgb(83 245 101);
+  transition: 0.3s;
+  box-shadow: 0px 0px 0px 1px rgb(33 159 47) inset, 0px 8px 20px -10px rgb(83 245 101);
 }
 
 .cube-form-flex {
-    width: 100%;
-    display: inline-flex;
-    justify-content: space-between;
+  width: 100%;
+  display: inline-flex;
+  justify-content: space-between;
 }
 
 /* Ocultar flechas en inputs de tipo number */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* Para Firefox */
 input[type=number] {
-    -moz-appearance: textfield;
-    /* Cambia la apariencia a un campo de texto */
+  -moz-appearance: textfield;
+  /* Cambia la apariencia a un campo de texto */
 }
 
 
 .input-container {
-    display: flex;
-    align-items: center;
-    /* Alinear verticalmente el texto y el input */
+  display: flex;
+  align-items: center;
+  /* Alinear verticalmente el texto y el input */
 }
 
 .prefix {
-    margin-right: 5px;
-    /* Espacio entre el prefijo y el input */
-    font-weight: bold;
-    /* Puedes ajustar el estilo del prefijo */
+  margin-right: 5px;
+  /* Espacio entre el prefijo y el input */
+  font-weight: bold;
+  /* Puedes ajustar el estilo del prefijo */
 }
 
 input[type="text"] {
-    border: 1px solid #ff0000;
-    /* Estilo del borde del input */
-    /*padding: 5px;  Espaciado interno del input */
-    border-radius: 4px;
-    /* Bordes redondeados */
-    width: 100px;
-    /* Ancho del input, ajusta según sea necesario */
+  border: 1px solid #ff0000;
+  /* Estilo del borde del input */
+  /*padding: 5px;  Espaciado interno del input */
+  border-radius: 4px;
+  /* Bordes redondeados */
+  width: 100px;
+  /* Ancho del input, ajusta según sea necesario */
 }
 
 
 .Cube_button_pagado {
-    display: inline-flex;
-    justify-content: center;
-    box-sizing: border-box;
-    gap: 24px;
-    padding: 12px 40px;
-    width: 100%;
-    border-top: 1px solid rgb(189 189 189);
+  display: inline-flex;
+  justify-content: center;
+  box-sizing: border-box;
+  gap: 24px;
+  padding: 12px 40px;
+  width: 100%;
+  border-top: 1px solid rgb(189 189 189);
 }
 
 .Cube_button_pagado button {
-    flex: 1 1 calc(50% - 10px);
-    padding: 4px 4px 4px 0px;
-    max-width: 170px;
-    background: #ddd;
-    border: none;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.3s;
-    justify-content: center;
-    border-radius: 9px;
-    font-size: 16px;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
+  flex: 1 1 calc(50% - 10px);
+  padding: 4px 4px 4px 0px;
+  max-width: 170px;
+  background: #ddd;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s;
+  justify-content: center;
+  border-radius: 9px;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
 
 .Cube_button_pagado button img {
-    height: 32px;
+  height: 32px;
 }
 
 #paid {
-    background: #00ff004a;
-    box-shadow: 0px 0px 0px 1px rgb(54 255 0) inset;
-    transition: 0.3S;
+  background: #00ff004a;
+  box-shadow: 0px 0px 0px 1px rgb(54 255 0) inset;
+  transition: 0.3S;
 }
 
 #paid:hover {
-    background: #00bb6b87;
-    transition: 0.3S;
+  background: #00bb6b87;
+  transition: 0.3S;
 }
 
 #pendingPayment {
-    background: #f9ff0036;
-    box-shadow: 0px 0px 0px 1px #ffdc00 inset;
-    transition: 0.3S;
+  background: #f9ff0036;
+  box-shadow: 0px 0px 0px 1px #ffdc00 inset;
+  transition: 0.3S;
 }
 
 #pendingPayment:hover {
-    background: #ffd21e94;
-    transition: 0.3S;
+  background: #ffd21e94;
+  transition: 0.3S;
 }
 
 #partialPayment {
-    background: #ff9b0036;
-    box-shadow: 0px 0px 0px 1px #ff6700b3 inset;
-    transition: 0.3S;
+  background: #ff9b0036;
+  box-shadow: 0px 0px 0px 1px #ff6700b3 inset;
+  transition: 0.3S;
 }
 
 #partialPayment:hover {
-    background: #ff9b0061;
-    transition: 0.3S;
+  background: #ff9b0061;
+  transition: 0.3S;
 }
 
 #partialAmount {
-    border: 1px solid #ff812b;
-    background: #ffeadb;
-    border-radius: 7px;
-    width: 90px;
-    font-size: 20px;
-    height: 28px;
-    padding: 0px 7px;
+  border: 1px solid #ff812b;
+  background: #ffeadb;
+  border-radius: 7px;
+  width: 90px;
+  font-size: 20px;
+  height: 28px;
+  padding: 0px 7px;
 }
 
 #partialAmount:focus {
-    outline: none;
-    border: 1px solid #00000000;
-    box-shadow: 0px 0px 0px 2px rgb(255 162 99);
+  outline: none;
+  border: 1px solid #00000000;
+  box-shadow: 0px 0px 0px 2px rgb(255 162 99);
 }
 
 
 .disabled {
-    filter: grayscale(1);
-    pointer-events: none;
-    /* Deshabilita la interacción */
-    background: white !important;
+  filter: grayscale(1);
+  pointer-events: none;
+  /* Deshabilita la interacción */
+  background: white !important;
 }
 
 /* modal_preview_factura_tittle FIN */
@@ -1034,386 +1034,386 @@ input[type="text"] {
 /* Modal factura procesada */
 
 .factura_processed_tittle {
-    height: 40px;
-    min-height: 40px;
-    background: #ffffff;
-    border-bottom: 1px solid rgb(221 221 221);
-    border-radius: 12px 12px 0px 0px;
+  height: 40px;
+  min-height: 40px;
+  background: #ffffff;
+  border-bottom: 1px solid rgb(221 221 221);
+  border-radius: 12px 12px 0px 0px;
 }
 
 .factura_processed_tittle h2 {
-    margin-block-start: 0px;
-    margin-block-end: 0px;
-    text-align: center;
-    color: #000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 0px 60px;
+  margin-block-start: 0px;
+  margin-block-end: 0px;
+  text-align: center;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0px 60px;
 }
 
 #processedInvoiceDetails {
-    overflow: auto;
-    flex: 1;
-    padding: 20px 30px 60px 30px;
-    width: 100%;
-    max-width: 470px;
-    background: #ffffff;
-    margin: 17px auto;
-    border-radius: 5px;
+  overflow: auto;
+  flex: 1;
+  padding: 20px 30px 60px 30px;
+  width: 100%;
+  max-width: 470px;
+  background: #ffffff;
+  margin: 17px auto;
+  border-radius: 5px;
 }
 
 
 
 .factura_processed_down {
-    width: 100%;
-    background: #ffffff;
-    border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
-    border-radius: 0px 0px 12px 12px;
+  width: 100%;
+  background: #ffffff;
+  border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
+  border-radius: 0px 0px 12px 12px;
 }
 
 .container_factura_processed_down {
-    padding: 5px 30px;
-    width: 100%;
-    max-width: 470px;
-    background: #ffffff;
-    margin: 0px auto;
+  padding: 5px 30px;
+  width: 100%;
+  max-width: 470px;
+  background: #ffffff;
+  margin: 0px auto;
 }
 
 .container_flex_factura_processed_down {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    gap: 7px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 7px;
 }
 
 .container_flex_factura_processed_down p {
-    margin-block-start: 2px;
-    margin-block-end: 2px;
+  margin-block-start: 2px;
+  margin-block-end: 2px;
 }
 
 .container_flex_factura_processed_down img {
-    height: 90px;
+  height: 90px;
 }
 
 .container_flex_factura_processed_down span {
-    font-weight: bold;
-    background: #0093ff;
-    color: white;
-    padding: 10px 12px;
-    border-radius: 7px;
-    min-width: 50px;
+  font-weight: bold;
+  background: #0093ff;
+  color: white;
+  padding: 10px 12px;
+  border-radius: 7px;
+  min-width: 50px;
 }
 
 
 .container_flex_factura_processed_down button {
-    min-width: 109px;
-    padding: 4px 10px;
-    background: #02ab02;
-    color: aliceblue;
-    border: none;
-    border-radius: 9px;
-    font-size: 16px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    flex-direction: row;
-    justify-content: center;
-    transition: 0.3s;
+  min-width: 109px;
+  padding: 4px 10px;
+  background: #02ab02;
+  color: aliceblue;
+  border: none;
+  border-radius: 9px;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-direction: row;
+  justify-content: center;
+  transition: 0.3s;
 }
 
 .container_flex_factura_processed_down button:hover {
-    cursor: pointer;
-    background: #007000;
-    transition: 0.3s;
+  cursor: pointer;
+  background: #007000;
+  transition: 0.3s;
 }
 
 .container_flex_factura_processed_down button img {
-    height: 25px;
+  height: 25px;
 }
 
 
 /* Abono */
 
 #abonobox_master {
-    font-size: 20px;
-    font-family: sans-serif;
-    max-width: 470px;
-    margin: 12px auto;
-    margin-bottom: 17px;
-    background: #bac5d59e;
-    padding: 10px 24px 10px 24px;
-    border-radius: 7px;
-    display: flex
+  font-size: 20px;
+  font-family: sans-serif;
+  max-width: 470px;
+  margin: 12px auto;
+  margin-bottom: 17px;
+  background: #bac5d59e;
+  padding: 10px 24px 10px 24px;
+  border-radius: 7px;
+  display: flex
 ;
-    justify-content: space-between;
-    align-items: center;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .abono-checkbox-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    padding: 10px;
-    background-color: #f8f8f8;
-    border-radius: 8px;
-    margin: 15px 0;
-  }
-  
-  .abono-checkbox-container input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-  }
-  
-  .abono-checkbox-container label {
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-  }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  margin: 15px 0;
+}
+
+.abono-checkbox-container input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.abono-checkbox-container label {
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+}
 
 /* Abono FIN */
-  
+
 
 
 /* Modal factura procesada FIN */
 
 @media screen and (max-width: 900px) {
-    .button-list button {
-        flex: 1 1 calc(50% - 10px) !important;
-    }
+  .button-list button {
+      flex: 1 1 calc(50% - 10px) !important;
+  }
 
-    .panelfacturacion_tittle h2 {
-        font-size: 18px;
-    }
+  .panelfacturacion_tittle h2 {
+      font-size: 18px;
+  }
 
 }
 
 @media screen and (max-width: 780px) {
 
-    #limpiarFactura1,
-    #añadirFactura1 {
-        display: none;
-    }
+  #limpiarFactura1,
+  #añadirFactura1 {
+      display: none;
+  }
 
-    #limpiarFactura2,
-    #añadirFactura2 {
-        display: inline-flex;
-    }
+  #limpiarFactura2,
+  #añadirFactura2 {
+      display: inline-flex;
+  }
 
-    #limpiarFactura2 {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        border-radius: 12px 5px 5px 5px;
-    }
+  #limpiarFactura2 {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      border-radius: 12px 5px 5px 5px;
+  }
 
-    #añadirFactura2 {
-        position: absolute;
-        top: 0px;
-        right: 0px;
-        border-radius: 5px 12px 5px 5px;
-    }
+  #añadirFactura2 {
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      border-radius: 5px 12px 5px 5px;
+  }
 
 }
 
 
 @media screen and (max-width: 750px) {
-    .MasterBox {
-        display: flex;
-        flex-direction: column-reverse;
-    }
+  .MasterBox {
+      display: flex;
+      flex-direction: column-reverse;
+  }
 
-    .panelfacturacion_tittle h2 {
-        font-size: 17px;
-    }
+  .panelfacturacion_tittle h2 {
+      font-size: 17px;
+  }
 
-    .container_previewfactura {
-        width: 100%;
-    }
+  .container_previewfactura {
+      width: 100%;
+  }
 
-    .container_formfactura {
-        width: 100%;
-        position: relative;
-        height: auto;
-    }
+  .container_formfactura {
+      width: 100%;
+      position: relative;
+      height: auto;
+  }
 
-    .panelfacturacion_body {
-        overflow: auto;
-        flex: 1;
-        padding: 20px 10px 20px 10px;
-    }
+  .panelfacturacion_body {
+      overflow: auto;
+      flex: 1;
+      padding: 20px 10px 20px 10px;
+  }
 
-    .panelfacturacion_down {
-        display: none;
-    }
+  .panelfacturacion_down {
+      display: none;
+  }
 
-    .panelfacturacion_down_RWD {
-        display: block;
-        width: 100%;
-        background: #ffffff00;
-        border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
-    }
+  .panelfacturacion_down_RWD {
+      display: block;
+      width: 100%;
+      background: #ffffff00;
+      border-top: 1px solid hsl(208.13deg 44.59% 87.48%);
+  }
 
-    .panelfacturacion_down_RWD p {
-        margin-block-start: 7px;
-        margin-block-end: 7px;
-        font-size: 14px;
-        text-align: center;
-    }
+  .panelfacturacion_down_RWD p {
+      margin-block-start: 7px;
+      margin-block-end: 7px;
+      font-size: 14px;
+      text-align: center;
+  }
 
-    .nombre_div_telefono {
-        gap: 0px;
-        flex-direction: column;
-    }
+  .nombre_div_telefono {
+      gap: 0px;
+      flex-direction: column;
+  }
 
-    .button-list {
+  .button-list {
 
-        flex-wrap: wrap;
-        gap: 4px;
-    }
+      flex-wrap: wrap;
+      gap: 4px;
+  }
 
-    .input-cantidad,
-    .input-numeroContacto {
-        margin-top: 0px;
-        margin-bottom: 7px;
-    }
+  .input-cantidad,
+  .input-numeroContacto {
+      margin-top: 0px;
+      margin-bottom: 7px;
+  }
 
-    #detalles-hidden {
-        display: none;
-    }
+  #detalles-hidden {
+      display: none;
+  }
 
-    .product-item {
-        grid-template-columns: 1fr 0.8fr;
-    }
+  .product-item {
+      grid-template-columns: 1fr 0.8fr;
+  }
 
-    .product-header {
-        grid-template-columns: 1fr 0.8fr;
-    }
+  .product-header {
+      grid-template-columns: 1fr 0.8fr;
+  }
 
-    #deliverySelection {
-        flex-wrap: nowrap;
-        gap: 4px;
-        width: 100%;
-        overflow: auto;
-    }
+  #deliverySelection {
+      flex-wrap: nowrap;
+      gap: 4px;
+      width: 100%;
+      overflow: auto;
+  }
 
-    .button-list button {
-        height: auto;
-        display: inline-flex;
-        flex-direction: column;
-        flex: 1 1 calc(50% - 10px) !important;
-        gap: 0px;
-    }
+  .button-list button {
+      height: auto;
+      display: inline-flex;
+      flex-direction: column;
+      flex: 1 1 calc(50% - 10px) !important;
+      gap: 0px;
+  }
 
-    #DeliveryButton {
-        width: 24%;
-        font-size: 14px;
-    }
+  #DeliveryButton {
+      width: 24%;
+      font-size: 14px;
+  }
 
-    #deliverySelection input {
-        width: 85%;
-    }
+  #deliverySelection input {
+      width: 85%;
+  }
 
-    .BarraMenu h1 {
-        font-size: 1.4em;
-    }
+  .BarraMenu h1 {
+      font-size: 1.4em;
+  }
 
-    #DeliveryButton {
-        box-shadow: 0px 0px 0px 1px #a1b3be inset;
-    }
+  #DeliveryButton {
+      box-shadow: 0px 0px 0px 1px #a1b3be inset;
+  }
 
-    #DeliveryButton:hover {
-        box-shadow: 0px 0px 0px 2px #57b1ec inset;
-    }
+  #DeliveryButton:hover {
+      box-shadow: 0px 0px 0px 2px #57b1ec inset;
+  }
 
-    #DeliveryButton.active {
-        box-shadow: 0px 0px 0px 2px #57b1ec inset;
-    }
+  #DeliveryButton.active {
+      box-shadow: 0px 0px 0px 2px #57b1ec inset;
+  }
 
-    #deliverySelection input {
-        box-shadow: 0px 0px 0px 1px rgb(145 145 145) inset;
-    }
+  #deliverySelection input {
+      box-shadow: 0px 0px 0px 1px rgb(145 145 145) inset;
+  }
 
-    .modal-content {
-        width: 100%;
-        top: 0px;
-        left: 0px;
-        transform: translate(0%, 0%);
-        max-height: calc(100% - 0px);
-        height: 100%;
-    }
+  .modal-content {
+      width: 100%;
+      top: 0px;
+      left: 0px;
+      transform: translate(0%, 0%);
+      max-height: calc(100% - 0px);
+      height: 100%;
+  }
 
-    .modal_preview_factura_tittle,
-    .factura_processed_tittle {
-        border-radius: 0px;
-    }
+  .modal_preview_factura_tittle,
+  .factura_processed_tittle {
+      border-radius: 0px;
+  }
 
-    .modal_preview_factura_tittle h2,
-    .factura_processed_tittle h2 {
-        font-size: 17px;
-    }
+  .modal_preview_factura_tittle h2,
+  .factura_processed_tittle h2 {
+      font-size: 17px;
+  }
 
-    .modal_preview_factura_down,
-    .container_factura_processed_down {
-        border-radius: 0px;
-    }
+  .modal_preview_factura_down,
+  .container_factura_processed_down {
+      border-radius: 0px;
+  }
 
-    .modal_preview_factura_down h2 {
-        font-size: 17px;
-    }
+  .modal_preview_factura_down h2 {
+      font-size: 17px;
+  }
 
-    .button-metodo-pago {
-        gap: 10px;
-    }
+  .button-metodo-pago {
+      gap: 10px;
+  }
 
-    .modal_preview_factura_body,
-    #processedInvoiceDetails {
-        width: 90%;
-        box-sizing: border-box;
-        padding: 14px 14px 24px 14px;
-        font-size: 0.8em;
-    }
+  .modal_preview_factura_body,
+  #processedInvoiceDetails {
+      width: 90%;
+      box-sizing: border-box;
+      padding: 14px 14px 24px 14px;
+      font-size: 0.8em;
+  }
 
-    .button-metodo-pago button {
-        padding: 5px 5px;
-        font-size: 12px;
-        display: inline-grid;
-    }
+  .button-metodo-pago button {
+      padding: 5px 5px;
+      font-size: 12px;
+      display: inline-grid;
+  }
 
-    .button-metodo-pago button.active {
-        box-shadow: 3px 3px 11px 2px rgb(161 207 255 / 28%);
-    }
+  .button-metodo-pago button.active {
+      box-shadow: 3px 3px 11px 2px rgb(161 207 255 / 28%);
+  }
 
-    .cube-form-flex {
-        font-size: 15px;
-        align-items: center;
-    }
+  .cube-form-flex {
+      font-size: 15px;
+      align-items: center;
+  }
 
-    .cube-montos {
-        display: flex;
-        margin: 10px 14px;
-        padding: 7px 14px;
-    }
+  .cube-montos {
+      display: flex;
+      margin: 10px 14px;
+      padding: 7px 14px;
+  }
 
-    #cashPaymentOptions input {
-        font-size: 15px;
-        width: 75px;
-        border-radius: 5px;
-    }
+  #cashPaymentOptions input {
+      font-size: 15px;
+      width: 75px;
+      border-radius: 5px;
+  }
 
-    .Cube_button_pagado {
-        padding: 12px 12px;
-        font-size: 12px;
-    }
+  .Cube_button_pagado {
+      padding: 12px 12px;
+      font-size: 12px;
+  }
 
-    .container_factura_processed_down {
-        padding: 5px 24px;
-        box-sizing: border-box;
-    }
+  .container_factura_processed_down {
+      padding: 5px 24px;
+      box-sizing: border-box;
+  }
 
 }
