@@ -423,7 +423,7 @@
         serviceDiv.dataset.name = data.nombre;
         serviceDiv.innerHTML = `
   <h3>${data.nombre} RD$${data.precio}</h3>
-  <img src="./img/icon/${data.icon}" alt="${data.nombre}">
+  <img src="${data.icon}" alt="${data.nombre}" style="border-radius: 14px;">
   <h5>Cantidad</h5>
   <div id="itemWeight">
       <button id="btnmenosmas" type="button" class="decreaseItem">-</button>
@@ -916,41 +916,49 @@ ${asumirPor !== "desactivado" ? `
     loadEmployees();
 
 
-    document.getElementById("processInvoice").addEventListener("click", () => {
-      const clientName = document.getElementById("clientName").value.trim();
-      const clientPhone = document.getElementById("clientPhone").value.replace(/-/g, ''); // Eliminar guiones
-      const empleadoSelect = document.getElementById("empleado");
+   document.getElementById("processInvoice").addEventListener("click", async () => {
+  // Verificar estado de la caja primero
+  const cajaAbierta = await verificarEstadoCaja();
+  if (!cajaAbierta) {
+    alert("Caja cerrada, por favor abrirla para facturar.");
+    return;
+  }
 
-      // Validación del número de teléfono
-      if (clientPhone.length < 10) {
-        alert("El número de teléfono debe tener al menos 10 caracteres.");
-        return;
-      }
+  // El resto del código existente...
+  const clientName = document.getElementById("clientName").value.trim();
+  const clientPhone = document.getElementById("clientPhone").value.replace(/-/g, '');
+  const empleadoSelect = document.getElementById("empleado");
 
-      if (!empleadoSelect.value) {
-        alert("Por favor, selecciona un empleado.");
-        return;
-      }
+  // Validación del número de teléfono
+  if (clientPhone.length < 10) {
+    alert("El número de teléfono debe tener al menos 10 caracteres.");
+    return;
+  }
 
-      if (!clientName || !clientPhone) {
-        alert("Por favor, completa el nombre del cliente.");
-        return;
-      }
+  if (!empleadoSelect.value) {
+    alert("Por favor, selecciona un empleado.");
+    return;
+  }
 
-      // Validación del nombre del cliente
-      if (!clientName.includes(" ") || clientName.split(" ")[1].length < 1) {
-        alert("Debes colocar el apellido del cliente");
-        return;
-      }
+  if (!clientName || !clientPhone) {
+    alert("Por favor, completa el nombre del cliente.");
+    return;
+  }
 
-      const invoiceDetails = document.getElementById("invoiceDetails").innerHTML;
-      document.getElementById("modalInvoiceDetails").innerHTML = invoiceDetails;
+  // Validación del nombre del cliente
+  if (!clientName.includes(" ") || clientName.split(" ")[1].length < 1) {
+    alert("Debes colocar el apellido del cliente");
+    return;
+  }
 
-      const total = calculateTotal();
-      document.getElementById("totalToPay").textContent = `RD$${total.toFixed(2)}`;
+  const invoiceDetails = document.getElementById("invoiceDetails").innerHTML;
+  document.getElementById("modalInvoiceDetails").innerHTML = invoiceDetails;
 
-      document.getElementById("confirmationModal").classList.remove("hidden");
-    });
+  const total = calculateTotal();
+  document.getElementById("totalToPay").textContent = `RD$${total.toFixed(2)}`;
+
+  document.getElementById("confirmationModal").classList.remove("hidden");
+});
 
     document.querySelector(".close-button").addEventListener("click", () => {
       document.getElementById("confirmationModal").classList.add("hidden");
@@ -1143,6 +1151,37 @@ ${asumirPor !== "desactivado" ? `
       document.getElementById("paid").classList.add("disabled");
       document.getElementById("partialPayment").classList.add("disabled");
     });
+
+
+
+
+    // Función para verificar si la caja está abierta
+const verificarEstadoCaja = async () => {
+  try {
+    const cajaSnapshot = await db.collection("caja").get();
+    if (!cajaSnapshot.empty) {
+      const cajaDoc = cajaSnapshot.docs[0].data();
+      
+      // Verificar si hay una hora de inicio de caja y no hay cierre reciente
+      const inicioCajaHora = cajaDoc.inicioCajaHora ? cajaDoc.inicioCajaHora.toDate() : null;
+      const cierreCajaHora = cajaDoc.cierreCajaHora ? cajaDoc.cierreCajaHora.toDate() : null;
+      
+      // La caja está abierta si:
+      // 1. Hay hora de inicio Y
+      // 2. No hay hora de cierre O la hora de inicio es más reciente que la de cierre
+      if (inicioCajaHora && (!cierreCajaHora || inicioCajaHora > cierreCajaHora)) {
+        return true; // Caja abierta
+      }
+    }
+    return false; // Caja cerrada
+  } catch (error) {
+    console.error("Error al verificar estado de caja:", error);
+    return false; // En caso de error, asumir caja cerrada
+  }
+};
+
+
+
 
     const processInvoice = async (status, isPartialPayment = false, partialAmount = 0) => {
       // Si el estado es "pago pendiente", no se necesita un método de pago
