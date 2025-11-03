@@ -285,79 +285,79 @@
 
     loadEmployees();
 
-    // Función para cargar facturas con paginación
-    const loadInvoices = async (status, loadMore = false) => {
-      currentStatus = status;
+  // Función para cargar facturas con paginación
+const loadInvoices = async (status, loadMore = false) => {
+  currentStatus = status;
 
-      if (!loadMore) {
-        // Si es una carga nueva, reiniciamos
-        invoices = [];
-        invoicesBody.innerHTML = "";
-        lastInvoiceDoc = null;
-        loadMoreContainer.style.display = "none";
-        noMoreInvoices.style.display = "none";
+  if (!loadMore) {
+    // Si es una carga nueva, reiniciamos
+    invoices = [];
+    invoicesBody.innerHTML = "";
+    lastInvoiceDoc = null;
+    loadMoreContainer.style.display = "none";
+    noMoreInvoices.style.display = "none";
+  }
+
+  try {
+    let query = db.collection("facturas")
+      .where("status", "==", status)
+      .orderBy("timestamp", "desc")
+      .limit(15);
+
+    if (loadMore && lastInvoiceDoc) {
+      query = query.startAfter(lastInvoiceDoc);
+    }
+
+    const snapshot = await query.get();
+
+    if (snapshot.empty) {
+      if (loadMore) {
+        // No hay más facturas para cargar
+        noMoreInvoices.style.display = "inline-flex";
+        loadMoreInvoicesBtn.style.display = "none";
+      } else {
+        // No hay facturas en absoluto
+        document.getElementById("noInvoicesMessage").classList.remove("hidden");
       }
+      return;
+    }
 
-      try {
-        let query = db.collection("facturas")
-          .where("status", "==", status)
-          .orderBy("timestamp", "desc")
-          .limit(15);
+    // Ocultar mensaje de no hay facturas si estamos cargando más
+    document.getElementById("noInvoicesMessage").classList.add("hidden");
 
-        if (loadMore && lastInvoiceDoc) {
-          query = query.startAfter(lastInvoiceDoc);
+    // Guardamos el último documento para la paginación
+    lastInvoiceDoc = snapshot.docs[snapshot.docs.length - 1];
+
+    // Procesamos los nuevos documentos
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.timestamp instanceof firebase.firestore.Timestamp) {
+        // Verificar que la factura no exista ya en el array
+        if (!invoices.some(invoice => invoice.id === doc.id)) {
+          invoices.push({ id: doc.id, ...data });
         }
-
-        const snapshot = await query.get();
-
-        if (snapshot.empty) {
-          if (loadMore) {
-            // No hay más facturas para cargar
-            noMoreInvoices.style.display = "inline-flex";
-            loadMoreInvoicesBtn.style.display = "none";
-          } else {
-            // No hay facturas en absoluto
-            document.getElementById("noInvoicesMessage").classList.remove("hidden");
-          }
-          return;
-        }
-
-        // Ocultar mensaje de no hay facturas si estamos cargando más
-        document.getElementById("noInvoicesMessage").classList.add("hidden");
-
-        // Guardamos el último documento para la paginación
-        lastInvoiceDoc = snapshot.docs[snapshot.docs.length - 1];
-
-        // Procesamos los nuevos documentos
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.timestamp instanceof firebase.firestore.Timestamp) {
-            // Verificar que la factura no exista ya en el array
-            if (!invoices.some(invoice => invoice.id === doc.id)) {
-              invoices.push({ id: doc.id, ...data });
-            }
-          }
-        });
-
-        // Mostrar u ocultar el botón de cargar más
-        if (snapshot.docs.length === 15 && status === "pagado entregado") {
-          loadMoreContainer.style.display = "block";
-          loadMoreInvoicesBtn.style.display = "inline-flex";
-          noMoreInvoices.style.display = "none";
-        } else if (loadMore) {
-          // Si estamos cargando más y no llegamos al límite, ocultar el botón
-          loadMoreInvoicesBtn.style.display = "none";
-          noMoreInvoices.style.display = "inline-flex";
-        }
-
-        // Renderizar las facturas
-        renderInvoices();
-        updateTitleAndBackground(status);
-      } catch (error) {
-        console.error("Error al cargar facturas:", error);
-        alert("Error al cargar facturas. Intente nuevamente.");
       }
-    };
+    });
+
+    // CORRECCIÓN: Mostrar u ocultar el botón de cargar más para TODOS los estados
+    if (snapshot.docs.length === 15) {
+      loadMoreContainer.style.display = "block";
+      loadMoreInvoicesBtn.style.display = "inline-flex";
+      noMoreInvoices.style.display = "none";
+    } else if (loadMore) {
+      // Si estamos cargando más y no llegamos al límite, ocultar el botón
+      loadMoreInvoicesBtn.style.display = "none";
+      noMoreInvoices.style.display = "inline-flex";
+    }
+
+    // Renderizar las facturas
+    renderInvoices();
+    updateTitleAndBackground(status);
+  } catch (error) {
+    console.error("Error al cargar facturas:", error);
+    alert("Error al cargar facturas. Intente nuevamente.");
+  }
+};
 
 
     // Función para renderizar las facturas en la tabla
@@ -1375,5 +1375,6 @@ searchInput.addEventListener("input", () => {
 </body>
 
 </html>
+
 
 <!-- 7 -->
