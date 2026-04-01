@@ -1433,7 +1433,7 @@ const verificarEstadoCaja = async () => {
 
       // Generar el ID aquí; si hay error se captura en el try/catch de abajo
       let _lastId;
-      try { _lastId = await getLastInvoiceId(); } catch(e) { _lastId = "ch00000"; }
+      try { _lastId = await getLastInvoiceId(); } catch(e) { _lastId = "ar00000"; }
 
       const invoiceData = {
         id: generateNewInvoiceId(_lastId),
@@ -1465,7 +1465,7 @@ const verificarEstadoCaja = async () => {
           price: deliveryPrice || "0"
         }] : [{ name: "Sin Delivery", price: "0" }],
         selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
-          name: product.closest('.product-item').querySelector('.productNombre')?.textContent || product.closest('.product-item').dataset.nombre || "",
+          name: product.closest('.product-item').dataset.nombre || "",
           quantity: parseInt(product.value) || 0,
           price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0
         })).filter(product => product.quantity > 0),
@@ -1689,7 +1689,7 @@ const verificarEstadoCaja = async () => {
     };
 
     const getLastInvoiceId = async () => {
-      let lastId = "ch00000";
+      let lastId = "ar00000";
       const snapshot = await db.collection("facturas-por-dia")
         .orderBy("fecha", "desc")
         .limit(10)
@@ -1701,7 +1701,7 @@ const verificarEstadoCaja = async () => {
           if (data.facturas && data.facturas.length > 0) {
             const ids = data.facturas
               .map(f => f.id)
-              .filter(id => id && id.startsWith('ch'));
+              .filter(id => id && (id.startsWith('ar') || id.startsWith('ch')));
             for (const id of ids) {
               if (parseInt(id.substring(2)) > parseInt(lastId.substring(2))) {
                 lastId = id;
@@ -1716,7 +1716,7 @@ const verificarEstadoCaja = async () => {
     const generateNewInvoiceId = (lastId) => {
       const lastNumber = parseInt(lastId.substring(2));
       const newNumber = lastNumber + 1;
-      return `ch${String(newNumber).padStart(5, '0')}`;
+      return `ar${String(newNumber).padStart(5, '0')}`;
     };
 
 
