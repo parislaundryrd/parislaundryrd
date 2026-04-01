@@ -96,7 +96,7 @@ h1 {
 
 .product-item {
     display: grid;
-    grid-template-columns: 0.1fr 0.1fr 3fr 7fr 1fr 1fr 0.1fr 0.1fr 0.1fr;
+    grid-template-columns: 0.1fr 0.1fr 3fr 7fr 1fr 1fr 0.1fr 0.1fr 0.1fr 0.1fr;
     border-radius: 10px;
     background: #e6f3ff;
     align-items: center;

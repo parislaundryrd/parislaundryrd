@@ -4,1948 +4,1937 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard de Contabilidad - Paris Laundry</title>
+  <title>Contabilidad — Paris Laundry</title>
   <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
-  <link rel="stylesheet" href="./css/styles_contabilidad.css">
   <link rel="stylesheet" href="./css/styles_menu.css">
+  <link rel="stylesheet" href="./css/styles_contabilidad.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
   <script src="./js/app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="./js/menu.js" defer></script>
-  <style>
-    .transaction-table-container {
-      min-height: 160px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      border-radius: 0px 0px 10px 10px;
-    }
 
-    .transaction-table {
-      width: 100%;
-      border-collapse: collapse;
-      /* Colapsar bordes */
-    }
-
-    .transaction-table th,
-    .transaction-table td {
-      padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid #b3cfe7;
-      /* Línea entre filas */
-      cursor: pointer;
-      /* Cambiar cursor al pasar sobre las filas */
-    }
-
-    .transaction-table th {
-      background-color: #c6daf3;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .highlight {
-      background-color: yellow;
-    }
-  </style>
 </head>
 
 <body>
 
-  <div class="MasterBox0" style="display: none;">
-
+  <div class="MasterBox0" style="display:none;">
     <laundry-menu></laundry-menu>
 
-    <!-- Contenedor de inventario -->
-    <div class="container_contabilidad">
+    <div class="pl-page">
 
-      <!-- Titulo -->
       <div class="panelContabilidad_tittle">
         <h2>Contabilidad</h2>
       </div>
-      <!-- Titulo FIN -->
 
-      <!-- body -->
       <div class="panelContabilidad_body">
-
-        <!-- Resumen -->
-        <div class="ResumenBox-Master">
-          <div class="summary" id="summary">
-            <h2 style="margin-block-start: 5px;margin-block-end: 5px;text-align: center;">Resumen Total</h2>
-            <p id="IngresoStyle">Ingresos Total: <span id="totalIncome" style="color: black;">0.00</span></p>
-            <p id="GastoStyle">Gastos Total: <span id="totalExpenses" style="color: black;">0.00</span></p>
-            <p id="BalanceStyle">Balance Total: <span id="balance" style="color: black;">0.00</span></p>
+        <!-- ── HEADER ── -->
+        <header class="pl-header">
+          <div class="pl-header-brand">
+            <h1>Paris Laundry <em>— Contabilidad</em></h1>
+            <span class="dateline" id="headerDateLabel">cargando…</span>
           </div>
-
-          <!-- Filtrar por Fecha -->
-          <div class="filter">
-            <h2 style="margin-block-start: 5px;margin-block-end: 5px;text-align: center;">Filtrar por Fecha</h2>
-            <div style="margin-top: 14px;display: inline-flex;gap: 20px;">
-              <div class="fechaCSS">
-                <label for="startDate" style="font-weight: bold;">Desde:</label>
-                <input type="date" id="startDate">
-              </div>
-              <div class="fechaCSS">
-                <label for="endDate" style="font-weight: bold;">Hasta:</label>
-                <input type="date" id="endDate">
-              </div>
-            </div>
-            <button id="filterButton">Filtrar Fecha</button>
-            <button id="resetFilterButton">Borrar Fecha</button>
+          <div class="pl-header-actions">
           </div>
-          <!-- Filtrar por Fecha FIN -->
+        </header>
 
-          <!-- Chart -->
-          <div class="Chart-Master">
-            <div class="ChartCSS">
-              <div class="box-año-dashboard" style="display: inline-flex;align-items: center;margin: 7px 0px;">
-                <h2 style="margin-block-start: -4px;margin-block-end: 5px;text-align: center;display: contents;">
-                  Ingresos y Gastos por Mes - Año: </h2>
-                <select id="yearSelect" style="margin-left: 5px;">
-                  <option value="2025">2025</option>
-                </select>
-              </div>
+        <!-- ── TABS ── -->
+        <nav class="pl-tabbar">
+          <button class="pl-tab active" data-tab="estadisticas">📊 Estadísticas</button>
+          <button class="pl-tab" data-tab="transacciones">💳 Transacciones</button>
+          <button class="pl-tab" data-tab="grafico">📈 Gráfico Anual</button>
+        </nav>
 
-              <canvas id="monthlyChart" width="400" height="160"></canvas>
+        <!-- ── FILTER BAR ── -->
+        <div class="pl-filterbar">
+          <div id="separador">
+            <div>
+              <label>Desde</label>
+              <input type="date" id="startDate">
             </div>
-            <div class="ChartCSS">
-              <!-- <label for="yearSelect">Año:</label> -->
+            <div>
+              <label>Hasta</label>
+              <input type="date" id="endDate">
+            </div>
 
+            <div>
+              <button class="btn btn-primary btn-sm" id="filterButton">Filtrar</button>
+              <button class="btn btn-outline btn-sm" id="resetFilterButton">↺ Hoy</button>
             </div>
           </div>
-          <!-- Chart FIN -->
 
-        </div>
-        <!-- Resumen FIN -->
-
-
-        <!-- Transacciones -->
-        <h2 style="text-align: center;margin-block-start: 5px;margin-block-end: 7px;">Transacciones</h2>
-
-        <div class="Top-Container">
-
-          <!-- Boton Añadir Transaccion -->
-          <div class="button-list">
-            <button id="addTransactionButton"><img src="./img/icon/mas.png">Añadir Transacción</button>
-          </div>
-          <!-- Boton Añadir Transaccion FIN -->
-
-          <!-- Barra de busqueda -->
-          <div class="search-bar">
-            <input type="text" id="searchInput"
-              placeholder="Buscar por ID, detalles, nombre del cliente, número del cliente, empleado o monto">
-            <div class="cantidad-img"><img src="./img/icon/buscar2.png"></div>
-          </div>
-          <!-- Barra de busqueda FIN -->
-
-          <div
-            style="display: inline-flex;flex-direction: column;justify-content: space-evenly;margin: 0px 14px;font-weight: bold;color: #252525;">
-
-            <!-- transacciones Visibles -->
-            <div id="visibleTransactionCount">Transacciones visibles: 0</div>
-            <!-- transacciones Visibles FIN -->
-            <!-- Filtrar transacciones por tipo -->
-            <div class="transaction-filter">
-              <label for="transactionTypeFilter">Filtrar por tipo:</label>
-              <select id="transactionTypeFilter">
-                <option value="all">Todas</option>
-                <option value="expense">Gasto</option>
-                <option value="income">Ingreso</option>
-              </select>
-            </div>
-            <!-- Filtrar transacciones por tipo FIN -->
-
-
-          </div>
-
+          <div class="filter-sep"></div>
+          <input type="text" id="searchInputTx" class="inline-search" placeholder="🔍  Buscar transacción…"
+            style="display:none;">
+          <span class="record-count" id="txCount" style="display:none;"></span>
         </div>
 
-        <!-- Tabla de Transacciones -->
-        <div class="transaction-table-container">
-          <table class="transaction-table" id="combinedTransactionTable">
-            <thead>
-              <tr>
-                <th><input type="checkbox" class="transaction-checkbox" checked=""
-                    style="filter: opacity(0.3);pointer-events: none;"></th>
+        <!-- ══════════════ PANEL: ESTADÍSTICAS ══════════════ -->
+        <div class="pl-panel active" id="panel-estadisticas">
 
-                <th>ID</th>
-                <th>Tipo</th>
-                <th>Detalles</th>
-                <th>Monto</th>
-                <th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody id="combinedTransactionList"></tbody>
-          </table>
-        </div>
-        <!-- Tabla de Transacciones FIN -->
-        <!-- Transacciones FIN -->
+          <div class="section-heading">Resumen del período</div>
 
-
-      </div>
-      <!-- body FIN -->
-
-
-      <!-- Down -->
-      <div class="panelContabilidad_down">
-        <p>© Paris Laundry RD - 2025</p>
-      </div>
-      <!-- Down FIN -->
-
-    </div>
-    <!-- Contenedor de inventario FIN -->
-
-
-
-    <!-- Modal para agregar transacción -->
-    <div id="addTransactionModal" class="modal">
-      <div class="modal-content">
-
-        <!-- modal-content-tiitle -->
-        <div class="modal-content-tiitle">
-          <span class="close" id="closeModal">&times;</span>
-          <h2>Añadir Nueva Transacción</h2>
-        </div>
-        <!-- modal-content-tiitle FIN -->
-
-        <!-- modal-content-body -->
-        <div class="modal-content-body">
-
-          <label for="transactionType">Tipo:</label>
-          <select id="transactionType">
-            <option value="expense">Gasto (-)</option>
-            <option value="income">Ingreso (+)</option>
-            <option value="employeePayment">Pago de Empleado</option> <!-- Nuevo tipo -->
-          </select>
-
-          <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-          <!-- Sección de Transacción Normal -->
-          <div id="normalTransactionFields">
-            <div style="margin-top: 17px;display: flex;flex-direction: row;align-items: center;">
-              <div class="fecha-hora-modal">
-                <label for="transactionDate">Fecha:</label>
-                <input type="date" id="transactionDate">
+          <!-- KPIs -->
+          <div class="kpi-grid">
+            <div class="kpi-card" style="--stripe-color:var(--teal)">
+              <div class="kpi-lbl">Ingresos</div>
+              <div class="kpi-val colored"><span class="kpi-unit">RD$ </span><span id="kpiIngresos">0.00</span></div>
+              <div class="kpi-sub" id="kpiIngresosFacturas">— facturas</div>
+            </div>
+            <div class="kpi-card" style="--stripe-color:var(--rose)">
+              <div class="kpi-lbl">Gastos</div>
+              <div class="kpi-val colored"><span class="kpi-unit">RD$ </span><span id="kpiGastos">0.00</span></div>
+              <div class="kpi-sub" id="kpiGastosDetalle">tx + empleados</div>
+            </div>
+            <div class="kpi-card" style="--stripe-color:var(--indigo)">
+              <div class="kpi-lbl">Balance</div>
+              <div class="kpi-val" id="kpiBalanceWrap"><span class="kpi-unit">RD$ </span><span
+                  id="kpiBalance">0.00</span>
               </div>
-              <div class="fecha-hora-modal">
-                <label for="transactionTime">Hora:</label>
-                <input type="time" id="transactionTime">
-              </div>
+              <div class="kpi-sub">ingresos − gastos</div>
+            </div>
+            <div class="kpi-card" style="--stripe-color:var(--amber)">
+              <div class="kpi-lbl">Facturas</div>
+              <div class="kpi-val" id="kpiFacturas">0</div>
+              <div class="kpi-sub" id="kpiFacturasSub">en el período</div>
+            </div>
+            <div class="kpi-card" style="--stripe-color:var(--violet)">
+              <div class="kpi-lbl">Hampers</div>
+              <div class="kpi-val" id="kpiHampers">0</div>
+              <div class="kpi-sub" id="kpiHampersSub">hampers completos</div>
+            </div>
+            <div class="kpi-card" style="--stripe-color:var(--amber)">
+              <div class="kpi-lbl">Libras Sueltas</div>
+              <div class="kpi-val" id="kpiLibrasSueltas">0</div>
+              <div class="kpi-sub">lbs fuera de rango</div>
+            </div>
+            <div class="kpi-card" style="--stripe-color:var(--sky);display: none;">
+              <div class="kpi-lbl">ITBIS</div>
+              <div class="kpi-val"><span class="kpi-unit">RD$ </span><span id="kpiITBIS">0.00</span></div>
+              <div class="kpi-sub">impuesto cobrado</div>
             </div>
 
-            <div class="modal-divisor"></div> <!-- Modal divisor -->
+            <div class="kpi-card" style="--stripe-color:var(--emerald);display: none;">
+              <div class="kpi-lbl">Delivery</div>
+              <div class="kpi-val"><span class="kpi-unit">RD$ </span><span id="kpiDelivery">0.00</span></div>
+              <div class="kpi-sub" id="kpiDeliverySub">— con delivery</div>
+            </div>
 
-            <label for="transactionAmount">Monto:</label><br>
-            <input type="number" id="transactionAmount" placeholder="Monto (RD$)" step="0.01">
-            <br>
-            <label for="transactionDetails">Detalles:</label><br>
-            <textarea id="transactionDetails" placeholder="Nota o descripción de la transacción"></textarea>
-            <br><br>
+
+            <div class="kpi-card" style="--stripe-color:var(--amber);display: none;">
+              <div class="kpi-lbl">Abonos</div>
+              <div class="kpi-val" id="kpiAbonos">0</div>
+              <div class="kpi-sub" id="kpiAbonosSub">saldo pendiente —</div>
+            </div>
           </div>
 
-          <!-- Sección de Pago de Empleado -->
-          <div id="employeePaymentFields" style="display: none;"> <!-- Campos ocultos por defecto -->
+          <!-- Daily bar chart -->
+          <div class="pl-card" style="margin-bottom:18px;">
+            <div class="card-title">
+              <span class="card-icon" style="--icon-bg:var(--indigo-light)">📅</span>
+              Ingresos por Día del Período
+            </div>
+            <div class="chart-h260"><canvas id="dailyBarChart"></canvas></div>
+          </div>
 
-            <h3 style="margin-block-start: 0px;margin-block-end: 1em;text-align: center;">Pago de Empleado:</h3>
+          <!-- Row: Pay methods + Hampers -->
+          <div class="grid-2">
+            <div class="pl-card">
+              <div class="card-title"><span class="card-icon" style="--icon-bg:var(--teal-light)">💵</span>Métodos de
+                Pago</div>
+              <div id="payMethodsContainer">
+                <div class="pl-loading">
+                  <div class="spinner"></div>Cargando…
+                </div>
+              </div>
+            </div>
+            <div class="pl-card">
+              <div class="card-title"><span class="card-icon" style="--icon-bg:var(--violet-light)">🧺</span>Hampers por
+                Tipo</div>
+              <div class="item-list" id="hamperListContainer">
+                <div class="pl-loading">
+                  <div class="spinner"></div>Cargando…
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <label for="employeeName">Nombre de Empleado:</label>
-            <select id="employeeName" style="margin-bottom: 8px;">
-              <option value="">Selecciona un empleado</option> <!-- Opción por defecto -->
+          <!-- Row: Employees + Status donut -->
+          <div class="grid-2">
+            <div class="pl-card">
+              <div class="card-title"><span class="card-icon" style="--icon-bg:var(--sky-light)">👥</span>Rendimiento
+                por Empleado</div>
+              <div style="overflow-x:auto;">
+                <table class="emp-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Empleado</th>
+                      <th>Facturas</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="empTableBody">
+                    <tr>
+                      <td colspan="5" class="pl-empty">Sin datos</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="pl-card">
+              <div class="card-title"><span class="card-icon" style="--icon-bg:var(--amber-light)">📋</span>Estado de
+                Facturas</div>
+              <div class="chart-h200"><canvas id="statusDonut"></canvas></div>
+              <div class="donut-legend" id="statusLegend"></div>
+            </div>
+          </div>
+
+          <!-- Row: Otros servicios + Resumen financiero -->
+          <div class="grid-2">
+            <div class="pl-card">
+              <div class="card-title"><span class="card-icon" style="--icon-bg:#fef9c3">✨</span>Otros Servicios</div>
+              <div class="item-list" id="otrosServiciosContainer">
+                <div class="pl-empty">Sin datos</div>
+              </div>
+            </div>
+            <div class="pl-card">
+              <div class="card-title"><span class="card-icon" style="--icon-bg:var(--teal-light)">💰</span>Resumen
+                Financiero</div>
+              <div id="finResumen">
+                <div class="pl-loading">
+                  <div class="spinner"></div>Cargando…
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- FIN PANEL ESTADÍSTICAS -->
+
+        <!-- ══════════════ PANEL: TRANSACCIONES ══════════════ -->
+        <div class="pl-panel" id="panel-transacciones">
+
+          <div class="summary-strip">
+            <div class="sum-card">
+              <div class="sum-lbl">Ingresos</div>
+              <div class="sum-val sum-income" id="txTotalIncome">RD$0.00</div>
+            </div>
+            <div class="sum-card">
+              <div class="sum-lbl">Gastos</div>
+              <div class="sum-val sum-expense" id="txTotalExpenses">RD$0.00</div>
+            </div>
+            <div class="sum-card">
+              <div class="sum-lbl">Balance</div>
+              <div class="sum-val sum-balance" id="txBalance">RD$0.00</div>
+            </div>
+          </div>
+
+          <div class="tx-filters">
+            <button class="btn btn-primary btn-sm" id="btnAddTx">＋ Transacción</button>
+
+            <input type="text" id="searchInputTxInline" class="tx-search"
+              placeholder="🔍  Buscar por ID, cliente, monto…">
+
+            <span class="record-count" id="txCountInline">0 registros</span>
+
+            <select id="transactionTypeFilter">
+              <option value="all">Todas las transacciones</option>
+              <option value="expense">Solo Gastos</option>
+              <option value="income">Solo Ingresos</option>
+              <option value="factura_efectivo">Facturas — Efectivo</option>
+              <option value="factura_transferencia">Facturas — Transferencia</option>
+              <option value="factura_tarjeta">Facturas — Tarjeta de Crédito</option>
             </select>
-            <br>
+          </div>
 
-            <div class="cube-form">
-
-              <div class="cube-form-flex">
-                <div>
-                  <label for="salaryPayment">Pago de Sueldo:</label>
-                </div>
-                <div>
-                  <input type="number" id="salaryPayment" placeholder="Monto (RD$)" step="0.01">
-                </div>
-              </div>
-
-              <div class="cube-form-flex">
-                <div>
-                  <label for="holidayPayment">Pago de Día Feriado:</label>
-                </div>
-                <div>
-                  <input type="number" id="holidayPayment" placeholder="Monto (RD$)" step="0.01">
-                </div>
-              </div>
-
-              <div class="cube-form-flex">
-                <div>
-                  <label for="overtimePayment">Pago Hora Extra:</label>
-                </div>
-                <div>
-                  <input type="number" id="overtimePayment" placeholder="Monto (RD$)" step="0.01">
-                </div>
-              </div>
-
-              <div class="cube-form-flex">
-                <div>
-                  <label for="vacationPayment">Pago de Vacaciones:</label>
-                </div>
-                <div>
-                  <input type="number" id="vacationPayment" placeholder="Monto (RD$)" step="0.01">
-                </div>
-              </div>
-
-              <div class="cube-form-flex">
-                <div>
-                  <label for="christmasPayment">Pago de Navidad:</label>
-                </div>
-                <div>
-                  <input type="number" id="christmasPayment" placeholder="Monto (RD$)" step="0.01">
-                </div>
-              </div>
+          <div class="tx-wrap">
+            <div class="tx-scroll">
+              <table class="tx-table">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="checkAll" checked></th>
+                    <th>ID</th>
+                    <th>Tipo</th>
+                    <th>Detalles</th>
+                    <th>Monto</th>
+                    <th>Fecha / Hora</th>
+                  </tr>
+                </thead>
+                <tbody id="combinedTransactionList">
+                  <tr>
+                    <td colspan="6" class="pl-loading">
+                      <div class="spinner"></div>Cargando…
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-
-
-            <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-            <h3 style="text-align: center;">Incentivos</h3>
-
-            <div class="cube-form">
-              <!-- Agregar este span para mostrar la cantidad de productos vendidos -->
-              <div class="cube-form-flex">
-                <div id="productsSoldInfo" style="margin-bottom: 8px;">
-                  <span style="font-weight: bold;">Cantidad de productos vendidos:</span>
-                  <span id="productsSoldAmount" style="color: #0069af; font-weight: bold;">0</span>
-                  <div id="productsSoldTimestamp" style="font-size: 14px;color: #0069af;font-weight: bold;"></div>
-                  <label style="display: flex; align-items: center; margin-top: 5px;">
-                    <input type="checkbox" id="resetProductsSoldCheckbox"
-                      style="margin-right: 7px;margin-bottom: 6px;height: 25px;width: 25px;">
-                    Pagar incentivo por ventas de producto.
-                  </label>
-                </div>
-              </div>
-
-              <div class="cube-form-flex">
-                <div>
-                  <label for="productSale">Venta de Producto:</label>
-                </div>
-                <div>
-                  <input type="number" id="productSale" placeholder="Monto (RD$)" step="0.01" disabled
-                    style="background-color: rgb(193 193 193); color: #888; cursor: no-drop;">
-                </div>
-              </div>
-
-              <div class="cube-form-flex">
-                <div>
-                  <label for="productionIncentive">Producción:</label>
-                </div>
-                <div>
-                  <input type="number" id="productionIncentive" placeholder="Monto (RD$)" step="0.01">
-                </div>
-              </div>
-
-              <div class="cube-form-flex">
-                <div>
-                  <label for="punctualityIncentive">Puntualidad:</label>
-                </div>
-                <div>
-                  <input type="number" id="punctualityIncentive" placeholder="Monto (RD$)" step="0.01">
-                </div>
-              </div>
-            </div>
-
-
-            <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-            <h3 style="text-align: center;">Descuentos</h3>
-
-            <div class="cube-form">
-              <div class="cube-form-flex">
-                <div>
-                  <label for="licenseDay">Día de Licencia:</label>
-                </div>
-                <div>
-                  <input type="number" id="licenseDay" placeholder="Monto (RD$)" step="0.01">
-                </div>
-              </div>
-
-              <div class="cube-form-flex">
-                <div>
-                  <label for="insurance">Seguro:</label>
-                </div>
-                <div>
-                  <input type="number" id="insurance" placeholder="Monto (RD$)" step="0.01">
-                </div>
-              </div>
-            </div>
-
-            <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-            <br>
-            <div style="display: flex;flex-direction: row;align-items: center;">
-              <div class="fecha-hora-modal">
-                <label for="employeePaymentDate">Fecha de Pago:</label>
-                <input type="date" id="employeePaymentDate"> <!-- Campo de fecha -->
-              </div>
-              <div class="fecha-hora-modal">
-                <label for="employeePaymentTime">Hora de Pago:</label>
-                <input type="time" id="employeePaymentTime"> <!-- Campo de hora -->
-              </div>
-            </div>
-
-            <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-            <input type="hidden" id="type" value="expense"> <!-- Campo oculto -->
-
-            <div class="cube-form">
-              <div class="cube-form-flex">
-                <div>
-                  <label for="totalAmount">Total:</label>
-                </div>
-                <div>
-                  <input type="text" id="totalAmount" readonly placeholder="Total (RD$)">
-                </div>
-              </div>
-            </div>
-            <!-- Campo para mostrar total -->
-
-
-
           </div>
         </div>
-        <!-- modal-content-body FIN -->
 
-        <!-- modal-content-down -->
-        <div class="modal-content-down">
-          <button id="submitTransactionButton">Añadir Transacción</button>
+        <!-- ══════════════ PANEL: GRÁFICO ANUAL ══════════════ -->
+        <div class="pl-panel" id="panel-grafico">
+
+          <div class="year-strip">
+            <label>Año</label>
+            <select id="yearSelect"></select>
+            <button class="btn btn-outline btn-sm" id="btnRefreshChart">↺ Actualizar</button>
+          </div>
+
+          <div class="pl-card" style="margin-bottom:16px;">
+            <div class="card-title"><span class="card-icon">📊</span>Ingresos y Gastos por Mes</div>
+            <div class="chart-h260"><canvas id="monthlyChart"></canvas></div>
+          </div>
+
+          <div class="grid-2">
+            <div class="pl-card">
+              <div class="card-title"><span class="card-icon" style="--icon-bg:var(--indigo-light)">🧾</span>Facturas
+                por Mes</div>
+              <div class="chart-h200"><canvas id="monthlyFacturasChart"></canvas></div>
+            </div>
+            <div class="pl-card">
+              <div class="card-title"><span class="card-icon" style="--icon-bg:var(--violet-light)">🧺</span>Hampers por
+                Mes</div>
+              <div class="chart-h200"><canvas id="monthlyHampersChart"></canvas></div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="pl-card">
+              <div class="card-title"><span class="card-icon" style="--icon-bg:var(--amber-light)">⚖️</span>Libras Sueltas por Mes</div>
+              <div class="chart-h200"><canvas id="monthlyLibrasChart"></canvas></div>
+            </div>
+            <div class="pl-card" style="display:flex;flex-direction:column;justify-content:center;">
+              <div class="card-title"><span class="card-icon" style="--icon-bg:var(--teal-light)">📋</span>¿Qué son las Libras Sueltas?</div>
+              <div style="padding:12px 16px;font-size:13px;color:var(--txt2);line-height:1.7;">
+                <p style="margin:0 0 8px;">Son las <strong style="color:var(--txt)">libras facturadas</strong> que <strong style="color:var(--amber)">no completan un hamper completo</strong> — es decir, servicios donde el peso estuvo fuera del rango mínimo–máximo del hamper.</p>
+                <p style="margin:0;">Este dato permite llevar control del volumen de ropa procesada <em>por debajo</em> del rango de hamper completo.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-heading">Resumen anual <span id="yearLabelAnual"
+              style="font-family:var(--font-disp);font-size:14px;font-style:italic;color:var(--indigo);text-transform:none;letter-spacing:0;"></span>
+          </div>
+          <div class="kpi-grid" id="annualKpiGrid"></div>
+
         </div>
-        <!-- modal-content-down FIN -->
+
       </div>
-    </div>
 
-    <!-- Modal para editar transacción -->
-    <div id="editTransactionModal" class="modal">
-      <div class="modal-content">
+      <div class="panelContabilidad_down">
+        <p>© Developed by J.P.</p>
+      </div>
 
-        <!-- modal-content-tiitle -->
-        <div class="modal-content-tiitle">
-          <span class="close" id="closeEditModal">&times;</span>
-          <h2>Editar Transacción</h2>
-        </div>
-        <!-- modal-content-tiitle FIN -->
+    </div><!-- end pl-page -->
+  </div><!-- end MasterBox0 -->
 
-        <!-- modal-content-body -->
-        <div class="modal-content-body">
-          <input type="hidden" id="editTransactionId">
-          <label for="editTransactionType">Tipo:</label>
-          <select id="editTransactionType">
-            <option value="income">Ingreso</option>
-            <option value="expense">Gasto</option>
+  <!-- ══ MODAL: NUEVA TRANSACCIÓN ══ -->
+  <div class="modal" id="addTransactionModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-head-icon modal-icon-add">＋</div>
+        <h3>Nueva Transacción</h3>
+        <button class="modal-close" id="closeModal" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Selector de tipo con chips visuales -->
+        <div class="fg">
+          <label>Tipo de transacción</label>
+          <div class="type-chips">
+            <label class="type-chip type-chip--expense">
+              <input type="radio" name="txTypeChip" value="expense" checked>
+              <span class="chip-icon">📤</span><span class="chip-lbl">Gasto</span>
+            </label>
+            <label class="type-chip type-chip--income">
+              <input type="radio" name="txTypeChip" value="income">
+              <span class="chip-icon">📥</span><span class="chip-lbl">Ingreso</span>
+            </label>
+            <label class="type-chip type-chip--emp">
+              <input type="radio" name="txTypeChip" value="employeePayment">
+              <span class="chip-icon">👤</span><span class="chip-lbl">Empleado</span>
+            </label>
+          </div>
+          <!-- hidden select for JS compatibility -->
+          <select id="transactionType" style="display:none;">
+            <option value="expense">Gasto (−)</option>
+            <option value="income">Ingreso (+)</option>
+            <option value="employeePayment">Pago de Empleado</option>
           </select>
+        </div>
 
-          <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-          <div style="display: flex;flex-direction: row;align-items: center;">
-            <div class="fecha-hora-modal">
-              <label for="editTransactionDate">Fecha:</label>
-              <input type="date" id="editTransactionDate">
-            </div>
-            <div class="fecha-hora-modal">
-              <label for="editTransactionTime">Hora:</label>
-              <input type="time" id="editTransactionTime">
+        <!-- Normal fields -->
+        <div id="normFields">
+          <div class="form-divider"></div>
+          <div class="form-2col">
+            <div class="fg"><label>Fecha</label><input type="date" id="transactionDate"></div>
+            <div class="fg"><label>Hora</label><input type="time" id="transactionTime"></div>
+          </div>
+          <div class="fg">
+            <label>Monto (RD$)</label>
+            <div class="amount-field">
+              <span class="amount-prefix">RD$</span>
+              <input type="number" id="transactionAmount" placeholder="0.00" step="0.01" min="0">
             </div>
           </div>
-
-          <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-          <label for="editTransactionAmount">Monto:</label>
-          <input type="number" id="editTransactionAmount" placeholder="Monto (RD$)" step="0.01">
-
-          <label for="editTransactionDetails">Detalles:</label>
-          <textarea id="editTransactionDetails" placeholder="Descripción de la transacción"></textarea>
-
+          <div class="fg"><label>Descripción</label><textarea id="transactionDetails"
+              placeholder="Describe esta transacción…"></textarea></div>
         </div>
-        <!-- modal-content-body FIN -->
 
-        <!-- modal-content-down -->
-        <div class="modal-content-down">
-          <button id="deleteTransactionButton" style="background: #f59696;">Eliminar Transacción</button>
-          <button id="saveTransactionButton">Guardar Cambios</button>
+        <!-- Employee fields -->
+        <div id="empFields">
+          <div class="form-divider"></div>
+          <div class="fg">
+            <label>Empleado</label>
+            <select id="employeeName">
+              <option value="">Selecciona un empleado…</option>
+            </select>
+          </div>
+          <div class="prod-box">
+            <div class="prod-box-lbl">Productos vendidos (incentivo)</div>
+            <div class="prod-box-val" id="productsSoldAmount">0</div>
+            <div class="prod-box-ts" id="productsSoldTimestamp"></div>
+            <label class="prod-check-label">
+              <input type="checkbox" id="resetProductsSoldCheckbox">
+              Pagar y resetear incentivo por ventas
+            </label>
+          </div>
+          <div class="form-divider"></div>
+          <div class="form-sub-title">💼 Salario y Extras</div>
+          <div class="form-2col">
+            <div class="fg"><label>Sueldo Base</label><input type="number" id="salaryPayment" placeholder="0.00"
+                step="0.01"></div>
+            <div class="fg"><label>Día Feriado</label><input type="number" id="holidayPayment" placeholder="0.00"
+                step="0.01"></div>
+            <div class="fg"><label>Hora Extra</label><input type="number" id="overtimePayment" placeholder="0.00"
+                step="0.01"></div>
+            <div class="fg"><label>Vacaciones</label><input type="number" id="vacationPayment" placeholder="0.00"
+                step="0.01"></div>
+            <div class="fg"><label>Navidad</label><input type="number" id="christmasPayment" placeholder="0.00"
+                step="0.01"></div>
+          </div>
+          <div class="form-sub-title">🏆 Incentivos</div>
+          <div class="form-2col">
+            <div class="fg">
+              <label>Venta Producto</label>
+              <input type="number" id="productSale" placeholder="0.00" step="0.01" disabled
+                style="opacity:.45;cursor:not-allowed;">
+            </div>
+            <div class="fg"><label>Producción</label><input type="number" id="productionIncentive" placeholder="0.00"
+                step="0.01"></div>
+            <div class="fg"><label>Puntualidad</label><input type="number" id="punctualityIncentive" placeholder="0.00"
+                step="0.01"></div>
+          </div>
+          <div class="form-sub-title">✂️ Descuentos</div>
+          <div class="form-2col">
+            <div class="fg"><label>Día de Licencia</label><input type="number" id="licenseDay" placeholder="0.00"
+                step="0.01"></div>
+            <div class="fg"><label>Seguro</label><input type="number" id="insurance" placeholder="0.00" step="0.01">
+            </div>
+          </div>
+          <div class="form-divider"></div>
+          <div class="form-2col">
+            <div class="fg"><label>Fecha de Pago</label><input type="date" id="employeePaymentDate"></div>
+            <div class="fg"><label>Hora de Pago</label><input type="time" id="employeePaymentTime"></div>
+          </div>
+          <div class="total-box">
+            <span class="total-box-lbl">Total a Pagar</span>
+            <span class="total-box-val" id="totalAmountDisplay">RD$0.00</span>
+            <input type="hidden" id="totalAmount">
+          </div>
         </div>
-        <!-- modal-content-down FIN -->
+
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" id="cancelAddTx">Cancelar</button>
+        <button class="btn btn-primary" id="submitTransactionButton">✓ Guardar</button>
       </div>
     </div>
+  </div>
 
-    <!-- Modal para editar factura -->
-    <div id="editInvoiceModal" class="modal">
-      <div class="modal-content">
-
-        <!-- modal-content-tiitle -->
-        <div class="modal-content-tiitle">
-          <span class="close" id="closeInvoiceModal">&times;</span>
-          <h2>Editar Factura</h2>
+  <!-- ══ MODAL: EDITAR TRANSACCIÓN ══ -->
+  <div class="modal" id="editTransactionModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-head-icon modal-icon-edit">✏️</div>
+        <h3>Editar Transacción</h3>
+        <button class="modal-close" id="closeEditModal" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editTransactionId">
+        <div class="fg">
+          <label>Tipo</label>
+          <select id="editTransactionType">
+            <option value="income">📥 Ingreso</option>
+            <option value="expense">📤 Gasto</option>
+          </select>
         </div>
-        <!-- modal-content-tiitle FIN -->
-
-        <!-- modal-content-body -->
-        <div class="modal-content-body">
-          <input type="hidden" id="editInvoiceId">
-          <label for="editClientName">Nombre del Cliente:</label>
-          <input type="text" id="editClientName" placeholder="Nombre del Cliente">
-          <br>
-          <label for="editClientPhone">Teléfono del Cliente:</label>
-          <input type="text" id="editClientPhone" placeholder="Teléfono del Cliente">
-          <br>
-          <label for="editClientAddress">Dirección del Cliente:</label>
-          <input type="text" id="editClientAddress" placeholder="Dirección del Cliente">
-
-          <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-          <label for="editEmployeeName">Nombre del Empleado:</label>
-          <input type="text" id="editEmployeeName" placeholder="Nombre del Empleado">
-
-          <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-          <label for="editDeliveryName">Opción de Entrega:</label>
-          <input type="text" id="editDeliveryName" placeholder="Nombre de la Opción de Entrega">
-          <br>
-          <label for="editDeliveryPrice">Precio de la Entrega:</label>
-          <input type="text" id="editDeliveryPrice" placeholder="Precio" value="0.00"> <!-- Cambiado a tipo text -->
-
+        <div class="form-2col">
+          <div class="fg"><label>Fecha</label><input type="date" id="editTransactionDate"></div>
+          <div class="fg"><label>Hora</label><input type="time" id="editTransactionTime"></div>
         </div>
-        <!-- modal-content-body FIN -->
-
-        <!-- modal-content-down -->
-        <div class="modal-content-down">
-          <button id="deleteInvoiceButton" style="background: #f59696;">Eliminar Factura</button>
-          <button id="saveInvoiceButton">Guardar Cambios</button>
+        <div class="fg">
+          <label>Monto (RD$)</label>
+          <div class="amount-field">
+            <span class="amount-prefix">RD$</span>
+            <input type="number" id="editTransactionAmount" step="0.01" placeholder="0.00">
+          </div>
         </div>
-        <!-- modal-content-down FIN -->
+        <div class="fg"><label>Descripción</label><textarea id="editTransactionDetails"
+            placeholder="Descripción de la transacción…"></textarea></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-danger btn-sm" id="deleteTransactionButton">🗑 Eliminar</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-ghost" id="cancelEditTx">Cancelar</button>
+        <button class="btn btn-primary" id="saveTransactionButton">✓ Guardar cambios</button>
       </div>
     </div>
+  </div>
 
-
-
-
-
-    <!-- Modal para editar pago de empleado -->
-    <div id="editEmployeePaymentModal" class="modal">
-      <div class="modal-content">
-
-        <!-- modal-content-tiitle -->
-        <div class="modal-content-tiitle">
-          <span class="close" id="closeEditEmployeeModal">&times;</span>
-          <h2>Editar Pago de Empleado</h2>
-        </div>
-        <!-- modal-content-tiitle FIN -->
-
-        <!-- modal-content-body -->
-        <div class="modal-content-body">
-          <input type="hidden" id="editEmployeePaymentId">
-
-
-          <div class="cube-form">
-
-            <div class="cube-form-flex">
-              <div>
-                <!-- Campo para el nombre del empleado (nuevo id) -->
-                <label for="editEmployeePaymentName">Nombre de Empleado:</label>
-              </div>
-              <div>
-                <input type="text" id="editEmployeePaymentName" style="width: 150px;">
-              </div>
-            </div>
-
-            <div class="cube-form-flex">
-              <div>
-                <label for="editSalaryPayment">Pago de Sueldo:</label>
-              </div>
-              <div>
-                <input type="number" id="editSalaryPayment" placeholder="Monto (RD$)" step="0.01">
-              </div>
-            </div>
-
-            <div class="cube-form-flex">
-              <div>
-                <label for="editHolidayPayment">Pago de Día Feriado:</label>
-              </div>
-              <div>
-                <input type="number" id="editHolidayPayment" placeholder="Monto (RD$)" step="0.01">
-              </div>
-            </div>
-
-            <div class="cube-form-flex">
-              <div>
-                <label for="editOvertimePayment">Pago Hora Extra:</label>
-              </div>
-              <div>
-                <input type="number" id="editOvertimePayment" placeholder="Monto (RD$)" step="0.01">
-              </div>
-            </div>
-
-            <div class="cube-form-flex">
-              <div>
-                <label for="editVacationPayment">Pago de Vacaciones:</label>
-              </div>
-              <div>
-                <input type="number" id="editVacationPayment" placeholder="Monto (RD$)" step="0.01">
-              </div>
-            </div>
-
-            <div class="cube-form-flex">
-              <div>
-                <label for="editChristmasPayment">Pago de Navidad:</label>
-              </div>
-              <div>
-                <input type="number" id="editChristmasPayment" placeholder="Monto (RD$)" step="0.01">
-              </div>
-            </div>
-          </div>
-
-
-          <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-          <h3 style="text-align: center;">Incentivos</h3>
-
-          <div class="cube-form">
-
-            <div class="cube-form-flex">
-              <div>
-                <label for="editProductSale">Venta de Producto:</label>
-              </div>
-              <div>
-                <input type="number" id="editProductSale" placeholder="Monto (RD$)" step="0.01">
-              </div>
-            </div>
-
-            <div class="cube-form-flex">
-              <div>
-                <label for="editProductionIncentive">Producción:</label>
-              </div>
-              <div>
-                <input type="number" id="editProductionIncentive" placeholder="Monto (RD$)" step="0.01">
-              </div>
-            </div>
-
-            <div class="cube-form-flex">
-              <div>
-                <label for="editPunctualityIncentive">Puntualidad:</label>
-              </div>
-              <div>
-                <input type="number" id="editPunctualityIncentive" placeholder="Monto (RD$)" step="0.01">
-              </div>
-            </div>
-          </div>
-
-
-          <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-          <h3 style="text-align: center;">Descuentos</h3>
-
-          <div class="cube-form">
-            <div class="cube-form-flex">
-              <div>
-                <label for="editLicenseDay">Día de Licencia:</label>
-              </div>
-              <div>
-                <input type="number" id="editLicenseDay" placeholder="Monto (RD$)" step="0.01">
-              </div>
-            </div>
-
-            <div class="cube-form-flex">
-              <div>
-                <label for="editInsurance">Seguro:</label>
-              </div>
-              <div>
-                <input type="number" id="editInsurance" placeholder="Monto (RD$)" step="0.01">
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-          <br>
-          <div style="display: flex;flex-direction: row;align-items: center;">
-            <div class="fecha-hora-modal">
-              <label for="editEmployeePaymentDate">Fecha de Pago:</label>
-              <input type="date" id="editEmployeePaymentDate">
-            </div>
-            <div class="fecha-hora-modal">
-              <label for="editEmployeePaymentTime">Hora de Pago:</label>
-              <input type="time" id="editEmployeePaymentTime">
-            </div>
-          </div>
-
-          <div class="modal-divisor"></div> <!-- Modal divisor -->
-
-          <div class="cube-form">
-            <div class="cube-form-flex">
-              <div>
-                <label for="editTotalAmount">Total:</label>
-              </div>
-              <div>
-                <input type="text" id="editTotalAmount" readonly>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        <!-- modal-content-body FIN -->
-
-        <!-- modal-content-down -->
-        <div class="modal-content-down">
-          <button id="deleteEmployeePaymentButton" style="background: #f59696;">Eliminar Pago de Empleado</button>
-          <button id="saveEmployeePaymentButton">Guardar Cambios</button>
-        </div>
-        <!-- modal-content-down FIN -->
+  <!-- ══ MODAL: EDITAR FACTURA ══ -->
+  <div class="modal" id="editInvoiceModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-head-icon modal-icon-invoice">🧾</div>
+        <h3>Editar Factura</h3>
+        <button class="modal-close" id="closeInvoiceModal" aria-label="Cerrar">✕</button>
       </div>
-
-
+      <div class="modal-body">
+        <input type="hidden" id="editInvoiceId">
+        <div class="form-sub-title">👤 Datos del Cliente</div>
+        <div class="fg"><label>Nombre del Cliente</label><input type="text" id="editClientName"
+            placeholder="Nombre completo…"></div>
+        <div class="form-2col">
+          <div class="fg"><label>Teléfono</label><input type="text" id="editClientPhone" placeholder="000-000-0000">
+          </div>
+          <div class="fg"><label>Dirección</label><input type="text" id="editClientAddress" placeholder="Dirección…">
+          </div>
+        </div>
+        <div class="fg"><label>Empleado Responsable</label><input type="text" id="editEmployeeName"
+            placeholder="Nombre del empleado…"></div>
+        <div class="form-divider"></div>
+        <div class="form-sub-title">🚚 Entrega</div>
+        <div class="form-2col">
+          <div class="fg"><label>Opción de Entrega</label><input type="text" id="editDeliveryName"
+              placeholder="Tipo de entrega…"></div>
+          <div class="fg">
+            <label>Precio Entrega (RD$)</label>
+            <div class="amount-field">
+              <span class="amount-prefix">RD$</span>
+              <input type="text" id="editDeliveryPrice" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-danger btn-sm" id="deleteInvoiceButton">🗑 Eliminar</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-ghost" id="cancelEditInvoice">Cancelar</button>
+        <button class="btn btn-primary" id="saveInvoiceButton">✓ Guardar cambios</button>
+      </div>
     </div>
+  </div>
 
-   <script>
-  // Al inicio de tu script, antes de las funciones
-  window.combinedTransactions = []; // Lista global de transacciones
+  <!-- ══ MODAL: EDITAR PAGO EMPLEADO ══ -->
+  <div class="modal" id="editEmployeePaymentModal">
+    <div class="modal-box modal-box--wide">
+      <div class="modal-head">
+        <div class="modal-head-icon modal-icon-emp">👤</div>
+        <h3>Editar Pago de Empleado</h3>
+        <button class="modal-close" id="closeEditEmployeeModal" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editEmployeePaymentId">
+        <div class="fg"><label>Nombre del Empleado</label><input type="text" id="editEmployeePaymentName"
+            placeholder="Nombre…"></div>
+        <div class="form-divider"></div>
+        <div class="form-sub-title">💼 Salario y Extras</div>
+        <div class="form-2col">
+          <div class="fg"><label>Sueldo Base</label><input type="number" id="editSalaryPayment" step="0.01"
+              placeholder="0.00"></div>
+          <div class="fg"><label>Día Feriado</label><input type="number" id="editHolidayPayment" step="0.01"
+              placeholder="0.00"></div>
+          <div class="fg"><label>Hora Extra</label><input type="number" id="editOvertimePayment" step="0.01"
+              placeholder="0.00"></div>
+          <div class="fg"><label>Vacaciones</label><input type="number" id="editVacationPayment" step="0.01"
+              placeholder="0.00"></div>
+          <div class="fg"><label>Navidad</label><input type="number" id="editChristmasPayment" step="0.01"
+              placeholder="0.00"></div>
+        </div>
+        <div class="form-sub-title">🏆 Incentivos</div>
+        <div class="form-2col">
+          <div class="fg"><label>Venta Producto</label><input type="number" id="editProductSale" step="0.01"
+              placeholder="0.00"></div>
+          <div class="fg"><label>Producción</label><input type="number" id="editProductionIncentive" step="0.01"
+              placeholder="0.00"></div>
+          <div class="fg"><label>Puntualidad</label><input type="number" id="editPunctualityIncentive" step="0.01"
+              placeholder="0.00"></div>
+        </div>
+        <div class="form-sub-title">✂️ Descuentos</div>
+        <div class="form-2col">
+          <div class="fg"><label>Día de Licencia</label><input type="number" id="editLicenseDay" step="0.01"
+              placeholder="0.00"></div>
+          <div class="fg"><label>Seguro</label><input type="number" id="editInsurance" step="0.01" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-2col">
+          <div class="fg"><label>Fecha</label><input type="date" id="editEmployeePaymentDate"></div>
+          <div class="fg"><label>Hora</label><input type="time" id="editEmployeePaymentTime"></div>
+        </div>
+        <div class="total-box">
+          <span class="total-box-lbl">Total a Pagar</span>
+          <span class="total-box-val" id="editTotalAmountDisplay">RD$0.00</span>
+          <input type="hidden" id="editTotalAmount">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-danger btn-sm" id="deleteEmployeePaymentButton">🗑 Eliminar</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-ghost" id="cancelEditEmp">Cancelar</button>
+        <button class="btn btn-primary" id="saveEmployeePaymentButton">✓ Guardar cambios</button>
+      </div>
+    </div>
+  </div>
 
-  // Función para obtener la fecha actual en formato YYYY-MM-DD
-// Función para obtener la fecha actual en formato YYYY-MM-DD (menos un día)
-const getCurrentDate = () => {
-  const now = new Date();
-  // Restar un día
-  now.setDate(now.getDate() - 1);
-  return now.toISOString().split('T')[0];
-};
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // NUEVA ESTRUCTURA: transacciones-por-dia
+    // Documento ID: YYYY-MM-DD
+    // {
+    //   fechaString, fecha (Timestamp),
+    //   transacciones: [ {id, type, amount, timestamp (Timestamp.now()), details, _kind} ],
+    //   pagosEmpleado: [ {id, employeeName, total, timestamp, salaryPayment, ...} ]
+    // }
+    // ═══════════════════════════════════════════════════════════════
 
-  // Función para establecer las fechas por defecto
-const setDefaultDates = () => {
-  const currentDate = getCurrentDate();
-  document.getElementById("startDate").value = currentDate;
-  document.getElementById("endDate").value = currentDate;
-};
+    // ── UTILIDADES ─────────────────────────────────────────────────
+    const getRDDateString = () => {
+      const now = new Date();
+      const local = new Date(now.getTime() + (-4 * 60 - now.getTimezoneOffset()) * 60000);
+      return local.toISOString().split('T')[0];
+    };
 
-  // Reemplaza la llamada a loadTransactions() al final del script con:
-  document.addEventListener('DOMContentLoaded', () => {
-    // Establecer fechas por defecto
-    setDefaultDates();
-    
-    setupRealTimeListeners();
+    const toDate = (ts) => {
+      if (!ts) return null;
+      if (ts.toDate) return ts.toDate();
+      if (ts._seconds !== undefined) return new Date(ts._seconds * 1000);
+      if (ts.seconds !== undefined) return new Date(ts.seconds * 1000);
+      if (ts instanceof Date) return ts;
+      return null;
+    };
 
-    // Configurar eventos de filtrado para que actualicen la UI
-    document.getElementById("filterButton").addEventListener("click", updateTransactionListUI);
-    document.getElementById("resetFilterButton").addEventListener("click", updateTransactionListUI);
-    document.getElementById("transactionTypeFilter").addEventListener("change", updateTransactionListUI);
-    document.getElementById("searchInput").addEventListener("input", searchTransactions);
-  });
+    const fmtMoney = (n) => 'RD$' + Math.abs(Number(n) || 0).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtNum = (n) => Number(n).toLocaleString('es-DO');
 
-  const addTransactionModal = document.getElementById("addTransactionModal");
-  const closeModal = document.getElementById("closeModal");
-  const submitTransactionButton = document.getElementById("submitTransactionButton");
-  const filterButton = document.getElementById("filterButton");
-  const totalIncomeElement = document.getElementById("totalIncome");
-  const totalExpensesElement = document.getElementById("totalExpenses");
-  const balanceElement = document.getElementById("balance");
-  const editTransactionModal = document.getElementById("editTransactionModal");
-  const closeEditModal = document.getElementById("closeEditModal");
-  const saveTransactionButton = document.getElementById("saveTransactionButton");
+    const formatTime = (date) => {
+      if (!date) return '';
+      const h = date.getHours(), m = date.getMinutes();
+      return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+    };
 
-  // Función para contar las transacciones visibles
-  const countVisibleTransactions = () => {
-    const combinedTransactionList = document.getElementById("combinedTransactionList");
-    const rows = combinedTransactionList.getElementsByTagName("tr");
-    let visibleCount = 0;
+    const genId = (prefix) => {
+      const n = new Date(), p = (v) => String(v).padStart(2, '0');
+      return `${prefix}${p(n.getDate())}${p(n.getMonth() + 1)}${String(n.getFullYear()).slice(-2)}-${p(n.getHours())}${p(n.getMinutes())}${p(n.getSeconds())}`;
+    };
 
-    // Contar las filas visibles
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i].offsetParent !== null) { // Verifica si la fila es visible
-        visibleCount++;
-      }
-    }
+    // ── ESTADO GLOBAL ───────────────────────────────────────────────
+    window.combinedTransactions = [];
+    window.unsubListeners = [];
+    let statusDonutInstance = null, dailyBarInstance = null;
+    let monthlyChartInstance = null, monthlyFacturasInstance = null, monthlyHampersInstance = null, monthlyLibrasInstance = null;
 
-    // Actualizar el conteo en el DOM
-    const visibleCountElement = document.getElementById("visibleTransactionCount");
-    visibleCountElement.textContent = `Transacciones visibles: ${visibleCount}`;
-  };
+    // ═══════════════════════════════════════════════════════════════
+    // FIRESTORE — ESTRUCTURA transacciones-por-dia
+    // ═══════════════════════════════════════════════════════════════
 
-  // Mantenemos la función original loadTransactions para cargas iniciales
-  const loadTransactions = () => {
-    const combinedTransactions = [];
-    const startDate = document.getElementById("startDate").value ? new Date(document.getElementById("startDate").value) : null;
-    const endDate = document.getElementById("endDate").value ? new Date(document.getElementById("endDate").value) : null;
+    // Guardar transacción normal en el día correspondiente
+    const guardarTransaccionEnDia = async (txData) => {
+      const date = txData.timestamp instanceof Date ? txData.timestamp : toDate(txData.timestamp);
+      const diaKey = date.toISOString().split('T')[0];
+      const diaRef = db.collection('transacciones-por-dia').doc(diaKey);
 
-    // Asegúrate de que la fecha de fin incluya todo el día
-    if (endDate) {
-      endDate.setHours(23, 59, 59, 999);
-      endDate.setDate(endDate.getDate() + 1);
-    }
+      await db.runTransaction(async (tx) => {
+        const diaDoc = await tx.get(diaRef);
+        // Convertir timestamp a Firestore Timestamp (no serverTimestamp dentro de array)
+        const txToSave = { ...txData, timestamp: firebase.firestore.Timestamp.fromDate(date) };
 
-    // Asegurarse de que la fecha de inicio incluya el inicio del día
-    if (startDate) {
-      startDate.setHours(0, 0, 0, 0);
-      startDate.setDate(startDate.getDate() + 1);
-    }
-
-    let totalIncome = 0;
-    let totalExpenses = 0;
-
-    // Cargar transacciones de la colección "transacciones"
-    let transactionsQuery = db.collection("transacciones").orderBy("timestamp", "desc");
-
-    // Filtrar transacciones según las fechas seleccionadas
-    if (startDate && endDate) {
-      transactionsQuery = transactionsQuery.where("timestamp", ">=", startDate).where("timestamp", "<=", endDate);
-    }
-
-    transactionsQuery.get()
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const transactionDate = data.timestamp ? data.timestamp.toDate() : null;
-
-          combinedTransactions.push({
-            id: data.id,
-            type: data.type,
-            amount: data.amount,
-            date: transactionDate,
-            details: data.details || "Sin detalles"
+        if (diaDoc.exists) {
+          const txsActuales = diaDoc.data().transacciones || [];
+          txsActuales.push(txToSave);
+          tx.update(diaRef, {
+            transacciones: txsActuales,
+            ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
           });
-
-          // Sumar a los totales
-          if (data.type === "income") {
-            totalIncome += data.amount;
-          } else {
-            totalExpenses += data.amount;
-          }
-        });
-
-        // Cargar pagos de empleados
-        return db.collection("PagoEmpleado").orderBy("timestamp", "desc").get();
-      })
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const employeePaymentDate = data.timestamp ? data.timestamp.toDate() : null;
-
-          // Filtrar pagos de empleados según las fechas
-          if ((!startDate || employeePaymentDate >= startDate) &&
-            (!endDate || employeePaymentDate <= endDate)) {
-            combinedTransactions.push({
-              id: data.id,
-              type: "expense",
-              amount: data.total,
-              date: employeePaymentDate,
-              details: `Pago de empleado: ${data.employeeName}`
-            });
-            totalExpenses += data.total;
-          }
-        });
-
-        // Cargar facturas
-        return db.collection("facturas").orderBy("timestamp", "desc").get();
-      })
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const invoiceDate = data.timestamp ? data.timestamp.toDate() : null;
-
-          // Filtrar facturas según las fechas
-          if ((!startDate || invoiceDate >= startDate) &&
-            (!endDate || invoiceDate <= endDate)) {
-            combinedTransactions.push({
-              id: data.id,
-              type: "income",
-              amount: data.total,
-              date: invoiceDate,
-              details: `Factura | Cliente: ${data.clientName} | Núm.: ${data.clientPhone} | ${data.NombreEmpleado}`,
-              clientName: data.clientName,
-              clientPhone: data.clientPhone,
-              clientAddress: data.clientAddress,
-              NombreEmpleado: data.NombreEmpleado,
-              deliveryOption: data.deliveryOption
-            });
-            totalIncome += data.total;
-          }
-        });
-
-        // Ordenar las transacciones combinadas por fecha
-        combinedTransactions.sort((a, b) => b.date - a.date);
-
-        // Actualizar la lista global de transacciones
-        window.combinedTransactions = combinedTransactions;
-
-        // Renderizar la lista
-        renderTransactionList();
-
-        // Actualizar resumen
-        updateSummary(totalIncome, totalExpenses);
-        countVisibleTransactions();
-      })
-      .catch((error) => {
-        console.error("Error al cargar transacciones:", error);
-      });
-  };
-
-  // Nueva función para renderizar la lista de transacciones
-  const renderTransactionList = () => {
-    const combinedTransactionList = document.getElementById("combinedTransactionList");
-    combinedTransactionList.innerHTML = "";
-    
-    // Obtener fecha actual del dispositivo
-    const today = new Date();
-    const todayFormatted = today.toISOString().split('T')[0];
-    
-    // Aplicar filtros
-    let startDate = document.getElementById("startDate").value ? new Date(document.getElementById("startDate").value) : null;
-    let endDate = document.getElementById("endDate").value ? new Date(document.getElementById("endDate").value) : null;
-    const typeFilter = document.getElementById("transactionTypeFilter").value;
-
-    // Si no se han seleccionado fechas, usar la fecha actual
-    if (!document.getElementById("startDate").value) {
-      document.getElementById("startDate").value = todayFormatted;
-      startDate = new Date(todayFormatted);
-    }
-    
-    if (!document.getElementById("endDate").value) {
-      document.getElementById("endDate").value = todayFormatted;
-      endDate = new Date(todayFormatted);
-    }
-
-    // Configurar las horas para incluir todo el día
-    if (startDate) startDate.setHours(0, 0, 0, 0);
-    if (endDate) endDate.setHours(23, 59, 59, 999);
-
-    let totalIncome = 0;
-    let totalExpenses = 0;
-
-    window.combinedTransactions.forEach(item => {
-      // Comprobar si la transacción tiene una fecha válida
-      if (!item.date) return;
-      
-      // Extraer fecha de la transacción (yyyy-mm-dd)
-      const itemDateStr = item.date.toISOString().split('T')[0];
-      
-      // Extraer fechas de inicio y fin para comparación (yyyy-mm-dd)
-      const startDateStr = startDate ? startDate.toISOString().split('T')[0] : null;
-      const endDateStr = endDate ? endDate.toISOString().split('T')[0] : null;
-      
-      // Comparar solo las fechas sin la hora
-      const withinStartDate = !startDateStr || itemDateStr >= startDateStr;
-      const withinEndDate = !endDateStr || itemDateStr <= endDateStr;
-      
-      if (withinStartDate && withinEndDate && (typeFilter === "all" || item.type === typeFilter)) {
-
-        const transactionItem = document.createElement("tr");
-        transactionItem.innerHTML = `
-          <td><input type="checkbox" class="transaction-checkbox" checked></td>
-          <td>${item.id}</td>
-          <td>${item.type === "income" ? "Ingreso" : "Gasto"}</td>
-          <td>${item.details || "Sin detalles"}</td>
-          <td>RD$${item.amount.toFixed(2)}</td>
-          <td>${item.date ? `${item.date.toLocaleDateString()} ${formatTime(item.date)}` : "Fecha no válida"}</td>
-        `;
-
-        const checkbox = transactionItem.querySelector(".transaction-checkbox");
-        checkbox.addEventListener("change", () => {
-          transactionItem.style.backgroundColor = checkbox.checked ? "" : "lightgray";
-          countVisibleTransactionsAndUpdateSummary();
-        });
-
-        transactionItem.addEventListener("click", (event) => {
-          if (event.target !== checkbox) {
-            if (item.type === "income" && item.details.includes("Factura")) {
-              openEditInvoiceModal(item);
-            } else if (item.type === "expense" && item.details.includes("Pago de empleado")) {
-              loadEmployeePaymentData(item.id);
-            } else {
-              openEditTransactionModal(item);
-            }
-          }
-        });
-
-        combinedTransactionList.appendChild(transactionItem);
-
-        if (item.type === "income") {
-          totalIncome += item.amount;
         } else {
-          totalExpenses += item.amount;
+          tx.set(diaRef, {
+            fechaString: diaKey,
+            fecha: firebase.firestore.Timestamp.fromDate(new Date(diaKey + 'T00:00:00-04:00')),
+            transacciones: [txToSave],
+            pagosEmpleado: [],
+            ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+          });
         }
+      });
+    };
+
+    // Guardar pago de empleado en el día correspondiente
+    const guardarPagoEmpleadoEnDia = async (pagoData) => {
+      const date = pagoData.timestamp instanceof Date ? pagoData.timestamp : toDate(pagoData.timestamp);
+      const diaKey = date.toISOString().split('T')[0];
+      const diaRef = db.collection('transacciones-por-dia').doc(diaKey);
+
+      await db.runTransaction(async (tx) => {
+        const diaDoc = await tx.get(diaRef);
+        const pagoToSave = { ...pagoData, timestamp: firebase.firestore.Timestamp.fromDate(date) };
+
+        if (diaDoc.exists) {
+          const pagosActuales = diaDoc.data().pagosEmpleado || [];
+          pagosActuales.push(pagoToSave);
+          tx.update(diaRef, {
+            pagosEmpleado: pagosActuales,
+            ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } else {
+          tx.set(diaRef, {
+            fechaString: diaKey,
+            fecha: firebase.firestore.Timestamp.fromDate(new Date(diaKey + 'T00:00:00-04:00')),
+            transacciones: [],
+            pagosEmpleado: [pagoToSave],
+            ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      });
+    };
+
+    // Cargar transacciones-por-dia en rango
+    const cargarTxPorRango = async (startStr, endStr) => {
+      let query = db.collection('transacciones-por-dia').orderBy('fechaString');
+      if (startStr) query = query.where('fechaString', '>=', startStr);
+      if (endStr) query = query.where('fechaString', '<=', endStr);
+      const snap = await query.get();
+      const txs = [], pagos = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        (d.transacciones || []).forEach(t => txs.push({ ...t, _diaKey: doc.id }));
+        (d.pagosEmpleado || []).forEach(p => pagos.push({ ...p, _diaKey: doc.id }));
+      });
+      return { txs, pagos };
+    };
+
+    // Actualizar transacción normal en su día
+    const actualizarTxEnDia = async (diaKey, id, campos) => {
+      const diaRef = db.collection('transacciones-por-dia').doc(diaKey);
+      await db.runTransaction(async (tx) => {
+        const doc = await tx.get(diaRef);
+        if (!doc.exists) throw new Error('Día no encontrado');
+        const updated = (doc.data().transacciones || []).map(t => t.id === id ? { ...t, ...campos } : t);
+        tx.update(diaRef, { transacciones: updated, ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp() });
+      });
+    };
+
+    // Eliminar transacción normal de su día
+    const eliminarTxDeDia = async (diaKey, id) => {
+      const diaRef = db.collection('transacciones-por-dia').doc(diaKey);
+      await db.runTransaction(async (tx) => {
+        const doc = await tx.get(diaRef);
+        if (!doc.exists) throw new Error('Día no encontrado');
+        tx.update(diaRef, {
+          transacciones: (doc.data().transacciones || []).filter(t => t.id !== id),
+          ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+    };
+
+    // Actualizar pago de empleado en su día
+    const actualizarPagoEnDia = async (diaKey, id, campos) => {
+      const diaRef = db.collection('transacciones-por-dia').doc(diaKey);
+      await db.runTransaction(async (tx) => {
+        const doc = await tx.get(diaRef);
+        if (!doc.exists) throw new Error('Día no encontrado');
+        const updated = (doc.data().pagosEmpleado || []).map(p => p.id === id ? { ...p, ...campos } : p);
+        tx.update(diaRef, { pagosEmpleado: updated, ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp() });
+      });
+    };
+
+    // Eliminar pago de empleado de su día
+    const eliminarPagoDeDia = async (diaKey, id) => {
+      const diaRef = db.collection('transacciones-por-dia').doc(diaKey);
+      await db.runTransaction(async (tx) => {
+        const doc = await tx.get(diaRef);
+        if (!doc.exists) throw new Error('Día no encontrado');
+        tx.update(diaRef, {
+          pagosEmpleado: (doc.data().pagosEmpleado || []).filter(p => p.id !== id),
+          ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+    };
+
+    // CRUD para facturas en facturas-por-dia
+    const buscarDiaDeFactura = async (facturaId) => {
+      const snap = await db.collection('facturas-por-dia').orderBy('fecha', 'desc').limit(120).get();
+      for (const doc of snap.docs) {
+        if ((doc.data().facturas || []).some(f => f.id === facturaId)) return doc.id;
       }
-    });
+      return null;
+    };
 
-    updateSummary(totalIncome, totalExpenses);
-    countVisibleTransactions();
-  };
-
-  // Función para formatear la hora (la mantenemos igual)
-  function formatTime(date) {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
-    return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-  }
-
-  // Configuramos los listeners en tiempo real
-  const setupRealTimeListeners = () => {
-    // Limpiar listeners anteriores si existen
-    if (window.transactionsListener) window.transactionsListener();
-    if (window.employeePaymentsListener) window.employeePaymentsListener();
-    if (window.invoicesListener) window.invoicesListener();
-
-    // Inicializar la lista global si no existe
-    window.combinedTransactions = window.combinedTransactions || [];
-
-    // Listener para transacciones normales
-    window.transactionsListener = db.collection("transacciones")
-      .orderBy("timestamp", "desc")
-      .onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          const data = change.doc.data();
-          const transaction = {
-            id: data.id,
-            type: data.type,
-            amount: data.amount,
-            date: data.timestamp.toDate(),
-            details: data.details || "Sin detalles"
-          };
-
-          if (change.type === "added" || change.type === "modified") {
-            const index = window.combinedTransactions.findIndex(t => t.id === transaction.id);
-            if (index >= 0) {
-              window.combinedTransactions[index] = transaction;
-            } else {
-              window.combinedTransactions.push(transaction);
-            }
-          } else if (change.type === "removed") {
-            window.combinedTransactions = window.combinedTransactions.filter(t => t.id !== transaction.id);
-          }
-        });
-
-        window.combinedTransactions.sort((a, b) => b.date - a.date);
-        renderTransactionList();
+    // Devuelve { diaKey, factura } con los datos completos de la factura
+    const buscarFacturaCompleta = async (facturaId) => {
+      const snap = await db.collection('facturas-por-dia').orderBy('fecha', 'desc').limit(120).get();
+      for (const doc of snap.docs) {
+        const encontrada = (doc.data().facturas || []).find(f => f.id === facturaId);
+        if (encontrada) return { diaKey: doc.id, factura: encontrada };
+      }
+      return null;
+    };
+    const actualizarFacturaEnDia = async (facturaId, campos) => {
+      const diaKey = await buscarDiaDeFactura(facturaId);
+      if (!diaKey) throw new Error('Día de factura no encontrado');
+      await db.runTransaction(async tx => {
+        const ref = db.collection('facturas-por-dia').doc(diaKey);
+        const doc = await tx.get(ref);
+        if (!doc.exists) throw new Error('Doc no existe');
+        tx.update(ref, { facturas: (doc.data().facturas || []).map(f => f.id === facturaId ? { ...f, ...campos } : f) });
       });
-
-    // Listener para pagos de empleados
-    window.employeePaymentsListener = db.collection("PagoEmpleado")
-      .orderBy("timestamp", "desc")
-      .onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          const data = change.doc.data();
-          const transaction = {
-            id: data.id,
-            type: "expense",
-            amount: data.total,
-            date: data.timestamp.toDate(),
-            details: `Pago de empleado: ${data.employeeName}`
-          };
-
-          if (change.type === "added" || change.type === "modified") {
-            const index = window.combinedTransactions.findIndex(t => t.id === transaction.id);
-            if (index >= 0) {
-              window.combinedTransactions[index] = transaction;
-            } else {
-              window.combinedTransactions.push(transaction);
-            }
-          } else if (change.type === "removed") {
-            window.combinedTransactions = window.combinedTransactions.filter(t => t.id !== transaction.id);
-          }
-        });
-
-        window.combinedTransactions.sort((a, b) => b.date - a.date);
-        renderTransactionList();
+    };
+    const eliminarFacturaDeDia = async (facturaId) => {
+      const diaKey = await buscarDiaDeFactura(facturaId);
+      if (!diaKey) throw new Error('Día de factura no encontrado');
+      await db.runTransaction(async tx => {
+        const ref = db.collection('facturas-por-dia').doc(diaKey);
+        const doc = await tx.get(ref);
+        if (!doc.exists) throw new Error('Doc no existe');
+        tx.update(ref, { facturas: (doc.data().facturas || []).filter(f => f.id !== facturaId) });
       });
+    };
 
-    // Listener para facturas
-    window.invoicesListener = db.collection("facturas")
-      .orderBy("timestamp", "desc")
-      .onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          const data = change.doc.data();
-          const transaction = {
-            id: data.id,
-            type: "income",
-            amount: data.total,
-            date: data.timestamp.toDate(),
-            details: `Factura | Cliente: ${data.clientName} | Núm.: ${data.clientPhone} | ${data.NombreEmpleado}`,
-            clientName: data.clientName,
-            clientPhone: data.clientPhone,
-            clientAddress: data.clientAddress,
-            NombreEmpleado: data.NombreEmpleado,
-            deliveryOption: data.deliveryOption
-          };
+    // ═══════════════════════════════════════════════════════════════
+    // ARCHIVO DE ELIMINADOS
+    // Colección: facturas_eliminadas
+    //   Documento "facturas"      → { facturas: [...] }
+    //   Documento "transacciones" → { transacciones: [...] }
+    // ═══════════════════════════════════════════════════════════════
 
-          if (change.type === "added" || change.type === "modified") {
-            const index = window.combinedTransactions.findIndex(t => t.id === transaction.id);
-            if (index >= 0) {
-              window.combinedTransactions[index] = transaction;
-            } else {
-              window.combinedTransactions.push(transaction);
-            }
-          } else if (change.type === "removed") {
-            window.combinedTransactions = window.combinedTransactions.filter(t => t.id !== transaction.id);
-          }
-        });
+    /**
+     * Archiva un objeto eliminado en facturas_eliminadas.
+     * @param {'facturas'|'transacciones'} tipo - nombre del documento destino
+     * @param {object} objeto - datos completos del item a archivar
+     */
+    const archivarEnEliminadas = async (tipo, objeto) => {
+      // Añadir metadato de cuándo y quién eliminó
+      const user = auth.currentUser;
+      const objetoConMeta = {
+        ...objeto,
+        _eliminadoEn: new Date().toISOString(),
+        _eliminadoPor: user ? (user.email || user.uid) : 'desconocido'
+      };
 
-        window.combinedTransactions.sort((a, b) => b.date - a.date);
-        renderTransactionList();
+      // Serializar Timestamps a objeto plano para que arrayUnion funcione correctamente
+      const serializar = (val) => {
+        if (val === null || val === undefined) return val;
+        if (typeof val !== 'object') return val;
+        if (val.toDate) return val.toDate().toISOString(); // Firestore Timestamp
+        if (val._seconds !== undefined) return new Date(val._seconds * 1000).toISOString();
+        if (val instanceof Date) return val.toISOString();
+        if (Array.isArray(val)) return val.map(serializar);
+        const out = {};
+        for (const k of Object.keys(val)) out[k] = serializar(val[k]);
+        return out;
+      };
+
+      const objetoFinal = serializar(objetoConMeta);
+
+      const ref = db.collection('facturas_eliminadas').doc(tipo);
+
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(ref);
+        if (snap.exists) {
+          tx.update(ref, {
+            [tipo]: firebase.firestore.FieldValue.arrayUnion(objetoFinal),
+            ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } else {
+          tx.set(ref, {
+            [tipo]: [objetoFinal],
+            ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
       });
-  };
+    };
 
-  // Mantenemos la función updateSummary sin cambios
-  const updateSummary = (totalIncome, totalExpenses) => {
-    totalIncomeElement.textContent = totalIncome.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
-    totalExpensesElement.textContent = totalExpenses.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
-    balanceElement.textContent = (totalIncome - totalExpenses).toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
-  };
+    // Cargar facturas desde facturas-por-dia por rango
+    const cargarFacturasPorRango = async (startStr, endStr) => {
+      let query = db.collection('facturas-por-dia').orderBy('fechaString');
+      if (startStr) query = query.where('fechaString', '>=', startStr);
+      if (endStr) query = query.where('fechaString', '<=', endStr);
+      const snap = await query.get();
+      const facturas = [], diasData = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        diasData.push({ diaKey: doc.id, estadisticas: d.estadisticas, facturas: d.facturas || [] });
+        (d.facturas || []).forEach(f => facturas.push(f));
+      });
+      return { facturas, diasData };
+    };
 
-  // Al cargar la página, configuramos los listeners y cargamos los datos iniciales
-  document.addEventListener('DOMContentLoaded', () => {
-    // Establecer fechas por defecto
-    setDefaultDates();
-    
-    // Primero cargamos los datos iniciales
-    loadTransactions();
+    // ═══════════════════════════════════════════════════════════════
+    // CARGA PRINCIPAL
+    // ═══════════════════════════════════════════════════════════════
+    const loadAll = async () => {
+      const startStr = document.getElementById('startDate').value || getRDDateString();
+      const endStr = document.getElementById('endDate').value || getRDDateString();
+      const startDate = new Date(startStr + 'T00:00:00');
+      const endDate = new Date(endStr + 'T23:59:59');
 
-    // Luego configuramos los listeners para cambios en tiempo real
-    setupRealTimeListeners();
+      document.getElementById('combinedTransactionList').innerHTML =
+        `<tr><td colspan="6" class="pl-loading"><div class="spinner"></div>Cargando…</td></tr>`;
 
-    // Configuramos los eventos de los filtros para que llamen a renderTransactionList
-    document.getElementById("filterButton").addEventListener("click", renderTransactionList);
-    document.getElementById("resetFilterButton").addEventListener("click", () => {
-      // Al resetear, volver a establecer las fechas por defecto
-      setDefaultDates();
+      const txList = [];
+      let totalIncome = 0, totalExpenses = 0, gastosTx = 0, pagosEmp = 0;
+
+      // ── 1. Transacciones normales (nueva estructura por día)
+      try {
+        const { txs } = await cargarTxPorRango(startStr, endStr);
+        txs.forEach(d => {
+          const date = toDate(d.timestamp);
+          if (!date || date < startDate || date > endDate) return;
+          const monto = parseFloat(d.amount) || 0;
+          txList.push({ id: d.id, type: d.type, amount: monto, date, details: d.details || 'Sin detalles', _source: 'transaccion', _diaKey: d._diaKey });
+          if (d.type === 'income') totalIncome += monto; else { totalExpenses += monto; gastosTx += monto; }
+        });
+      } catch (e) { console.error('Error tx nuevas:', e); }
+
+      // ── 1b. Transacciones colección legada (compatibilidad)
+      try {
+        const snap = await db.collection('transacciones').orderBy('timestamp', 'desc').get();
+        snap.forEach(doc => {
+          const d = doc.data();
+          const date = d.timestamp ? (d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp)) : null;
+          if (!date || date < startDate || date > endDate) return;
+          const monto = parseFloat(d.amount) || 0;
+          txList.push({ id: d.id, type: d.type, amount: monto, date, details: d.details || 'Sin detalles', _source: 'transaccion_legada', _docId: doc.id });
+          if (d.type === 'income') totalIncome += monto; else { totalExpenses += monto; gastosTx += monto; }
+        });
+      } catch (e) { console.warn('Colección legada no disponible:', e.message); }
+
+      // ── 2. Pagos de empleados (nueva estructura por día)
+      try {
+        const { pagos } = await cargarTxPorRango(startStr, endStr);
+        pagos.forEach(d => {
+          const date = toDate(d.timestamp);
+          if (!date || date < startDate || date > endDate) return;
+          const monto = parseFloat(d.total) || 0;
+          txList.push({
+            id: d.id, type: 'expense', amount: monto, date, details: `Pago empleado: ${d.employeeName}`,
+            _source: 'pago_empleado', _diaKey: d._diaKey, _pagoData: d
+          });
+          totalExpenses += monto; pagosEmp += monto;
+        });
+      } catch (e) { console.error('Error pagos empleado:', e); }
+
+      // ── 2b. Pagos legados
+      try {
+        const snap = await db.collection('PagoEmpleado').orderBy('timestamp', 'desc').get();
+        snap.forEach(doc => {
+          const d = doc.data();
+          const date = d.timestamp ? (d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp)) : null;
+          if (!date || date < startDate || date > endDate) return;
+          const monto = parseFloat(d.total) || 0;
+          txList.push({
+            id: d.id, type: 'expense', amount: monto, date, details: `Pago empleado: ${d.employeeName}`,
+            _source: 'pago_empleado_legado', _docId: doc.id, _pagoData: d
+          });
+          totalExpenses += monto; pagosEmp += monto;
+        });
+      } catch (e) { console.warn('Colección legada PagoEmpleado no disponible'); }
+
+      // ── 3. Facturas
+      let facturasData = [], diasData = [];
+      try {
+        const res = await cargarFacturasPorRango(startStr, endStr);
+        facturasData = res.facturas; diasData = res.diasData;
+        facturasData.forEach(f => {
+          const date = toDate(f.timestamp);
+          if (!date) return;
+          const monto = parseFloat(f.total) || 0;
+          txList.push({
+            id: f.id, type: 'income', amount: monto, date,
+            details: `Factura | ${f.clientName} | ${f.clientPhone} | ${f.NombreEmpleado}`,
+            clientName: f.clientName, clientPhone: f.clientPhone, clientAddress: f.clientAddress,
+            NombreEmpleado: f.NombreEmpleado, deliveryOption: f.deliveryOption,
+            paymentMethod: f.paymentMethod || '', invoiceStatus: f.status || '',
+            _source: 'factura'
+          });
+          totalIncome += monto;
+        });
+      } catch (e) { console.error('Error facturas:', e); }
+
+      // Dedup por id (por si hay duplicados legado+nuevo)
+      const seen = new Set();
+      const txDedup = txList.filter(t => { if (seen.has(t.id)) return false; seen.add(t.id); return true; });
+      txDedup.sort((a, b) => (b.date || 0) - (a.date || 0));
+      window.combinedTransactions = txDedup;
+
       renderTransactionList();
-    });
-    document.getElementById("transactionTypeFilter").addEventListener("change", renderTransactionList);
-    document.getElementById("searchInput").addEventListener("input", searchTransactions);
-  });
+      renderStats(facturasData, diasData, totalIncome, totalExpenses, gastosTx, pagosEmp, startStr, endStr);
+    };
 
-  // Función para generar un ID basado en el timestamp actual
-  const generateTimestampId = (prefix) => {
-    const now = new Date();
+    // ═══════════════════════════════════════════════════════════════
+    // RENDER — TABLA DE TRANSACCIONES
+    // ═══════════════════════════════════════════════════════════════
+    const highlight = (text, term) => {
+      if (!term || !text) return text || '';
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return String(text).replace(new RegExp(`(${escaped})`, 'gi'),
+        '<mark style="background:#fde68a;color:#78350f;border-radius:3px;padding:0 2px;">$1</mark>');
+    };
 
-    // Obtener componentes de fecha y hora
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = String(now.getFullYear()).slice(-2);
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const renderTransactionList = () => {
+      const tbody = document.getElementById('combinedTransactionList');
+      tbody.innerHTML = '';
+      const typeFilter = document.getElementById('transactionTypeFilter').value;
+      const term = (document.getElementById('searchInputTxInline').value || '').toLowerCase();
+      let income = 0, expenses = 0, count = 0;
 
-    // Formato: prefijo + ddmmyy-hhmmss
-    return `${prefix}${day}${month}${year}-${hours}${minutes}${seconds}`;
-  };
+      window.combinedTransactions.forEach(item => {
+        if (!item.date) return;
 
-  // Modificar la función addTransaction para usar generateTimestampId
-  const addTransaction = async () => {
-    const type = document.getElementById("transactionType").value;
-    const dateInput = document.getElementById("transactionDate").value;
-    const timeInput = document.getElementById("transactionTime").value;
+        // Filtros de método de pago para facturas
+        if (typeFilter === 'factura_efectivo') {
+          if (item._source !== 'factura') return;
+          const m = (item.paymentMethod || '').toLowerCase();
+          if (m !== 'efectivo') return;
+        } else if (typeFilter === 'factura_transferencia') {
+          if (item._source !== 'factura') return;
+          const m = (item.paymentMethod || '').toLowerCase();
+          if (m !== 'transferencia') return;
+        } else if (typeFilter === 'factura_tarjeta') {
+          if (item._source !== 'factura') return;
+          const m = (item.paymentMethod || '').toLowerCase();
+          if (!m.includes('tarjeta')) return;
+        } else if (typeFilter !== 'all' && item.type !== typeFilter) return;
 
-    if (type === "employeePayment") {
-      // Lógica para el pago de empleado
-      const salaryPayment = parseFloat(document.getElementById("salaryPayment").value) || 0;
-      const holidayPayment = parseFloat(document.getElementById("holidayPayment").value) || 0;
-      const overtimePayment = parseFloat(document.getElementById("overtimePayment").value) || 0;
-      const vacationPayment = parseFloat(document.getElementById("vacationPayment").value) || 0;
-      const christmasPayment = parseFloat(document.getElementById("christmasPayment").value) || 0;
-      const productSale = parseFloat(document.getElementById("productSale").value) || 0;
-      const productionIncentive = parseFloat(document.getElementById("productionIncentive").value) || 0;
-      const punctualityIncentive = parseFloat(document.getElementById("punctualityIncentive").value) || 0;
-      const licenseDay = parseFloat(document.getElementById("licenseDay").value) || 0;
-      const insurance = parseFloat(document.getElementById("insurance").value) || 0;
+        if (term && !`${item.id || ''} ${item.details || ''} ${item.amount}`.toLowerCase().includes(term)) return;
 
-      const total = salaryPayment + holidayPayment + overtimePayment + vacationPayment + christmasPayment +
-        productSale + productionIncentive + punctualityIncentive - licenseDay - insurance;
+        count++;
+        if (item.type === 'income') income += item.amount; else expenses += item.amount;
 
-      const employeeName = document.getElementById("employeeName").value;
+        const tr = document.createElement('tr');
+        const typePill = item.type === 'income'
+          ? '<span class="pill pill-teal">↑ Ingreso</span>'
+          : '<span class="pill pill-rose">↓ Gasto</span>';
+        const amtColor = item.type === 'income' ? 'var(--teal)' : 'var(--rose)';
+        const amtSign = item.type === 'income' ? '+' : '−';
+        const srcIcon = {
+          factura: '🧾', transaccion: '💳', transaccion_legada: '💳',
+          pago_empleado: '👤', pago_empleado_legado: '👤'
+        }[item._source] || '•';
 
-      // Obtener la fecha y hora de pago de empleado
-      const employeePaymentDate = document.getElementById("employeePaymentDate").value;
-      const employeePaymentTime = document.getElementById("employeePaymentTime").value;
-
-      // Validar fecha y hora de pago de empleado
-      if (!employeePaymentDate || !employeePaymentTime) {
-        alert("Por favor, ingresa una fecha y hora válidas para el pago de empleado.");
-        return;
-      }
-
-      // Crear el objeto Date para el pago de empleado
-      const [year, month, day] = employeePaymentDate.split('-');
-      const [hours, minutes] = employeePaymentTime.split(':');
-      const paymentDate = new Date(year, month - 1, day, hours, minutes);
-
-      // Generar ID único basado en timestamp con prefijo 'pe'
-      const newId = generateTimestampId('pe');
-
-      // Verificar si el checkbox está marcado
-      const resetProductsSold = document.getElementById("resetProductsSoldCheckbox").checked;
-
-      // Si el checkbox está marcado, reiniciar los montos en ventaproductos
-      if (resetProductsSold && employeeName) {
-        try {
-          // Obtener todos los documentos de ventaproductos para este empleado
-          const querySnapshot = await db.collection("ventaproductos")
-            .where("empleado", "==", employeeName)
-            .get();
-
-          // Crear un batch para actualizar todos los documentos
-          const batch = db.batch();
-
-          querySnapshot.forEach(doc => {
-            const docRef = db.collection("ventaproductos").doc(doc.id);
-            batch.update(docRef, {
-              monto: 0,
-              timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-          });
-
-          // Ejecutar el batch
-          await batch.commit();
-          console.log("Contador de productos vendidos reiniciado para", employeeName);
-        } catch (error) {
-          console.error("Error al reiniciar el contador de productos vendidos:", error);
+        // Sub-label de método de pago para facturas (debajo del pill de tipo)
+        let paySubLabel = '';
+        if (item._source === 'factura') {
+          const m = (item.paymentMethod || '').toLowerCase();
+          const s = (item.invoiceStatus || '').toLowerCase();
+          if (s === 'pago pendiente') {
+            paySubLabel = '<div style="display: inline-block;font-size: 0.8rem;padding: 1px 6px;border-radius: 20px;background: #fef4db;color: #dd7435;font-weight: 600;vertical-align: middle;">⏳ Pendiente</div>';
+          } else if (m === 'efectivo') {
+            paySubLabel = '<div style="display: inline-block;font-size: 0.8rem;padding: 1px 6px;border-radius: 20px;background: #e7fedb;color: #0a8562;font-weight: 600;vertical-align: middle;">💵 Efectivo</div>';
+          } else if (m === 'transferencia') {
+            paySubLabel = '<div style="display: inline-block;font-size: 0.8rem;padding: 1px 6px;border-radius: 20px;background: #dbeafe;color: #1e40af;font-weight: 600;vertical-align: middle;">🏦 Transferencia</div>';
+          } else if (m.includes('tarjeta')) {
+            paySubLabel = '<div style="display: inline-block;font-size: 0.8rem;padding: 1px 6px;border-radius: 20px;background: #e7dbfe;color: #5b21b6;font-weight: 600;vertical-align: middle;">💳 Tarjeta</div>';
+          }
         }
-      }
 
-      // Agregar el pago de empleado con el nuevo ID
-      db.collection("PagoEmpleado").add({
-        id: newId,
-        type: "expense",
-        timestamp: paymentDate,
-        employeeName,
-        salaryPayment,
-        holidayPayment,
-        overtimePayment,
-        vacationPayment,
-        christmasPayment,
-        productSale,
-        productionIncentive,
-        punctualityIncentive,
-        licenseDay,
-        insurance,
-        total
-      }).then(() => {
-        alert("Pago de empleado agregado correctamente.");
-        resetForm(); // Llamar a la función para reiniciar el formulario
-        closeModal.click();
-        loadTransactions();
-      }).catch((error) => {
-        console.error("Error al agregar el pago de empleado: ", error);
-        alert("Hubo un problema al agregar el pago de empleado.");
-      });
+        tr.innerHTML = `
+      <td><input type="checkbox" class="tx-cb" checked></td>
+      <td class="mono dim" style="font-size:0.8rem;">${highlight(item.id || '—', term)}</td>
+      <td><div>${typePill} <span style="font-size:11px;color:var(--txt3);">${srcIcon}</span></div>${paySubLabel}</td>
+      <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.details || ''}">${highlight(item.details || '—', term)}</td>
+      <td class="mono" style="color:${amtColor};white-space:nowrap;">${amtSign}${highlight(fmtMoney(item.amount), term)}</td>
+      <td class="dim" style="white-space:nowrap;">${item.date ? `${item.date.toLocaleDateString('es-DO')} ${formatTime(item.date)}` : '—'}</td>
+    `;
 
-    } else {
-      // Lógica para transacciones normales (gasto o ingreso)
-      const amount = parseFloat(document.getElementById("transactionAmount").value);
-      const details = document.getElementById("transactionDetails").value;
-
-      if (!isNaN(amount) && dateInput && timeInput && details) {
-        const [year, month, day] = dateInput.split('-');
-        const [hours, minutes] = timeInput.split(':');
-        const timestamp = new Date(year, month - 1, day, hours, minutes);
-
-        // Determinar el prefijo según el tipo de transacción
-        const prefix = type === "expense" ? "tg" : "ti";
-
-        // Generar ID único basado en timestamp
-        const newId = generateTimestampId(prefix);
-
-        db.collection("transacciones").add({
-          id: newId,
-          type,
-          amount,
-          timestamp,
-          details
-        }).then(() => {
-          alert("Transacción agregada correctamente.");
-          resetForm(); // Llamar a la función para reiniciar el formulario
-          closeModal.click();
-          loadTransactions
-        }).catch((error) => {
-          console.error("Error al agregar la transacción: ", error);
-          alert("Hubo un problema al agregar la transacción.");
+        const cb = tr.querySelector('.tx-cb');
+        cb.addEventListener('change', () => { tr.style.background = cb.checked ? '' : 'rgba(255,255,255,0.02)'; recalcTxSummary(); });
+        tr.addEventListener('click', e => {
+          if (e.target === cb) return;
+          if (item._source === 'factura') openEditInvoiceModal(item);
+          else if (item._source === 'pago_empleado') openEditPagoEmpleadoModal(item);
+          else if (item._source === 'pago_empleado_legado') openEditPagoEmpleadoModal(item);
+          else openEditTransactionModal(item);
         });
-      } else {
-        alert("Por favor, completa todos los campos correctamente.");
-      }
-    }
-  };
+        tbody.appendChild(tr);
+      });
 
-  // Función para reiniciar el formulario
-  const resetForm = () => {
-    document.getElementById("transactionType").value = "expense"; // Restablecer tipo a gasto
-    document.getElementById("transactionDate").value = ""; // Limpiar fecha
-    document.getElementById("transactionTime").value = ""; // Limpiar hora
-    document.getElementById("transactionAmount").value = ""; // Limpiar monto
-    document.getElementById("transactionDetails").value = ""; // Limpiar detalles
-    document.getElementById("employeeName").value = ""; // Limpiar nombre de empleado
-    document.getElementById("salaryPayment").value = ""; // Limpiar pago de sueldo
-    document.getElementById("holidayPayment").value = ""; // Limpiar pago de día feriado
-    document.getElementById("overtimePayment").value = ""; // Limpiar pago hora extra
-    document.getElementById("vacationPayment").value = ""; // Limpiar pago de vacaciones
-    document.getElementById("christmasPayment").value = ""; // Limpiar pago de navidad
-    document.getElementById("productSale").value = ""; // Limpiar venta de producto
-    document.getElementById("productionIncentive").value = ""; // Limpiar producción
-    document.getElementById("punctualityIncentive").value = ""; // Limpiar puntualidad
-    document.getElementById("licenseDay").value = ""; // Limpiar día de licencia
-    document.getElementById("insurance").value = ""; // Limpiar seguro
-    document.getElementById("employeePaymentDate").value = ""; // Limpiar fecha de pago
-    document.getElementById("employeePaymentTime").value = ""; // Limpiar hora de pago
-    document.getElementById("totalAmount").value = ""; // Limpiar total
-    // Desmarcar el checkbox y deshabilitar el campo de venta de producto
-    document.getElementById("resetProductsSoldCheckbox").checked = false;
-    document.getElementById("productSale").disabled = true;
-    document.getElementById("productSale").style.backgroundColor = "#f0f0f0";
-    document.getElementById("productSale").style.color = "#888";
-    document.getElementById("productSale").value = "";
-  };
+      if (!count) tbody.innerHTML = `<tr><td colspan="6" class="pl-empty">Sin transacciones en este período</td></tr>`;
 
-  // Evento para filtrar transacciones al hacer clic en el botón de filtrar
-  filterButton.addEventListener("click", () => {
-    const startDate = document.getElementById("startDate").value;
-    const endDate = document.getElementById("endDate").value;
+      const countText = `${count} ${count === 1 ? 'registro' : 'registros'}`;
+      document.getElementById('txCount').textContent = countText;
+      document.getElementById('txCountInline').textContent = countText;
+      updateTxSummaryDisplay(income, expenses);
+    };
 
-    // Verificar si hay fechas seleccionadas
-    if (startDate || endDate) {
-      loadTransactions(); // Cargar transacciones con los filtros aplicados
-      filterButton.classList.add("active"); // Agregar la clase 'active' al botón
-    } else {
-      alert("Por favor, selecciona al menos una fecha."); // Mensaje de advertencia si no hay fechas
-    }
-  });
+    const updateTxSummaryDisplay = (income, expenses) => {
+      document.getElementById('txTotalIncome').textContent = fmtMoney(income);
+      document.getElementById('txTotalExpenses').textContent = fmtMoney(expenses);
+      const bal = income - expenses;
+      const balEl = document.getElementById('txBalance');
+      balEl.textContent = fmtMoney(bal);
+      balEl.style.color = bal >= 0 ? 'var(--teal)' : 'var(--rose)';
+    };
 
-  // Evento para restablecer los filtros de fecha
-  document.getElementById("resetFilterButton").addEventListener("click", () => {
-    setDefaultDates(); // Establecer fechas por defecto en lugar de vacías
-    loadTransactions(); // Cargar transacciones sin filtros
-    filterButton.classList.remove("active"); // Quitar la clase 'active' del botón
-  });
+    const recalcTxSummary = () => {
+      let income = 0, expenses = 0;
+      document.querySelectorAll('#combinedTransactionList tr').forEach(tr => {
+        const cb = tr.querySelector('.tx-cb');
+        if (!cb || !cb.checked || !tr.cells[4]) return;
+        const val = parseFloat(tr.cells[4].textContent.replace(/[^0-9.]/g, '')) || 0;
+        if (tr.cells[2].textContent.includes('Ingreso')) income += val; else expenses += val;
+      });
+      updateTxSummaryDisplay(income, expenses);
+    };
 
-  // Agregar eventos para quitar la clase 'active' si se borra la fecha
-  document.getElementById("startDate").addEventListener("input", () => {
-    if (!document.getElementById("startDate").value && !document.getElementById("endDate").value) {
-      filterButton.classList.remove("active"); // Quitar la clase 'active' si ambos campos están vacíos
-    }
-  });
+    // ═══════════════════════════════════════════════════════════════
+    // RENDER — ESTADÍSTICAS
+    // ═══════════════════════════════════════════════════════════════
+    const renderStats = (facturas, diasData, totalIncome, totalExpenses, gastosTx, pagosEmp, startStr, endStr) => {
+      const balance = totalIncome - totalExpenses;
+      document.getElementById('kpiIngresos').textContent = fmtNum(totalIncome.toFixed(2));
+      document.getElementById('kpiGastos').textContent = fmtNum(totalExpenses.toFixed(2));
+      document.getElementById('kpiBalance').textContent = fmtNum(balance.toFixed(2));
+      document.getElementById('kpiBalance').style.color = balance >= 0 ? 'var(--teal)' : 'var(--rose)';
+      document.getElementById('kpiFacturas').textContent = fmtNum(facturas.length);
+      document.getElementById('kpiIngresosFacturas').textContent = `${facturas.length} facturas`;
+      document.getElementById('kpiGastosDetalle').textContent = `TX: ${fmtMoney(gastosTx)} · Emp: ${fmtMoney(pagosEmp)}`;
 
-  document.getElementById("endDate").addEventListener("input", () => {
-    if (!document.getElementById("startDate").value && !document.getElementById("endDate").value) {
-      filterButton.classList.remove("active"); // Quitar la clase 'active' si ambos campos están vacíos
-    }
-  });
+      let hampersTotal = 0, librasSueltasTotal = 0, itbisTotal = 0, deliveryIncome = 0, deliveryCount = 0;
+      let abonosCount = 0, abonosSaldo = 0;
+      const desgloseHampers = {}, desgloseOtros = {}, desgloseLibrasSueltas = {}, empleadosMap = {};
+      const metodoPagos = { efectivo: { qty: 0, monto: 0 }, transferencia: { qty: 0, monto: 0 }, tarjeta: { qty: 0, monto: 0 }, pendiente: { qty: 0, monto: 0 } };
+      const statusCount = { pagado: 0, pendiente: 0, abono: 0, listo: 0, entregado: 0 };
+      const dailyIngresos = {};
 
-  // Función para abrir el modal de edición de transacción
-  const openEditTransactionModal = (transaction) => {
-    document.getElementById("editTransactionId").value = transaction.id;
-    document.getElementById("editTransactionType").value = transaction.type;
-    document.getElementById("editTransactionAmount").value = transaction.amount;
-    document.getElementById("editTransactionDate").value = transaction.date.toISOString().split('T')[0];
-    document.getElementById("editTransactionTime").value = transaction.date.toTimeString().split(' ')[0].substring(0, 5);
-    document.getElementById("editTransactionDetails").value = transaction.details;
-    editTransactionModal.style.display = "block";
-  };
+      facturas.forEach(f => {
+        const monto = parseFloat(f.total) || 0;
+        const date = toDate(f.timestamp);
+        if (date) { const dk = date.toISOString().split('T')[0]; dailyIngresos[dk] = (dailyIngresos[dk] || 0) + monto; }
 
-  // Evento para cerrar el modal de edición
-  closeEditModal.addEventListener("click", () => {
-    editTransactionModal.style.display = "none";
-  });
+        const metodo = (f.paymentMethod || '').toLowerCase();
+        const status = (f.status || '').toLowerCase();
+        if (status === 'pago pendiente') { metodoPagos.pendiente.qty++; metodoPagos.pendiente.monto += monto; statusCount.pendiente++; }
+        else if (metodo === 'efectivo') { metodoPagos.efectivo.qty++; metodoPagos.efectivo.monto += monto; }
+        else if (metodo === 'transferencia') { metodoPagos.transferencia.qty++; metodoPagos.transferencia.monto += monto; }
+        else if (metodo.includes('tarjeta')) { metodoPagos.tarjeta.qty++; metodoPagos.tarjeta.monto += monto; }
 
-  // Función para abrir el modal de edición de facturas
-  const openEditInvoiceModal = (invoice) => {
-    document.getElementById("editInvoiceId").value = invoice.id; // Asegúrate de que 'id' esté presente
-    document.getElementById("editClientName").value = invoice.clientName || ''; // Usa un valor por defecto si es undefined
-    document.getElementById("editClientPhone").value = invoice.clientPhone || '';
-    document.getElementById("editClientAddress").value = invoice.clientAddress || '';
-    document.getElementById("editEmployeeName").value = invoice.NombreEmpleado || '';
+        if (status === 'pagado') statusCount.pagado++;
+        else if (status === 'listo') statusCount.listo++;
+        else if (status === 'entregado') statusCount.entregado++;
+        if (f.abonoFact === 'yes') { statusCount.abono++; abonosCount++; abonosSaldo += parseFloat(f.remainingBalance) || 0; }
 
-    // Asegúrate de que deliveryOption esté correctamente estructurado
-    if (invoice.deliveryOption && invoice.deliveryOption.length > 0) {
-      document.getElementById("editDeliveryName").value = invoice.deliveryOption[0].name || '';
-      document.getElementById("editDeliveryPrice").value = invoice.deliveryOption[0].price || '';
-    } else {
-      document.getElementById("editDeliveryName").value = '';
-      document.getElementById("editDeliveryPrice").value = '';
-    }
-
-    editInvoiceModal.style.display = "block"; // Mostrar el modal
-  };
-
-  document.getElementById("closeInvoiceModal").addEventListener("click", () => {
-    editInvoiceModal.style.display = "none";
-  });
-
-  document.getElementById("saveInvoiceButton").addEventListener("click", () => {
-    const id = document.getElementById("editInvoiceId").value;
-    const clientName = document.getElementById("editClientName").value;
-    const clientPhone = document.getElementById("editClientPhone").value;
-    const clientAddress = document.getElementById("editClientAddress").value;
-    const employeeName = document.getElementById("editEmployeeName").value;
-    const deliveryName = document.getElementById("editDeliveryName").value;
-    const deliveryPrice = document.getElementById("editDeliveryPrice").value; // Se mantiene como cadena
-
-    // Actualizar la factura en Firestore
-    db.collection("facturas").where("id", "==", id).get()
-      .then((querySnapshot) => {
-        if (!querySnapshot.empty) {
-          const doc = querySnapshot.docs[0];
-          return doc.ref.update({
-            clientName,
-            clientPhone,
-            clientAddress,
-            NombreEmpleado: employeeName,
-            deliveryOption: [{ name: deliveryName, price: deliveryPrice }] // Se envía como cadena
-          });
-        } else {
-          throw new Error("No se encontró la factura con el ID proporcionado.");
+        itbisTotal += parseFloat(f.ITBISmonto) || 0;
+        if (f.deliveryOption && f.deliveryOption[0]) {
+          const dp = parseFloat(f.deliveryOption[0].price) || 0;
+          if (dp > 0) { deliveryIncome += dp; deliveryCount++; }
         }
-      })
-      .then(() => {
-        alert("Factura actualizada correctamente.");
-        editInvoiceModal.style.display = "none";
-        loadTransactions(); // Recargar transacciones
-      })
-      .catch((error) => {
-        console.error("Error al actualizar la factura: ", error);
-        alert("Hubo un problema al actualizar la factura.");
+
+        (f.selectedServices || []).forEach(s => {
+          const k = s.name || 'Sin nombre';
+          if (s.hamperComplete === "yes") {
+            // Hamper completo (peso entre librasMin y librasMax)
+            hampersTotal++;
+            desgloseHampers[k] = (desgloseHampers[k] || 0) + 1;
+          } else {
+            // Libras sueltas (fuera del rango de hamper completo)
+            const lbs = parseInt(s.weight) || 0;
+            librasSueltasTotal += lbs;
+            const kLbs = `⚖️ ${k}`;
+            desgloseLibrasSueltas[kLbs] = (desgloseLibrasSueltas[kLbs] || 0) + lbs;
+          }
+        });
+
+        (f.otrosServicios || []).forEach(s => {
+          const k = s.name || 'Servicio';
+          desgloseOtros[k] = (desgloseOtros[k] || 0) + (s.count || 1);
+        });
+
+        const emp = f.NombreEmpleado || 'Desconocido';
+        if (!empleadosMap[emp]) empleadosMap[emp] = { facturas: 0, total: 0 };
+        empleadosMap[emp].facturas++;
+        empleadosMap[emp].total += monto;
       });
-  });
 
-  // Función para cargar los nombres de empleados desde Firestore
-  const loadEmployeeNames = () => {
-    const employeeSelect = document.getElementById("employeeName");
-    employeeSelect.innerHTML = ""; // Limpiar opciones existentes
+      // KPIs secundarios
+      document.getElementById('kpiHampers').textContent = fmtNum(hampersTotal);
+      document.getElementById('kpiHampersSub').textContent = `hampers completos`;
+      document.getElementById('kpiLibrasSueltas').textContent = fmtNum(librasSueltasTotal);
+      document.getElementById('kpiITBIS').textContent = fmtNum(itbisTotal.toFixed(2));
+      document.getElementById('kpiDelivery').textContent = fmtNum(deliveryIncome.toFixed(2));
+      document.getElementById('kpiDeliverySub').textContent = `${deliveryCount} con delivery`;
+      document.getElementById('kpiAbonos').textContent = fmtNum(abonosCount);
+      document.getElementById('kpiAbonosSub').textContent = `saldo pend. ${fmtMoney(abonosSaldo)}`;
 
-    // Agregar opción por defecto
-    const defaultOption = document.createElement("option");
-    defaultOption.value = "";
-    defaultOption.textContent = "Selecciona un empleado";
-    employeeSelect.appendChild(defaultOption);
+      // Métodos de pago
+      const maxMonto = Math.max(...Object.values(metodoPagos).map(m => m.monto), 1);
+      const payColors = { efectivo: '#0d9488', transferencia: '#4361ee', tarjeta: '#7c3aed', pendiente: '#d97706' };
+      const payLabels = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta', pendiente: 'Pago Pendiente' };
+      document.getElementById('payMethodsContainer').innerHTML = Object.entries(metodoPagos).map(([key, val]) => {
+        const pct = (val.monto / maxMonto * 100).toFixed(1);
+        return `<div class="pay-bar-item">
+      <div class="pay-bar-header"><span>${payLabels[key]}</span><span class="pay-count">${val.qty} · ${fmtMoney(val.monto)}</span></div>
+      <div class="pay-bar-track"><div class="pay-bar-fill" style="width:${pct}%;background:${payColors[key]};"></div></div>
+    </div>`;
+      }).join('') || '<div class="pl-empty">Sin datos</div>';
 
-    // Consultar la colección "empleados"
-    db.collection("empleados").get().then((snapshot) => {
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const option = document.createElement("option");
-        option.value = data.nombre; // Asumiendo que el campo se llama "nombre"
-        option.textContent = data.nombre; // Mostrar el nombre en el select
-        employeeSelect.appendChild(option);
+      // Hampers
+      const sortedHampers = Object.entries(desgloseHampers).sort((a, b) => b[1] - a[1]);
+      const sortedLibrasSueltas = Object.entries(desgloseLibrasSueltas).sort((a, b) => b[1] - a[1]);
+      let hamperHTML = sortedHampers.length
+        ? sortedHampers.map(([n, q]) => `<div class="item-row"><span class="item-name">${n}</span><span class="item-badge">${q}</span></div>`).join('')
+        : '<div class="pl-empty">Sin hampers en este período</div>';
+      if (sortedLibrasSueltas.length) {
+        hamperHTML += `<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;font-weight:700;color:var(--txt2);letter-spacing:.05em;text-transform:uppercase;">Libras Sueltas</div>`;
+        hamperHTML += sortedLibrasSueltas.map(([n, q]) => `<div class="item-row"><span class="item-name" style="font-size:12px;">${n}</span><span class="item-badge" style="color:#92400e;font-weight: 500;">${q} lbs</span></div>`).join('');
+      }
+      document.getElementById('hamperListContainer').innerHTML = hamperHTML;
+
+      // Empleados
+      const sortedEmps = Object.entries(empleadosMap).sort((a, b) => b[1].total - a[1].total);
+      document.getElementById('empTableBody').innerHTML = sortedEmps.length
+        ? sortedEmps.map(([name, data], idx) => {
+          const ticket = data.facturas > 0 ? data.total / data.facturas : 0;
+          return `<tr><td><strong>${name}</strong></td><td class="mono">${data.facturas}</td><td class="mono">${fmtMoney(data.total)}</td><td class="mono" style="color:var(--txt2)">${fmtMoney(ticket)}</td></tr>`;
+        }).join('')
+        : '<tr><td colspan="4" class="pl-empty">Sin datos</td></tr>';
+
+      // Donut estados
+      const donutData = [statusCount.pagado, statusCount.pendiente, statusCount.abono, statusCount.listo, statusCount.entregado];
+      const donutColors = ['#0d9488', '#d97706', '#7c3aed', '#4361ee', '#0284c7'];
+      const donutLabels = ['Pagado', 'Pendiente', 'Abono', 'Listo', 'Entregado'];
+      if (statusDonutInstance) { statusDonutInstance.destroy(); statusDonutInstance = null; }
+      statusDonutInstance = new Chart(document.getElementById('statusDonut').getContext('2d'), {
+        type: 'doughnut',
+        data: { labels: donutLabels, datasets: [{ data: donutData, backgroundColor: donutColors, borderWidth: 2, borderColor: '#ffffff' }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '65%',
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } } }
+        }
       });
-    }).catch((error) => {
-      console.error("Error al cargar empleados: ", error);
-    });
-  };
+      document.getElementById('statusLegend').innerHTML = donutLabels.map((l, i) =>
+        `<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--txt2);">
+       <div style="width:8px;height:8px;border-radius:50%;background:${donutColors[i]};flex-shrink:0;"></div>${l}: <strong style="color:var(--txt)">${donutData[i]}</strong>
+     </div>`
+      ).join('');
 
-  // Evento para habilitar/deshabilitar el campo de venta de producto
-  document.getElementById("resetProductsSoldCheckbox").addEventListener("change", function () {
-    const productSaleInput = document.getElementById("productSale");
-    if (this.checked) {
-      productSaleInput.disabled = false;
-      productSaleInput.style.backgroundColor = "";
-      productSaleInput.style.color = "";
-    } else {
-      productSaleInput.disabled = true;
-      productSaleInput.style.backgroundColor = "#f0f0f0";
-      productSaleInput.style.color = "#888";
-      productSaleInput.value = ""; // Limpiar el valor cuando se desmarca
-    }
-  });
+      // Gráfico diario
+      const days = [];
+      for (let d = new Date(startStr + 'T00:00:00'), end = new Date(endStr + 'T00:00:00'); d <= end; d.setDate(d.getDate() + 1))
+        days.push(d.toISOString().split('T')[0]);
+      const today = getRDDateString();
+      if (dailyBarInstance) { dailyBarInstance.destroy(); dailyBarInstance = null; }
+      dailyBarInstance = new Chart(document.getElementById('dailyBarChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: days.map(d => d.slice(5)), datasets: [{
+            label: 'Ingresos', data: days.map(d => dailyIngresos[d] || 0),
+            backgroundColor: days.map(d => d === today ? 'rgba(67,97,238,.85)' : 'rgba(13,148,136,.55)'),
+            borderRadius: 5, borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${fmtMoney(ctx.parsed.y)}` } } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(17,24,39,.06)' }, ticks: { color: '#9aa3b5', callback: v => fmtMoney(v) } },
+            x: { grid: { display: false }, ticks: { color: '#9aa3b5', maxRotation: 45 } }
+          }
+        }
+      });
 
-  // Función para cargar los productos vendidos por el empleado seleccionado
-  const loadProductsSoldByEmployee = (employeeName) => {
-    const productsSoldAmount = document.getElementById("productsSoldAmount");
-    const productsSoldTimestamp = document.getElementById("productsSoldTimestamp");
+      // Otros servicios
+      const sortedOtros = Object.entries(desgloseOtros).sort((a, b) => b[1] - a[1]);
+      document.getElementById('otrosServiciosContainer').innerHTML = sortedOtros.length
+        ? sortedOtros.map(([n, q]) => `<div class="item-row"><span class="item-name">${n}</span><span class="item-badge">${q}</span></div>`).join('')
+        : '<div class="pl-empty">Sin servicios adicionales</div>';
 
-    if (!employeeName) {
-      productsSoldAmount.textContent = "0";
-      productsSoldTimestamp.textContent = "";
-      return;
-    }
+      // Resumen financiero
+      const finRows = [
+        { label: 'Ingresos totales', val: fmtMoney(totalIncome), color: 'var(--teal)' },
+        { label: '  · Efectivo', val: fmtMoney(metodoPagos.efectivo.monto), color: 'var(--txt)' },
+        { label: '  · Transferencia', val: fmtMoney(metodoPagos.transferencia.monto), color: 'var(--txt)' },
+        { label: '  · Tarjeta', val: fmtMoney(metodoPagos.tarjeta.monto), color: 'var(--txt)' },
+        { label: '  · Pendiente de cobro', val: fmtMoney(metodoPagos.pendiente.monto), color: 'var(--amber)' },
+        { label: 'ITBIS cobrado', val: fmtMoney(itbisTotal), color: 'var(--indigo)' },
+        { label: 'Delivery cobrado', val: fmtMoney(deliveryIncome), color: 'var(--indigo)' },
+        { label: 'Gastos (transacciones)', val: fmtMoney(gastosTx), color: 'var(--rose)' },
+        { label: 'Pagos de empleados', val: fmtMoney(pagosEmp), color: 'var(--rose)' },
+        { label: 'Balance neto', val: fmtMoney(totalIncome - totalExpenses), color: totalIncome >= totalExpenses ? 'var(--teal)' : 'var(--rose)' },
+      ];
+      document.getElementById('finResumen').innerHTML = finRows.map(r =>
+        `<div class="fin-row${r.total ? ' fin-total' : ''}"><span class="fin-lbl">${r.label}</span><span class="fin-val" style="color:${r.color};">${r.val}</span></div>`
+      ).join('');
+    };
 
-    db.collection("ventaproductos")
-      .where("empleado", "==", employeeName)
-      .get()
-      .then((querySnapshot) => {
-        let totalAmount = 0;
-        let latestTimestamp = null;
+    // ═══════════════════════════════════════════════════════════════
+    // GRÁFICO ANUAL
+    // ═══════════════════════════════════════════════════════════════
+    const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          totalAmount += parseFloat(data.monto) || 0;
+    const poblarYearSelect = () => {
+      const sel = document.getElementById('yearSelect'); sel.innerHTML = '';
+      const y = new Date().getFullYear();
+      for (let i = y; i >= y - 3; i--) { const o = document.createElement('option'); o.value = o.textContent = i; sel.appendChild(o); }
+      sel.value = y;
+    };
 
-          // Obtener el timestamp más reciente
-          if (data.timestamp) {
-            const docTimestamp = data.timestamp.toDate();
-            if (!latestTimestamp || docTimestamp > latestTimestamp) {
-              latestTimestamp = docTimestamp;
+    const cargarGraficoMensual = async (year) => {
+      const ingresos = new Array(12).fill(0), gastos = new Array(12).fill(0);
+      const facturas = new Array(12).fill(0), hampers = new Array(12).fill(0);
+      const librasSueltas = new Array(12).fill(0); // ← NUEVO: libras que no completan 1 hamper
+      let anualIncome = 0, anualExpenses = 0, anualFacturas = 0, anualHampers = 0;
+      let anualLibrasSueltas = 0; // ← NUEVO
+
+      try {
+        const { facturas: fList } = await cargarFacturasPorRango(`${year}-01-01`, `${year}-12-31`);
+        fList.forEach(f => {
+          const d = toDate(f.timestamp); if (!d) return;
+          const m = d.getMonth(), monto = parseFloat(f.total) || 0;
+          ingresos[m] += monto; facturas[m]++; anualIncome += monto; anualFacturas++;
+
+          // Separar hampers completos de libras sueltas
+          (f.selectedServices || []).forEach(s => {
+            if (s.hamperComplete === "yes") {
+              hampers[m]++;
+              anualHampers++;
+            } else {
+              const lbs = parseInt(s.weight) || 0;
+              librasSueltas[m] += lbs;
+              anualLibrasSueltas += lbs;
             }
-          }
-        });
-
-        productsSoldAmount.textContent = `${totalAmount}`;
-
-        // Mostrar la fecha y hora del timestamp más reciente
-        if (latestTimestamp) {
-          const options = {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-          };
-          productsSoldTimestamp.textContent = `Último pago de incentivo por ventas: ${latestTimestamp.toLocaleDateString('es-DO', options)}`;
-        } else {
-          productsSoldTimestamp.textContent = "";
-        }
-      })
-      .catch((error) => {
-        console.error("Error al cargar productos vendidos:", error);
-        productsSoldAmount.textContent = "Error";
-        productsSoldTimestamp.textContent = "";
-      });
-  };
-
-  // Modifica el evento change del select de empleados para cargar los productos vendidos
-  document.getElementById("employeeName").addEventListener("change", function () {
-    loadProductsSoldByEmployee(this.value);
-  });
-
-  // También llama a la función cuando se abre el modal para actualizar si ya hay un empleado seleccionado
-  document.getElementById("addTransactionButton").addEventListener("click", () => {
-    loadEmployeeNames();
-    const employeeName = document.getElementById("employeeName").value;
-    loadProductsSoldByEmployee(employeeName);
-    addTransactionModal.style.display = "block";
-  });
-
-  // Evento para guardar cambios en la transacción
-  saveTransactionButton.addEventListener("click", () => {
-    const id = document.getElementById("editTransactionId").value;
-    const type = document.getElementById("editTransactionType").value;
-    const amount = parseFloat(document.getElementById("editTransactionAmount").value);
-    const dateInput = document.getElementById("editTransactionDate").value;
-    const timeInput = document.getElementById("editTransactionTime").value;
-    const details = document.getElementById("editTransactionDetails").value;
-
-    if (!isNaN(amount) && dateInput && timeInput) {
-      const [year, month, day] = dateInput.split('-');
-      const [hours, minutes] = timeInput.split(':');
-      const timestamp = new Date(year, month - 1, day, hours, minutes);
-
-      db.collection("transacciones").where("id", "==", id).get()
-        .then((querySnapshot) => {
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            return doc.ref.update({
-              type,
-              amount,
-              timestamp, // Asegúrate de que este campo sea correcto
-              details
-            });
-          } else {
-            throw new Error("No se encontró la transacción con el ID proporcionado.");
-          }
-        })
-        .then(() => {
-          alert("Transacción actualizada correctamente.");
-          editTransactionModal.style.display = "none";
-          loadTransactions(); // Recargar transacciones
-        })
-        .catch((error) => {
-          console.error("Error al actualizar la transacción: ", error);
-          alert("Hubo un problema al actualizar la transacción.");
-        });
-    } else {
-      alert("Por favor, completa todos los campos correctamente.");
-    }
-  });
-
-  // Evento para abrir el modal de agregar transacción
-  document.getElementById("addTransactionButton").addEventListener("click", () => {
-    addTransactionModal.style.display = "block";
-  });
-
-  submitTransactionButton.addEventListener("click", addTransaction);
-
-  // Evento para cerrar el modal de agregar transacción
-  closeModal.addEventListener("click", () => {
-    addTransactionModal.style.display = "none";
-  });
-
-  // Evento para filtrar transacciones al cambiar el select de tipo
-  document.getElementById("transactionTypeFilter").addEventListener("change", loadTransactions);
-
-  // Código para mostrar/ocultar campos de Pago de Empleado
-  document.getElementById("transactionType").addEventListener("change", function () {
-    const employeePaymentFields = document.getElementById("employeePaymentFields");
-    const normalTransactionFields = document.getElementById("normalTransactionFields");
-
-    if (this.value === "employeePayment") {
-      employeePaymentFields.style.display = "block"; // Mostrar campos de pago de empleado
-      normalTransactionFields.style.display = "none"; // Ocultar campos de transacción normal
-    } else {
-      employeePaymentFields.style.display = "none"; // Ocultar campos de pago de empleado
-      normalTransactionFields.style.display = "block"; // Mostrar campos de transacción normal
-    }
-  });
-
-  // Función para calcular el total en tiempo real
-  const calculateTotal = () => {
-    const salaryPayment = parseFloat(document.getElementById("salaryPayment").value) || 0;
-    const holidayPayment = parseFloat(document.getElementById("holidayPayment").value) || 0;
-    const overtimePayment = parseFloat(document.getElementById("overtimePayment").value) || 0;
-    const vacationPayment = parseFloat(document.getElementById("vacationPayment").value) || 0;
-    const christmasPayment = parseFloat(document.getElementById("christmasPayment").value) || 0;
-    const productSale = parseFloat(document.getElementById("productSale").value) || 0;
-    const productionIncentive = parseFloat(document.getElementById("productionIncentive").value) || 0;
-    const punctualityIncentive = parseFloat(document.getElementById("punctualityIncentive").value) || 0;
-    const licenseDay = parseFloat(document.getElementById("licenseDay").value) || 0;
-    const insurance = parseFloat(document.getElementById("insurance").value) || 0;
-
-    const total = salaryPayment + holidayPayment + overtimePayment + vacationPayment + christmasPayment +
-      productSale + productionIncentive + punctualityIncentive - licenseDay - insurance;
-
-    document.getElementById("totalAmount").value = total.toFixed(2); // Actualizar el total
-  };
-
-  // Agregar eventos para calcular el total en tiempo real
-  document.querySelectorAll("#employeePaymentFields input[type='number']").forEach(input => {
-    input.addEventListener("input", calculateTotal);
-  });
-
-  // Evento para filtrar transacciones al hacer clic en el botón de filtrar
-  filterButton.addEventListener("click", loadTransactions);
-
-  // Función para contar las transacciones visibles y actualizar el resumen
-  const countVisibleTransactionsAndUpdateSummary = () => {
-    const combinedTransactionList = document.getElementById("combinedTransactionList");
-    const rows = combinedTransactionList.getElementsByTagName("tr");
-    let visibleCount = 0;
-    let totalIncome = 0;
-    let totalExpenses = 0;
-
-    // Contar las filas visibles y calcular totales
-    for (let i = 0; i < rows.length; i++) {
-      const checkbox = rows[i].querySelector(".transaction-checkbox");
-      if (rows[i].offsetParent !== null && checkbox.checked) { // Verifica si la fila es visible y el checkbox está marcado
-        visibleCount++;
-        const amount = parseFloat(rows[i].cells[4].textContent.replace('RD$', '').replace(',', ''));
-        const type = rows[i].cells[2].textContent; // Tipo de transacción
-
-        if (type === "Ingreso") {
-          totalIncome += amount;
-        } else {
-          totalExpenses += amount;
-        }
-      }
-    }
-
-    // Actualizar el conteo en el DOM
-    const visibleCountElement = document.getElementById("visibleTransactionCount");
-    visibleCountElement.textContent = `Transacciones visibles: ${visibleCount}`;
-
-    // Actualizar resumen
-    updateSummary(totalIncome, totalExpenses);
-  };
-
-  // Función para buscar transacciones en tiempo real
-  const searchTransactions = () => {
-    const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-    const combinedTransactionList = document.getElementById("combinedTransactionList");
-    const rows = combinedTransactionList.getElementsByTagName("tr");
-
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      const id = row.cells[1].textContent.toLowerCase();
-      const details = row.cells[3].textContent.toLowerCase();
-      const amount = row.cells[4].textContent.toLowerCase();
-
-      if (id.includes(searchTerm) || details.includes(searchTerm) || amount.includes(searchTerm)) {
-        row.style.display = "";
-        row.querySelector(".transaction-checkbox").checked = true;
-
-        // Resaltar coincidencias
-        row.cells[1].innerHTML = highlightMatches(row.cells[1].textContent, searchTerm);
-        row.cells[3].innerHTML = highlightMatches(row.cells[3].textContent, searchTerm);
-        row.cells[4].innerHTML = highlightMatches(row.cells[4].textContent, searchTerm);
-      } else {
-        row.style.display = "none";
-        row.querySelector(".transaction-checkbox").checked = false;
-      }
-    }
-
-    countVisibleTransactionsAndUpdateSummary();
-  };
-
-  // Evento para buscar transacciones al escribir en el input
-  document.getElementById("searchInput").addEventListener("input", searchTransactions);
-
-  const highlightMatches = (text, searchTerm) => {
-    if (!searchTerm) return text;
-    const regex = new RegExp(`(${searchTerm})`, 'gi');
-    return text.replace(regex, '<span class="highlight">$1</span>');
-  };
-
-  // Función para abrir el modal de edición de pago de empleado
-  const openEditEmployeePaymentModal = (payment) => {
-    document.getElementById("editEmployeePaymentId").value = payment.id;
-    document.getElementById("editEmployeePaymentName").value = payment.employeeName;
-    document.getElementById("editSalaryPayment").value = payment.salaryPayment;
-    document.getElementById("editHolidayPayment").value = payment.holidayPayment;
-    document.getElementById("editOvertimePayment").value = payment.overtimePayment;
-    document.getElementById("editVacationPayment").value = payment.vacationPayment;
-    document.getElementById("editChristmasPayment").value = payment.christmasPayment;
-    document.getElementById("editProductSale").value = payment.productSale;
-    document.getElementById("editProductionIncentive").value = payment.productionIncentive;
-    document.getElementById("editPunctualityIncentive").value = payment.punctualityIncentive;
-    document.getElementById("editLicenseDay").value = payment.licenseDay;
-    document.getElementById("editInsurance").value = payment.insurance;
-
-    // Calcular total al abrir el modal
-    calculateEditTotal();
-
-    // Mostrar el modal
-    document.getElementById("editEmployeePaymentModal").style.display = "block";
-  };
-
-  // Evento para cerrar el modal de edición
-  document.getElementById("closeEditEmployeeModal").addEventListener("click", () => {
-    document.getElementById("editEmployeePaymentModal").style.display = "none";
-  });
-
-  // Función para calcular el total en tiempo real en el modal de edición
-  const calculateEditTotal = () => {
-    const salaryPayment = parseFloat(document.getElementById("editSalaryPayment").value) || 0;
-    const holidayPayment = parseFloat(document.getElementById("editHolidayPayment").value) || 0;
-    const overtimePayment = parseFloat(document.getElementById("editOvertimePayment").value) || 0;
-    const vacationPayment = parseFloat(document.getElementById("editVacationPayment").value) || 0;
-    const christmasPayment = parseFloat(document.getElementById("editChristmasPayment").value) || 0;
-    const productSale = parseFloat(document.getElementById("editProductSale").value) || 0;
-    const productionIncentive = parseFloat(document.getElementById("editProductionIncentive").value) || 0;
-    const punctualityIncentive = parseFloat(document.getElementById("editPunctualityIncentive").value) || 0;
-    const licenseDay = parseFloat(document.getElementById("editLicenseDay").value) || 0;
-    const insurance = parseFloat(document.getElementById("editInsurance").value) || 0;
-
-    const total = salaryPayment + holidayPayment + overtimePayment + vacationPayment + christmasPayment +
-      productSale + productionIncentive + punctualityIncentive - licenseDay - insurance;
-
-    document.getElementById("editTotalAmount").value = total.toFixed(2); // Actualizar el total
-  };
-
-  // Agregar eventos para calcular el total en tiempo real en el modal de edición
-  document.querySelectorAll("#editEmployeePaymentModal input[type='number']").forEach(input => {
-    input.addEventListener("input", calculateEditTotal);
-  });
-
-  // Evento para guardar cambios en el pago de empleado
-  document.getElementById("saveEmployeePaymentButton").addEventListener("click", () => {
-    const id = document.getElementById("editEmployeePaymentId").value;
-    const employeeName = document.getElementById("editEmployeePaymentName").value; // Usar el nuevo id
-    const salaryPayment = parseFloat(document.getElementById("editSalaryPayment").value);
-    const holidayPayment = parseFloat(document.getElementById("editHolidayPayment").value);
-    const overtimePayment = parseFloat(document.getElementById("editOvertimePayment").value);
-    const vacationPayment = parseFloat(document.getElementById("editVacationPayment").value);
-    const christmasPayment = parseFloat(document.getElementById("editChristmasPayment").value);
-    const productSale = parseFloat(document.getElementById("editProductSale").value);
-    const productionIncentive = parseFloat(document.getElementById("editProductionIncentive").value);
-    const punctualityIncentive = parseFloat(document.getElementById("editPunctualityIncentive").value);
-    const licenseDay = parseFloat(document.getElementById("editLicenseDay").value);
-    const insurance = parseFloat(document.getElementById("editInsurance").value);
-
-    // Obtener la fecha y hora de pago
-    const paymentDate = document.getElementById("editEmployeePaymentDate").value;
-    const paymentTime = document.getElementById("editEmployeePaymentTime").value;
-
-    // Validar que todos los campos sean correctos
-    if (!isNaN(salaryPayment) && !isNaN(holidayPayment) && !isNaN(overtimePayment) &&
-      !isNaN(vacationPayment) && !isNaN(christmasPayment) && !isNaN(productSale) &&
-      !isNaN(productionIncentive) && !isNaN(punctualityIncentive) && !isNaN(licenseDay) &&
-      !isNaN(insurance) && paymentDate && paymentTime) {
-
-      // Crear objeto Date para la fecha y hora de pago
-      const [year, month, day] = paymentDate.split('-');
-      const [hours, minutes] = paymentTime.split(':');
-      const paymentDateTime = new Date(year, month - 1, day, hours, minutes);
-
-      // Actualizar el pago de empleado en Firestore
-      db.collection("PagoEmpleado").where("id", "==", id).get()
-        .then((querySnapshot) => {
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            return doc.ref.update({
-              employeeName,
-              salaryPayment,
-              holidayPayment,
-              overtimePayment,
-              vacationPayment,
-              christmasPayment,
-              productSale,
-              productionIncentive,
-              punctualityIncentive,
-              licenseDay,
-              insurance,
-              total: salaryPayment + holidayPayment + overtimePayment + vacationPayment + christmasPayment +
-                productSale + productionIncentive + punctualityIncentive - licenseDay - insurance,
-              timestamp: paymentDateTime // Asegúrate de usar 'timestamp' aquí
-            });
-          } else {
-            throw new Error("No se encontró el pago de empleado con el ID proporcionado.");
-          }
-        })
-        .then(() => {
-          alert("Pago de empleado actualizado correctamente.");
-          document.getElementById("editEmployeePaymentModal").style.display = "none";
-          loadTransactions(); // Recargar transacciones
-        })
-        .catch((error) => {
-          console.error("Error al actualizar el pago de empleado: ", error);
-          alert("Hubo un problema al actualizar el pago de empleado.");
-        });
-    } else {
-      alert("Por favor, completa todos los campos correctamente.");
-    }
-  });
-
-  // Cargar datos del pago de empleado al abrir el modal
-  const loadEmployeePaymentData = (id) => {
-    db.collection("PagoEmpleado").where("id", "==", id).get()
-      .then((querySnapshot) => {
-        if (!querySnapshot.empty) {
-          const payment = querySnapshot.docs[0].data();
-          openEditEmployeePaymentModal({
-            id: payment.id,
-            employeeName: payment.employeeName,
-            salaryPayment: payment.salaryPayment,
-            holidayPayment: payment.holidayPayment,
-            overtimePayment: payment.overtimePayment,
-            vacationPayment: payment.vacationPayment,
-            christmasPayment: payment.christmasPayment,
-            productSale: payment.productSale,
-            productionIncentive: payment.productionIncentive,
-            punctualityIncentive: payment.punctualityIncentive,
-            licenseDay: payment.licenseDay,
-            insurance: payment.insurance,
-            date: payment.timestamp.toDate() // Asegúrate de que esto esté en formato Date
           });
+        });
+      } catch (e) { console.error(e); }
 
-          // Llenar los campos de fecha y hora
-          const paymentDate = payment.timestamp.toDate();
+      // Transacciones nuevas (por día)
+      try {
+        const { txs } = await cargarTxPorRango(`${year}-01-01`, `${year}-12-31`);
+        txs.forEach(d => {
+          const date = toDate(d.timestamp); if (!date) return;
+          const m = date.getMonth(), monto = parseFloat(d.amount) || 0;
+          if (d.type === 'income') ingresos[m] += monto; else { gastos[m] += monto; anualExpenses += monto; }
+        });
+      } catch (e) { console.error(e); }
 
-          // Obtener la fecha en formato local
-          const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-          const localDate = paymentDate.toLocaleDateString('es-DO', options);
+      // Transacciones legadas
+      try {
+        const s = new Date(`${year}-01-01T00:00:00`), e = new Date(`${year}-12-31T23:59:59`);
+        const snap = await db.collection('transacciones').where('timestamp', '>=', s).where('timestamp', '<=', e).get();
+        snap.forEach(doc => {
+          const d = doc.data(); const date = d.timestamp ? (d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp)) : null;
+          if (!date) return;
+          const m = date.getMonth(), monto = parseFloat(d.amount) || 0;
+          if (d.type === 'income') ingresos[m] += monto; else { gastos[m] += monto; anualExpenses += monto; }
+        });
+      } catch (e) { }
 
-          // Cambiar el formato a YYYY-MM-DD
-          const formattedDate = localDate.split('/').reverse().join('-'); // Cambia el formato a YYYY-MM-DD
-          document.getElementById("editEmployeePaymentDate").value = formattedDate;
+      // Pagos empleado nuevos
+      try {
+        const { pagos } = await cargarTxPorRango(`${year}-01-01`, `${year}-12-31`);
+        pagos.forEach(p => {
+          const date = toDate(p.timestamp); if (!date) return;
+          const monto = parseFloat(p.total) || 0;
+          gastos[date.getMonth()] += monto; anualExpenses += monto;
+        });
+      } catch (e) { console.error(e); }
 
-          // Establecer la hora
-          document.getElementById("editEmployeePaymentTime").value = paymentDate.toTimeString().split(' ')[0].substring(0, 5);
-        } else {
-          alert("No se encontró el pago de empleado.");
+      // Pagos legados
+      try {
+        const s = new Date(`${year}-01-01T00:00:00`), e = new Date(`${year}-12-31T23:59:59`);
+        const snap = await db.collection('PagoEmpleado').where('timestamp', '>=', s).where('timestamp', '<=', e).get();
+        snap.forEach(doc => {
+          const d = doc.data(); const date = d.timestamp ? (d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp)) : null;
+          if (!date) return;
+          const monto = parseFloat(d.total) || 0; gastos[date.getMonth()] += monto; anualExpenses += monto;
+        });
+      } catch (e) { }
+
+      [monthlyChartInstance, monthlyFacturasInstance, monthlyHampersInstance, monthlyLibrasInstance].forEach(c => { if (c) c.destroy(); });
+      monthlyChartInstance = monthlyFacturasInstance = monthlyHampersInstance = monthlyLibrasInstance = null;
+
+      monthlyChartInstance = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
+        type: 'bar', data: {
+          labels: MESES, datasets: [
+            { label: 'Ingresos', data: ingresos, backgroundColor: 'rgba(13,148,136,.75)', borderRadius: 4 },
+            { label: 'Gastos', data: gastos, backgroundColor: 'rgba(225,29,72,.65)', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#9aa3b5' } }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtMoney(ctx.parsed.y)}` } } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(17,24,39,.06)' }, ticks: { color: '#9aa3b5', callback: v => fmtMoney(v) } },
+            x: { grid: { display: false }, ticks: { color: '#9aa3b5' } }
+          }
         }
-      })
-      .catch((error) => {
-        console.error("Error al cargar el pago de empleado: ", error);
       });
-  };
 
-  // Función para eliminar una transacción
-  const deleteTransaction = (id) => {
-    if (confirm("¿Estás seguro de que deseas eliminar esta transacción?")) {
-      db.collection("transacciones").where("id", "==", id).get()
-        .then((querySnapshot) => {
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            return doc.ref.delete(); // Eliminar el documento
-          } else {
-            throw new Error("No se encontró la transacción con el ID proporcionado.");
+      monthlyFacturasInstance = new Chart(document.getElementById('monthlyFacturasChart').getContext('2d'), {
+        type: 'line', data: {
+          labels: MESES, datasets: [{
+            label: 'Facturas', data: facturas, borderColor: '#4361ee',
+            backgroundColor: 'rgba(67,97,238,.08)', borderWidth: 2, pointBackgroundColor: '#4361ee', tension: 0.3, fill: true
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(17,24,39,.06)' }, ticks: { color: '#9aa3b5' } },
+            x: { grid: { display: false }, ticks: { color: '#9aa3b5' } }
           }
-        })
-        .then(() => {
-          alert("Transacción eliminada correctamente.");
-          editTransactionModal.style.display = "none"; // Cerrar el modal
-          loadTransactions(); // Recargar las transacciones
-        })
-        .catch((error) => {
-          console.error("Error al eliminar la transacción: ", error);
-          alert("Hubo un problema al eliminar la transacción.");
-        });
-    }
-  };
+        }
+      });
 
-  // Función para eliminar una factura
-  const deleteInvoice = (id) => {
-    if (confirm("¿Estás seguro de que deseas eliminar esta factura?")) {
-      db.collection("facturas").where("id", "==", id).get()
-        .then((querySnapshot) => {
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            return doc.ref.delete(); // Eliminar el documento
-          } else {
-            throw new Error("No se encontró la factura con el ID proporcionado.");
+      monthlyHampersInstance = new Chart(document.getElementById('monthlyHampersChart').getContext('2d'), {
+        type: 'line', data: {
+          labels: MESES, datasets: [{
+            label: 'Hampers', data: hampers, borderColor: '#7c3aed',
+            backgroundColor: 'rgba(124,58,237,.08)', borderWidth: 2, pointBackgroundColor: '#7c3aed', tension: 0.3, fill: true
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(17,24,39,.06)' }, ticks: { color: '#9aa3b5' } },
+            x: { grid: { display: false }, ticks: { color: '#9aa3b5' } }
           }
-        })
-        .then(() => {
-          alert("Factura eliminada correctamente.");
-          editInvoiceModal.style.display = "none"; // Cerrar el modal
-          loadTransactions(); // Recargar las transacciones
-        })
-        .catch((error) => {
-          console.error("Error al eliminar la factura: ", error);
-          alert("Hubo un problema al eliminar la factura.");
-        });
-    }
-  };
+        }
+      });
 
-  // Función para eliminar un pago de empleado
-  const deleteEmployeePayment = (id) => {
-    if (confirm("¿Estás seguro de que deseas eliminar este pago de empleado?")) {
-      db.collection("PagoEmpleado").where("id", "==", id).get()
-        .then((querySnapshot) => {
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            return doc.ref.delete(); // Eliminar el documento
-          } else {
-            throw new Error("No se encontró el pago de empleado con el ID proporcionado.");
+      // ── Gráfico de Libras Sueltas por Mes ──
+      monthlyLibrasInstance = new Chart(document.getElementById('monthlyLibrasChart').getContext('2d'), {
+        type: 'bar', data: {
+          labels: MESES, datasets: [{
+            label: 'Libras Sueltas',
+            data: librasSueltas,
+            backgroundColor: 'rgba(217,119,6,.70)',
+            borderRadius: 5,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} lbs` } }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(17,24,39,.06)' },
+              ticks: { color: '#9aa3b5', callback: v => `${v} lbs` }
+            },
+            x: { grid: { display: false }, ticks: { color: '#9aa3b5' } }
           }
-        })
-        .then(() => {
-          alert("Pago de empleado eliminado correctamente.");
-          editEmployeePaymentModal.style.display = "none"; // Cerrar el modal
-          loadTransactions(); // Recargar las transacciones
-        })
-        .catch((error) => {
-          console.error("Error al eliminar el pago de empleado: ", error);
-          alert("Hubo un problema al eliminar el pago de empleado.");
+        }
+      });
+
+      document.getElementById('yearLabelAnual').textContent = year;
+      document.getElementById('annualKpiGrid').innerHTML = [
+        { label: 'Ingresos del Año', val: fmtMoney(anualIncome), color: 'var(--teal)', stripe: 'var(--teal)' },
+        { label: 'Gastos del Año', val: fmtMoney(anualExpenses), color: 'var(--rose)' },
+        { label: 'Balance del Año', val: fmtMoney(anualIncome - anualExpenses), color: anualIncome >= anualExpenses ? 'var(--teal)' : 'var(--rose)' },
+        { label: 'Facturas del Año', val: fmtNum(anualFacturas), color: 'var(--amber)' },
+        { label: 'Hampers del Año', val: fmtNum(anualHampers), color: 'var(--violet)' },
+        { label: 'Libras Sueltas del Año', val: `${fmtNum(anualLibrasSueltas)} lbs`, color: 'var(--amber)' },
+        { label: 'Ticket Promedio', val: anualFacturas > 0 ? fmtMoney(anualIncome / anualFacturas) : 'RD$0.00', color: 'var(--indigo)' },
+      ].map(k => `<div class="kpi-card" style="--stripe-color:${k.color}">
+      <div class="kpi-lbl">${k.label}</div>
+      <div class="kpi-val" style="color:${k.color};font-size:18px;">${k.val}</div>
+    </div>`).join('');
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // LISTENERS EN TIEMPO REAL
+    // ═══════════════════════════════════════════════════════════════
+    const setupRealTimeListeners = () => {
+      window.unsubListeners.forEach(u => u());
+      window.unsubListeners = [];
+      const diaHoy = getRDDateString();
+      let timer = null;
+      const debounce = () => { clearTimeout(timer); timer = setTimeout(loadAll, 1000); };
+      window.unsubListeners = [
+        db.collection('transacciones-por-dia').doc(diaHoy).onSnapshot(debounce),
+        db.collection('facturas-por-dia').doc(diaHoy).onSnapshot(debounce),
+      ];
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // TABS
+    // ═══════════════════════════════════════════════════════════════
+    document.querySelectorAll('.pl-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.pl-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.pl-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // FILTROS
+    // ═══════════════════════════════════════════════════════════════
+    const setDefaultDates = () => {
+      const today = getRDDateString();
+      document.getElementById('startDate').value = today;
+      document.getElementById('endDate').value = today;
+      document.getElementById('headerDateLabel').textContent = `Hoy: ${today}`;
+    };
+
+    document.getElementById('filterButton').addEventListener('click', () => {
+      const s = document.getElementById('startDate').value, e = document.getElementById('endDate').value;
+      if (!s || !e) { alert('Selecciona rango completo.'); return; }
+      document.getElementById('headerDateLabel').textContent = s === e ? `Mostrando: ${s}` : `${s} → ${e}`;
+      loadAll();
+    });
+    document.getElementById('resetFilterButton').addEventListener('click', () => { setDefaultDates(); loadAll(); });
+    document.getElementById('transactionTypeFilter').addEventListener('change', renderTransactionList);
+    document.getElementById('searchInputTx').addEventListener('input', renderTransactionList);
+    document.getElementById('searchInputTxInline').addEventListener('input', renderTransactionList);
+    document.getElementById('yearSelect').addEventListener('change', function () { cargarGraficoMensual(parseInt(this.value)); });
+    document.getElementById('btnRefreshChart').addEventListener('click', () => cargarGraficoMensual(parseInt(document.getElementById('yearSelect').value)));
+
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL HELPERS
+    // ═══════════════════════════════════════════════════════════════
+    const openModal = (id) => document.getElementById(id).classList.add('open');
+    const closeModal = (id) => document.getElementById(id).classList.remove('open');
+    document.querySelectorAll('.modal').forEach(m => {
+      m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL: NUEVA TRANSACCIÓN
+    // ═══════════════════════════════════════════════════════════════
+    // Sync type-chips with hidden select
+    document.querySelectorAll('input[name="txTypeChip"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.getElementById('transactionType').value = radio.value;
+        document.getElementById('transactionType').dispatchEvent(new Event('change'));
+      });
+    });
+
+    document.getElementById('btnAddTx').addEventListener('click', () => {
+      resetAddForm();
+      loadEmployeeNames();
+      // Precargar fecha/hora actual
+      const now = new Date();
+      document.getElementById('transactionDate').value = getRDDateString();
+      document.getElementById('transactionTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      document.getElementById('employeePaymentDate').value = getRDDateString();
+      document.getElementById('employeePaymentTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      openModal('addTransactionModal');
+    });
+    document.getElementById('closeModal').addEventListener('click', () => closeModal('addTransactionModal'));
+    document.getElementById('cancelAddTx').addEventListener('click', () => closeModal('addTransactionModal'));
+
+    document.getElementById('transactionType').addEventListener('change', function () {
+      const isEmp = this.value === 'employeePayment';
+      document.getElementById('empFields').style.display = isEmp ? 'block' : 'none';
+      document.getElementById('normFields').style.display = isEmp ? 'none' : 'block';
+    });
+
+    document.getElementById('submitTransactionButton').addEventListener('click', async () => {
+      const type = document.getElementById('transactionType').value;
+
+      if (type === 'employeePayment') {
+        const name = document.getElementById('employeeName').value;
+        if (!name) { alert('Selecciona un empleado.'); return; }
+        const s = parseFloat(document.getElementById('salaryPayment').value) || 0;
+        const h = parseFloat(document.getElementById('holidayPayment').value) || 0;
+        const o = parseFloat(document.getElementById('overtimePayment').value) || 0;
+        const v = parseFloat(document.getElementById('vacationPayment').value) || 0;
+        const c = parseFloat(document.getElementById('christmasPayment').value) || 0;
+        const ps = parseFloat(document.getElementById('productSale').value) || 0;
+        const pi = parseFloat(document.getElementById('productionIncentive').value) || 0;
+        const pu = parseFloat(document.getElementById('punctualityIncentive').value) || 0;
+        const ld = parseFloat(document.getElementById('licenseDay').value) || 0;
+        const ins = parseFloat(document.getElementById('insurance').value) || 0;
+        const total = s + h + o + v + c + ps + pi + pu - ld - ins;
+        const pDate = document.getElementById('employeePaymentDate').value;
+        const pTime = document.getElementById('employeePaymentTime').value;
+        if (!pDate || !pTime) { alert('Fecha y hora requeridas.'); return; }
+        const [yy, mm, dd] = pDate.split('-'), [hh, mi] = pTime.split(':');
+        const timestamp = new Date(yy, mm - 1, dd, hh, mi);
+
+        // Reset incentivo productos
+        const reset = document.getElementById('resetProductsSoldCheckbox').checked;
+        if (reset && name) {
+          try {
+            const qs = await db.collection('ventaproductos').where('empleado', '==', name).get();
+            const batch = db.batch();
+            qs.forEach(doc => batch.update(doc.ref, { monto: 0, timestamp: firebase.firestore.FieldValue.serverTimestamp() }));
+            await batch.commit();
+          } catch (e) { console.error(e); }
+        }
+
+        try {
+          await guardarPagoEmpleadoEnDia({
+            id: genId('pe'), type: 'expense', timestamp,
+            employeeName: name, salaryPayment: s, holidayPayment: h, overtimePayment: o,
+            vacationPayment: v, christmasPayment: c, productSale: ps, productionIncentive: pi,
+            punctualityIncentive: pu, licenseDay: ld, insurance: ins, total
+          });
+          alert('Pago de empleado guardado.');
+          resetAddForm(); closeModal('addTransactionModal'); loadAll();
+        } catch (e) { console.error(e); alert('Error al guardar: ' + e.message); }
+
+      } else {
+        const amount = parseFloat(document.getElementById('transactionAmount').value);
+        const details = document.getElementById('transactionDetails').value.trim();
+        const dIn = document.getElementById('transactionDate').value;
+        const tIn = document.getElementById('transactionTime').value;
+        if (isNaN(amount) || amount <= 0 || !dIn || !tIn || !details) { alert('Completa todos los campos con valores válidos.'); return; }
+        const [yy, mm, dd] = dIn.split('-'), [hh, mi] = tIn.split(':');
+        const timestamp = new Date(yy, mm - 1, dd, hh, mi);
+        const prefix = type === 'expense' ? 'tg' : 'ti';
+        try {
+          await guardarTransaccionEnDia({ id: genId(prefix), type, amount, timestamp, details });
+          alert('Transacción guardada.');
+          resetAddForm(); closeModal('addTransactionModal'); loadAll();
+        } catch (e) { console.error(e); alert('Error al guardar: ' + e.message); }
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL: EDITAR TRANSACCIÓN NORMAL
+    // ═══════════════════════════════════════════════════════════════
+    const openEditTransactionModal = (tx) => {
+      document.getElementById('editTransactionId').value = tx.id;
+      document.getElementById('editTransactionType').value = tx.type;
+      document.getElementById('editTransactionAmount').value = tx.amount;
+      document.getElementById('editTransactionDate').value = tx.date.toISOString().split('T')[0];
+      document.getElementById('editTransactionTime').value = tx.date.toTimeString().slice(0, 5);
+      document.getElementById('editTransactionDetails').value = tx.details;
+      // Store meta for save/delete
+      document.getElementById('editTransactionId').dataset.diaKey = tx._diaKey || '';
+      document.getElementById('editTransactionId').dataset.docId = tx._docId || '';
+      document.getElementById('editTransactionId').dataset.source = tx._source || '';
+      // Guardar datos completos para archivar en caso de eliminación
+      document.getElementById('editTransactionId').dataset.txJson = JSON.stringify({
+        id: tx.id, type: tx.type, amount: tx.amount,
+        date: tx.date ? tx.date.toISOString() : null,
+        details: tx.details, _diaKey: tx._diaKey || '', _source: tx._source || ''
+      });
+      openModal('editTransactionModal');
+    };
+    document.getElementById('closeEditModal').addEventListener('click', () => closeModal('editTransactionModal'));
+    document.getElementById('cancelEditTx').addEventListener('click', () => closeModal('editTransactionModal'));
+
+    document.getElementById('saveTransactionButton').addEventListener('click', async () => {
+      const el = document.getElementById('editTransactionId');
+      const id = el.value;
+      const diaKey = el.dataset.diaKey;
+      const docId = el.dataset.docId;
+      const source = el.dataset.source;
+      const type = document.getElementById('editTransactionType').value;
+      const amount = parseFloat(document.getElementById('editTransactionAmount').value);
+      const dIn = document.getElementById('editTransactionDate').value;
+      const tIn = document.getElementById('editTransactionTime').value;
+      const details = document.getElementById('editTransactionDetails').value;
+      if (isNaN(amount) || !dIn || !tIn) { alert('Completa todos los campos.'); return; }
+      const [yy, mm, dd] = dIn.split('-'), [hh, mi] = tIn.split(':');
+      const timestamp = firebase.firestore.Timestamp.fromDate(new Date(yy, mm - 1, dd, hh, mi));
+
+      try {
+        if (source === 'transaccion' && diaKey) {
+          await actualizarTxEnDia(diaKey, id, { type, amount, timestamp, details });
+        } else if (source === 'transaccion_legada' && docId) {
+          await db.collection('transacciones').doc(docId).update({ type, amount, timestamp: new Date(yy, mm - 1, dd, hh, mi), details });
+        }
+        alert('Guardado.'); closeModal('editTransactionModal'); loadAll();
+      } catch (e) { console.error(e); alert('Error: ' + e.message); }
+    });
+
+    document.getElementById('deleteTransactionButton').addEventListener('click', async () => {
+      if (!confirm('¿Eliminar esta transacción? Se archivará en la base de datos por seguridad.')) return;
+      const el = document.getElementById('editTransactionId');
+      const id = el.value;
+      const diaKey = el.dataset.diaKey;
+      const docId = el.dataset.docId;
+      const source = el.dataset.source;
+      const txJson = el.dataset.txJson;
+
+      try {
+        // 1. Archivar datos antes de eliminar
+        let datosParaArchivar = { id, _source: source };
+        try { datosParaArchivar = txJson ? JSON.parse(txJson) : datosParaArchivar; } catch (_) {}
+        await archivarEnEliminadas('transacciones', datosParaArchivar);
+
+        // 2. Eliminar de origen
+        if (source === 'transaccion' && diaKey) {
+          await eliminarTxDeDia(diaKey, id);
+        } else if (source === 'transaccion_legada' && docId) {
+          await db.collection('transacciones').doc(docId).delete();
+        }
+        alert('Eliminada.'); closeModal('editTransactionModal'); loadAll();
+      } catch (e) { console.error(e); alert('Error: ' + e.message); }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL: EDITAR FACTURA
+    // ═══════════════════════════════════════════════════════════════
+    const openEditInvoiceModal = (inv) => {
+      document.getElementById('editInvoiceId').value = inv.id;
+      document.getElementById('editClientName').value = inv.clientName || '';
+      document.getElementById('editClientPhone').value = inv.clientPhone || '';
+      document.getElementById('editClientAddress').value = inv.clientAddress || '';
+      document.getElementById('editEmployeeName').value = inv.NombreEmpleado || '';
+      if (inv.deliveryOption && inv.deliveryOption[0]) {
+        document.getElementById('editDeliveryName').value = inv.deliveryOption[0].name || '';
+        document.getElementById('editDeliveryPrice').value = inv.deliveryOption[0].price || '';
+      } else {
+        document.getElementById('editDeliveryName').value = '';
+        document.getElementById('editDeliveryPrice').value = '';
+      }
+      openModal('editInvoiceModal');
+    };
+    document.getElementById('closeInvoiceModal').addEventListener('click', () => closeModal('editInvoiceModal'));
+    document.getElementById('cancelEditInvoice').addEventListener('click', () => closeModal('editInvoiceModal'));
+
+    document.getElementById('saveInvoiceButton').addEventListener('click', async () => {
+      const id = document.getElementById('editInvoiceId').value;
+      try {
+        await actualizarFacturaEnDia(id, {
+          clientName: document.getElementById('editClientName').value,
+          clientPhone: document.getElementById('editClientPhone').value,
+          clientAddress: document.getElementById('editClientAddress').value,
+          NombreEmpleado: document.getElementById('editEmployeeName').value,
+          deliveryOption: [{ name: document.getElementById('editDeliveryName').value, price: document.getElementById('editDeliveryPrice').value }]
         });
-    }
-  };
+        alert('Factura actualizada.'); closeModal('editInvoiceModal'); loadAll();
+      } catch (e) { console.error(e); alert('Error: ' + e.message); }
+    });
+    document.getElementById('deleteInvoiceButton').addEventListener('click', async () => {
+      if (!confirm('¿Eliminar esta factura? Se archivará en la base de datos por seguridad.')) return;
+      const id = document.getElementById('editInvoiceId').value;
+      try {
+        // 1. Obtener datos completos antes de eliminar
+        const resultado = await buscarFacturaCompleta(id);
+        const datosFactura = resultado ? resultado.factura : { id, _nota: 'datos no recuperados' };
 
-  // Evento para eliminar la transacción
-  document.getElementById("deleteTransactionButton").addEventListener("click", () => {
-    const id = document.getElementById("editTransactionId").value; // Obtener el ID de la transacción
-    deleteTransaction(id); // Llamar a la función de eliminación
-  });
+        // 2. Archivar en facturas_eliminadas/facturas
+        await archivarEnEliminadas('facturas', datosFactura);
 
-  // Evento para eliminar la factura
-  document.getElementById("deleteInvoiceButton").addEventListener("click", () => {
-    const id = document.getElementById("editInvoiceId").value; // Obtener el ID de la factura
-    deleteInvoice(id); // Llamar a la función de eliminación
-  });
+        // 3. Eliminar de facturas-por-dia
+        await eliminarFacturaDeDia(id);
 
-  // Evento para eliminar el pago de empleado
-  document.getElementById("deleteEmployeePaymentButton").addEventListener("click", () => {
-    const id = document.getElementById("editEmployeePaymentId").value; // Obtener el ID del pago de empleado
-    deleteEmployeePayment(id); // Llamar a la función de eliminación
-  });
+        alert('Factura eliminada.'); closeModal('editInvoiceModal'); loadAll();
+      } catch (e) { console.error(e); alert('Error: ' + e.message); }
+    });
 
-  // Cargar transacciones al inicio
-  loadTransactions();
-</script>
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL: EDITAR PAGO EMPLEADO
+    // ═══════════════════════════════════════════════════════════════
+    const openEditPagoEmpleadoModal = (item) => {
+      const p = item._pagoData || item;
+      document.getElementById('editEmployeePaymentId').value = p.id || item.id;
+      document.getElementById('editEmployeePaymentId').dataset.diaKey = item._diaKey || '';
+      document.getElementById('editEmployeePaymentId').dataset.docId = item._docId || '';
+      document.getElementById('editEmployeePaymentId').dataset.source = item._source || '';
+      // Guardar datos completos para archivar en caso de eliminación
+      document.getElementById('editEmployeePaymentId').dataset.pagoJson = JSON.stringify({
+        id: p.id || item.id,
+        employeeName: p.employeeName, total: p.total,
+        salaryPayment: p.salaryPayment, holidayPayment: p.holidayPayment,
+        overtimePayment: p.overtimePayment, vacationPayment: p.vacationPayment,
+        christmasPayment: p.christmasPayment, productSale: p.productSale,
+        productionIncentive: p.productionIncentive, punctualityIncentive: p.punctualityIncentive,
+        licenseDay: p.licenseDay, insurance: p.insurance,
+        _diaKey: item._diaKey || '', _source: item._source || ''
+      });
+      document.getElementById('editEmployeePaymentName').value = p.employeeName || '';
+      document.getElementById('editSalaryPayment').value = p.salaryPayment || 0;
+      document.getElementById('editHolidayPayment').value = p.holidayPayment || 0;
+      document.getElementById('editOvertimePayment').value = p.overtimePayment || 0;
+      document.getElementById('editVacationPayment').value = p.vacationPayment || 0;
+      document.getElementById('editChristmasPayment').value = p.christmasPayment || 0;
+      document.getElementById('editProductSale').value = p.productSale || 0;
+      document.getElementById('editProductionIncentive').value = p.productionIncentive || 0;
+      document.getElementById('editPunctualityIncentive').value = p.punctualityIncentive || 0;
+      document.getElementById('editLicenseDay').value = p.licenseDay || 0;
+      document.getElementById('editInsurance').value = p.insurance || 0;
+      const date = toDate(p.timestamp) || item.date;
+      if (date) {
+        document.getElementById('editEmployeePaymentDate').value = date.toISOString().split('T')[0];
+        document.getElementById('editEmployeePaymentTime').value = date.toTimeString().slice(0, 5);
+      }
+      calcEditTotal();
+      openModal('editEmployeePaymentModal');
+    };
+    document.getElementById('closeEditEmployeeModal').addEventListener('click', () => closeModal('editEmployeePaymentModal'));
+    document.getElementById('cancelEditEmp').addEventListener('click', () => closeModal('editEmployeePaymentModal'));
 
-    <script src="./js/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    document.getElementById('saveEmployeePaymentButton').addEventListener('click', async () => {
+      const el = document.getElementById('editEmployeePaymentId');
+      const id = el.value;
+      const diaKey = el.dataset.diaKey;
+      const docId = el.dataset.docId;
+      const source = el.dataset.source;
+      const name = document.getElementById('editEmployeePaymentName').value;
+      const s = parseFloat(document.getElementById('editSalaryPayment').value) || 0;
+      const h = parseFloat(document.getElementById('editHolidayPayment').value) || 0;
+      const o = parseFloat(document.getElementById('editOvertimePayment').value) || 0;
+      const v = parseFloat(document.getElementById('editVacationPayment').value) || 0;
+      const c = parseFloat(document.getElementById('editChristmasPayment').value) || 0;
+      const ps = parseFloat(document.getElementById('editProductSale').value) || 0;
+      const pi = parseFloat(document.getElementById('editProductionIncentive').value) || 0;
+      const pu = parseFloat(document.getElementById('editPunctualityIncentive').value) || 0;
+      const ld = parseFloat(document.getElementById('editLicenseDay').value) || 0;
+      const ins = parseFloat(document.getElementById('editInsurance').value) || 0;
+      const total = s + h + o + v + c + ps + pi + pu - ld - ins;
+      const pDate = document.getElementById('editEmployeePaymentDate').value;
+      const pTime = document.getElementById('editEmployeePaymentTime').value;
+      if (!pDate || !pTime) { alert('Fecha y hora requeridas.'); return; }
+      const [yy, mm, dd] = pDate.split('-'), [hh, mi] = pTime.split(':');
+      const timestamp = firebase.firestore.Timestamp.fromDate(new Date(yy, mm - 1, dd, hh, mi));
+      const campos = {
+        employeeName: name, salaryPayment: s, holidayPayment: h, overtimePayment: o,
+        vacationPayment: v, christmasPayment: c, productSale: ps, productionIncentive: pi,
+        punctualityIncentive: pu, licenseDay: ld, insurance: ins, total, timestamp
+      };
+      try {
+        if (source === 'pago_empleado' && diaKey) {
+          await actualizarPagoEnDia(diaKey, id, campos);
+        } else if (source === 'pago_empleado_legado' && docId) {
+          campos.timestamp = new Date(yy, mm - 1, dd, hh, mi);
+          await db.collection('PagoEmpleado').doc(docId).update(campos);
+        }
+        alert('Pago actualizado.'); closeModal('editEmployeePaymentModal'); loadAll();
+      } catch (e) { console.error(e); alert('Error: ' + e.message); }
+    });
 
+    document.getElementById('deleteEmployeePaymentButton').addEventListener('click', async () => {
+      if (!confirm('¿Eliminar este pago? Se archivará en la base de datos por seguridad.')) return;
+      const el = document.getElementById('editEmployeePaymentId');
+      const id = el.value;
+      const diaKey = el.dataset.diaKey;
+      const docId = el.dataset.docId;
+      const source = el.dataset.source;
+      const pagoJson = el.dataset.pagoJson;
 
+      try {
+        // 1. Archivar datos antes de eliminar (en "transacciones" ya que es un gasto de empleado)
+        let datosParaArchivar = { id, _source: source };
+        try { datosParaArchivar = pagoJson ? JSON.parse(pagoJson) : datosParaArchivar; } catch (_) {}
+        await archivarEnEliminadas('transacciones', datosParaArchivar);
+
+        // 2. Eliminar de origen
+        if (source === 'pago_empleado' && diaKey) {
+          await eliminarPagoDeDia(diaKey, id);
+        } else if (source === 'pago_empleado_legado' && docId) {
+          await db.collection('PagoEmpleado').doc(docId).delete();
+        }
+        alert('Eliminado y archivado.'); closeModal('editEmployeePaymentModal'); loadAll();
+      } catch (e) { console.error(e); alert('Error: ' + e.message); }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // EMPLEADOS — HELPERS
+    // ═══════════════════════════════════════════════════════════════
+    const loadEmployeeNames = () => {
+      const sel = document.getElementById('employeeName');
+      sel.innerHTML = '<option value="">Selecciona un empleado…</option>';
+      db.collection('empleados').get().then(snap => {
+        snap.forEach(doc => { const o = document.createElement('option'); o.value = o.textContent = doc.data().nombre; sel.appendChild(o); });
+      });
+    };
+
+    const loadProductsSoldByEmployee = (name) => {
+      const amtEl = document.getElementById('productsSoldAmount');
+      const tsEl = document.getElementById('productsSoldTimestamp');
+      if (!name) { amtEl.textContent = '0'; tsEl.textContent = ''; return; }
+      db.collection('ventaproductos').where('empleado', '==', name).get().then(snap => {
+        let total = 0, lastTs = null;
+        snap.forEach(doc => {
+          total += parseFloat(doc.data().monto) || 0;
+          const ts = toDate(doc.data().timestamp);
+          if (ts && (!lastTs || ts > lastTs)) lastTs = ts;
+        });
+        amtEl.textContent = total;
+        tsEl.textContent = lastTs ? `Último incentivo: ${lastTs.toLocaleDateString('es-DO')}` : '';
+      });
+    };
+
+    document.getElementById('employeeName').addEventListener('change', function () { loadProductsSoldByEmployee(this.value); });
+    document.getElementById('resetProductsSoldCheckbox').addEventListener('change', function () {
+      const inp = document.getElementById('productSale');
+      inp.disabled = !this.checked; inp.style.opacity = this.checked ? '1' : '0.5';
+      inp.style.cursor = this.checked ? '' : 'not-allowed';
+      if (!this.checked) inp.value = '';
+      calcAddTotal();
+    });
+
+    // ── Cálculos totales en tiempo real
+    const calcAddTotal = () => {
+      const add = ['salaryPayment', 'holidayPayment', 'overtimePayment', 'vacationPayment',
+        'christmasPayment', 'productSale', 'productionIncentive', 'punctualityIncentive'];
+      const sub = ['licenseDay', 'insurance'];
+      const total = add.reduce((acc, id) => acc + (parseFloat(document.getElementById(id).value) || 0), 0)
+        - sub.reduce((acc, id) => acc + (parseFloat(document.getElementById(id).value) || 0), 0);
+      document.getElementById('totalAmount').value = total.toFixed(2);
+      document.getElementById('totalAmountDisplay').textContent = fmtMoney(total);
+    };
+    const calcEditTotal = () => {
+      const add = ['editSalaryPayment', 'editHolidayPayment', 'editOvertimePayment', 'editVacationPayment',
+        'editChristmasPayment', 'editProductSale', 'editProductionIncentive', 'editPunctualityIncentive'];
+      const sub = ['editLicenseDay', 'editInsurance'];
+      const total = add.reduce((acc, id) => acc + (parseFloat(document.getElementById(id).value) || 0), 0)
+        - sub.reduce((acc, id) => acc + (parseFloat(document.getElementById(id).value) || 0), 0);
+      document.getElementById('editTotalAmount').value = total.toFixed(2);
+      document.getElementById('editTotalAmountDisplay').textContent = fmtMoney(total);
+    };
+
+    document.querySelectorAll('#empFields input[type="number"]').forEach(i => i.addEventListener('input', calcAddTotal));
+    document.querySelectorAll('#editEmployeePaymentModal input[type="number"]').forEach(i => i.addEventListener('input', calcEditTotal));
+
+    // ── Reset formulario
+    const resetAddForm = () => {
+      ['transactionDate', 'transactionTime', 'transactionAmount', 'transactionDetails',
+        'employeeName', 'salaryPayment', 'holidayPayment', 'overtimePayment', 'vacationPayment',
+        'christmasPayment', 'productSale', 'productionIncentive', 'punctualityIncentive',
+        'licenseDay', 'insurance', 'employeePaymentDate', 'employeePaymentTime'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+      document.getElementById('transactionType').value = 'expense';
+      document.getElementById('totalAmount').value = '';
+      document.getElementById('totalAmountDisplay').textContent = 'RD$0.00';
+      document.getElementById('resetProductsSoldCheckbox').checked = false;
+      const ps = document.getElementById('productSale');
+      ps.disabled = true; ps.style.opacity = '0.5'; ps.style.cursor = 'not-allowed';
+      document.getElementById('normFields').style.display = 'block';
+      document.getElementById('empFields').style.display = 'none';
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+      setDefaultDates();
+      poblarYearSelect();
+      loadAll();
+      setupRealTimeListeners();
+      cargarGraficoMensual(new Date().getFullYear());
+    });
+  </script>
 </body>
 
 </html>
-
-<!-- 4 -->

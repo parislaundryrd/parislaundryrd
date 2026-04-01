@@ -8,6 +8,18 @@
   <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
   <link rel="stylesheet" href="./css/styles_inventario.css">
   <link rel="stylesheet" href="./css/styles_menu.css">
+  <style>
+    /* Toggle switch "Punto por venta" */
+    .toggle-switch { position:relative; display:inline-block; width:42px; height:24px; cursor:pointer; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; inset:0; background:#ccc; border-radius:24px; transition:.3s; }
+    .toggle-slider:before { content:""; position:absolute; height:18px; width:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
+    .toggle-switch input:checked + .toggle-slider { background:#4caf50; }
+    .toggle-switch input:checked + .toggle-slider:before { transform:translateX(18px); }
+    /* Checkbox en modales */
+    .modal-check-row { display:flex; align-items:center; gap:10px; margin-top:10px; }
+    .modal-check-row input[type=checkbox] { width:20px; height:20px; cursor:pointer; accent-color:#4caf50; }
+  </style>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
@@ -83,6 +95,11 @@
           <p>
             <label for="newProductQuantity">Cantidad del Producto:</label><br>
             <input type="number" id="newProductQuantity" placeholder="Cantidad" min="0">
+          <p>
+          <div class="modal-check-row">
+            <input type="checkbox" id="newProductPuntoPorVenta">
+            <label for="newProductPuntoPorVenta">Cuenta como <strong>Punto por Venta</strong></label>
+          </div>
         </div>
         <!-- modal-Inventario-body FIN -->
 
@@ -124,6 +141,11 @@
           <p>
             <label for="editProductQuantity">Cantidad del Producto:</label><br>
             <input type="number" id="editProductQuantity" placeholder="Cantidad" min="0">
+          <p>
+          <div class="modal-check-row">
+            <input type="checkbox" id="editProductPuntoPorVenta">
+            <label for="editProductPuntoPorVenta">Cuenta como <strong>Punto por Venta</strong></label>
+          </div>
         </div>
         <!-- modal-Inventario-body FIN -->
 
@@ -208,7 +230,14 @@
                 <div id="lista-valorNeto" style="flex-direction: column;min-width: 80px;padding: 0px 20px;">Valor Neto:<br><strong>RD$${valorTotalNeto.toFixed(2)}</strong></div> <!-- Nueva columna -->
         <div style="flex-direction: column;">Precio:<br><strong>RD$${data.precio.toFixed(2)}</strong></div>
         <div style="flex-direction: column;">Stock:<br><strong style="color: ${data.cantidad < 20 ? 'red' : 'black'};">${data.cantidad}</strong></div>
-        <div id="lista-editar"><button onclick="openEditModal('${doc.id}', '${data.id}', '${data.nombre}', '${data.detalles}', ${data.precio}, ${data.cantidad})">Editar</button></div>
+        <div id="lista-puntoventa" style="flex-direction:column;align-items:center;gap:4px;">
+          <span style="font-size:11px;color:#888;">Punto por venta</span>
+          <label class="toggle-switch" title="${data.puntoPorVenta ? 'Activo' : 'Inactivo'}">
+            <input type="checkbox" class="puntoPorVentaToggle" data-docid="${doc.id}" ${data.puntoPorVenta ? 'checked' : ''}>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div id="lista-editar"><button onclick="openEditModal('${doc.id}', '${data.id}', '${data.nombre}', '${data.detalles}', ${data.precio}, ${data.cantidad}, ${data.puntoPorVenta ? true : false})">Editar</button></div>
         <div><button id="btnEliminarProduct" onclick="deleteProduct('${doc.id}')">X</button></div>
       `;
           productList.appendChild(productItem);
@@ -293,6 +322,7 @@
       const detalles = document.getElementById("newProductDetails").value;
       const precio = parseFloat(document.getElementById("newProductPrice").value);
       const cantidad = parseInt(document.getElementById("newProductQuantity").value);
+      const puntoPorVenta = document.getElementById("newProductPuntoPorVenta").checked;
 
       if (nombre && detalles && !isNaN(precio) && !isNaN(cantidad)) {
         // Obtener el último id
@@ -307,12 +337,13 @@
         const formattedId = newId.toString().padStart(4, '0'); // Asegurarse de que tenga 4 dígitos
 
         db.collection("productos").add({
-          id: formattedId, // Usar el ID formateado
+          id: formattedId,
           nombre,
           detalles,
           precio,
           cantidad,
-          ordenNum: newId // Puedes usar el mismo id como ordenNum si lo deseas
+          puntoPorVenta,
+          ordenNum: newId
         }).then((docRef) => {
           // Registrar en el historial de inventario
           db.collection("historialInventario").add({
@@ -342,16 +373,17 @@
       document.getElementById("newProductDetails").value = "";
       document.getElementById("newProductPrice").value = "";
       document.getElementById("newProductQuantity").value = "";
+      document.getElementById("newProductPuntoPorVenta").checked = false;
     };
 
     // Abrir el modal de edición
-    const openEditModal = (id, productId, nombre, detalles, precio, cantidad) => {
+    const openEditModal = (id, productId, nombre, detalles, precio, cantidad, puntoPorVenta) => {
       currentEditingProductId = id;
       document.getElementById("editProductName").value = nombre;
       document.getElementById("editProductDetails").value = detalles;
       document.getElementById("editProductPrice").value = precio;
       document.getElementById("editProductQuantity").value = cantidad;
-      // Puedes mostrar el ID en el modal si lo deseas
+      document.getElementById("editProductPuntoPorVenta").checked = puntoPorVenta === true || puntoPorVenta === 'true';
       document.getElementById("editProductId").innerText = `ID: ${productId}`;
       editProductModal.style.display = "block";
     };
@@ -362,6 +394,7 @@
       const detalles = document.getElementById("editProductDetails").value;
       const precio = parseFloat(document.getElementById("editProductPrice").value);
       const cantidad = parseInt(document.getElementById("editProductQuantity").value);
+      const puntoPorVenta = document.getElementById("editProductPuntoPorVenta").checked;
 
       if (nombre && detalles && !isNaN(precio) && !isNaN(cantidad)) {
         // Obtener el documento del producto actual
@@ -398,7 +431,8 @@
           nombre,
           detalles,
           precio,
-          cantidad
+          cantidad,
+          puntoPorVenta
         });
 
         // Registrar en el historial de inventario solo si hay cambios
@@ -577,6 +611,19 @@
 
     // Evento para cargar más transacciones
     document.getElementById("loadMoreButton").addEventListener("click", loadHistory);
+
+    // Toggle "Punto por venta" en tiempo real desde la lista
+    productList.addEventListener('change', async (e) => {
+      if (!e.target.classList.contains('puntoPorVentaToggle')) return;
+      const docId = e.target.dataset.docid;
+      const activo = e.target.checked;
+      try {
+        await db.collection("productos").doc(docId).update({ puntoPorVenta: activo });
+      } catch (err) {
+        console.error("Error actualizando puntoPorVenta:", err);
+        e.target.checked = !activo; // revertir si falla
+      }
+    });
 
     // Cargar productos al iniciar
     loadProducts();

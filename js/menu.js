@@ -19,7 +19,7 @@ class LaundryMenu extends HTMLElement {
                         <img src="./img/Paris Laundry 1.png" alt="Logo">
                         <div>
                         <h1>Paris Laundry</h1>
-                        <h2 class="admin-only">ADMINISTRADOR</h2>
+                        <h2 class="admin-only">CHARLES</h2>
                         </div>
                     </div>
                     <div class="linediv"></div>
@@ -51,6 +51,14 @@ class LaundryMenu extends HTMLElement {
                         <div id="dateTime">
                             <h1 id="time">--:--:--</h1>
                             <p id="date">--/--/----</p>
+                            <div id="internetIndicador" class="internet-indicador">
+                                <span id="internetIcono" class="internet-icono">
+                                    <svg id="internetSvg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                    </svg>
+                                </span>
+                                <span id="internetTexto">Verificando…</span>
+                            </div>
                         </div>
                     </div>
 
@@ -92,37 +100,13 @@ class LaundryMenu extends HTMLElement {
         `;
 
         this.currentUserRole = null;
-        this.logoutTimer = null;
         this.initAuth();
         this.initModal();
         this.resaltarEnlaceActivo();
         this.startDateTimeUpdate();
-        this.loadFacturasCount();
-        this.setupActivityListeners();
-    }
-
-    setupActivityListeners() {
-        // Eventos que indican actividad del usuario
-        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-        
-        events.forEach(event => {
-            document.addEventListener(event, this.resetLogoutTimer.bind(this), true);
-        });
-
-        // Iniciar el temporizador
-        this.resetLogoutTimer();
-    }
-
-    resetLogoutTimer() {
-        // Limpiar el temporizador existente
-        if (this.logoutTimer) {
-            clearTimeout(this.logoutTimer);
-        }
-        
-        // Establecer nuevo temporizador (1 hora = 3600000 ms)
-        this.logoutTimer = setTimeout(() => {
-            this.cleanAuthAndRedirect();
-        }, 3600000); // 1 hora en milisegundos
+        this.initInternetIndicator();
+        // CORRECCIÓN: loadFacturasCount() se llama desde finalizeAuthProcess()
+        // para garantizar que Firebase Auth ya confirmó sesión antes de hacer queries.
     }
 
     async initAuth() {
@@ -183,6 +167,13 @@ class LaundryMenu extends HTMLElement {
         this.style.display = 'block';
         
         this.setupLogout();
+
+        // CORRECCIÓN: Iniciar contadores AQUÍ, cuando Auth ya confirmó sesión.
+        // La bandera evita suscribirse dos veces (caché + onAuthStateChanged).
+        if (!this._contadoresIniciados) {
+            this._contadoresIniciados = true;
+            this.loadFacturasCount();
+        }
     }
 
     verifyPageAccess() {
@@ -221,11 +212,6 @@ class LaundryMenu extends HTMLElement {
     }
 
     cleanAuthAndRedirect() {
-        // Limpiar el temporizador
-        if (this.logoutTimer) {
-            clearTimeout(this.logoutTimer);
-        }
-        
         // Limpiar caché y cerrar sesión
         localStorage.removeItem('authUser');
         localStorage.removeItem('userRole');
@@ -245,54 +231,55 @@ class LaundryMenu extends HTMLElement {
     }
 
     loadFacturasCount() {
-        this.unsubscribePendiente = db.collection('facturas')
-            .where('status', '==', 'pago pendiente')
+        // Escuchar en tiempo real TODA la colección facturas-por-dia
+        // sin filtrar por fecha — así funciona aunque el campo fechaString
+        // no exista en documentos antiguos o no haya índice creado.
+        this.unsubscribeFacturasCount = db.collection('facturas-por-dia')
             .onSnapshot((snapshot) => {
-                const count = snapshot.size;
-                this.updateDisplay('facturasCountPendiente', count);
-            }, (error) => {
-                console.error("Error al obtener las facturas en 'pago pendiente': ", error);
-                document.getElementById('facturasCountPendiente').textContent = `Error`;
-            });
+                let pendiente = 0, pagado = 0, pagadoListo = 0;
 
-        this.unsubscribePagado = db.collection('facturas')
-            .where('status', '==', 'pagado')
-            .onSnapshot((snapshot) => {
-                const count = snapshot.size;
-                this.updateDisplay('facturasCountPagado', count);
-            }, (error) => {
-                console.error("Error al obtener las facturas en 'pagado': ", error);
-                document.getElementById('facturasCountPagado').textContent = `Error`;
-            });
+                // Calcular fecha de hoy en RD para excluir docs futuros (seguridad)
+                const rdNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santo_Domingo' }));
+                const hoy = `${rdNow.getFullYear()}-${String(rdNow.getMonth()+1).padStart(2,'0')}-${String(rdNow.getDate()).padStart(2,'0')}`;
 
-        this.unsubscribePagadoListo = db.collection('facturas')
-            .where('status', '==', 'pagado listo')
-            .onSnapshot((snapshot) => {
-                const count = snapshot.size;
-                this.updateDisplay('facturasCountPagadoListo', count);
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Respetar solo docs de hoy hacia atrás usando el ID del doc (YYYY-MM-DD)
+                    // o el campo fechaString si existe; si no existe ninguno, incluir igual.
+                    const docFecha = data.fechaString || doc.id;
+                    if (docFecha > hoy) return; // saltar docs futuros
+
+                    (data.facturas || []).forEach(f => {
+                        if (f._diaOriginal) return; // copia del 2do pago de abono — no contar
+                        if (f.status === 'pago pendiente') pendiente++;
+                        else if (f.status === 'pagado') pagado++;
+                        else if (f.status === 'pagado listo') pagadoListo++;
+                    });
+                });
+
+                this.updateDisplay('facturasCountPendiente', pendiente);
+                this.updateDisplay('facturasCountPagado', pagado);
+                this.updateDisplay('facturasCountPagadoListo', pagadoListo);
             }, (error) => {
-                console.error("Error al obtener las facturas en 'pagado listo': ", error);
-                document.getElementById('facturasCountPagadoListo').textContent = `Error`;
+                console.error("Error al obtener contadores de facturas:", error);
             });
     }
 
     updateDisplay(elementId, count) {
-        const element = document.getElementById(elementId);
-        element.textContent = count;
-        if (count > 0) {
-            element.style.display = 'block';
-        } else {
-            element.style.display = 'none';
+        // CORRECCIÓN: usar this.querySelector() — los elementos viven dentro
+        // del Web Component y document.getElementById() no los encuentra siempre.
+        const element = this.querySelector('#' + elementId);
+        if (element) {
+            element.textContent = count;
+            element.style.display = count > 0 ? 'block' : 'none';
         }
-        
+
+        // Los elementos Dup están en facturas-generadas.html (otra página),
+        // se actualizan desde su propio onSnapshot independiente.
         const dupElement = document.getElementById(elementId + 'Dup');
         if (dupElement) {
             dupElement.textContent = count;
-            if (count > 0) {
-                dupElement.style.display = 'block';
-            } else {
-                dupElement.style.display = 'none';
-            }
+            dupElement.style.display = count > 0 ? 'inline' : 'none';
         }
     }
 
@@ -365,49 +352,63 @@ class LaundryMenu extends HTMLElement {
         updateDateTime();
     }
 
-    javascript
-updateFooterYear() {
-    try {
-        const currentYear = new Date().getFullYear();
-        const yearElements = document.querySelectorAll('#currentYear, #currentYearMobile');
-        
-        if (yearElements.length === 0) {
-            console.warn('No se encontraron elementos para mostrar el año');
-            return;
+    updateFooterYear() {
+        try {
+            const currentYear = new Date().getFullYear();
+            const yearElements = document.querySelectorAll('#currentYear, #currentYearMobile');
+            
+            if (yearElements.length === 0) {
+                console.warn('No se encontraron elementos para mostrar el año');
+                return;
+            }
+            
+            yearElements.forEach(el => {
+                el.textContent = currentYear;
+            });
+        } catch (error) {
+            console.error('Error al actualizar el año en el footer:', error);
         }
-        
-        yearElements.forEach(el => {
-            el.textContent = currentYear;
-        });
-    } catch (error) {
-        console.error('Error al actualizar el año en el footer:', error);
     }
-}
+
+    initInternetIndicator() {
+        const ind = this.querySelector('#internetIndicador');
+        const icono = this.querySelector('#internetSvg');
+        const texto = this.querySelector('#internetTexto');
+        if (!ind) return;
+
+        const setOnline = () => {
+            ind.dataset.state = 'online';
+            icono.innerHTML = '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>';
+            texto.textContent = 'Conectado';
+        };
+
+        const setOffline = () => {
+            ind.dataset.state = 'offline';
+            icono.innerHTML = '<circle cx="12" cy="12" r="10" opacity="0.35"/><path d="M2 12h20" opacity="0.35"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" opacity="0.35"/><line x1="4" y1="4" x2="20" y2="20"/>';
+            texto.textContent = 'Sin conexión';
+        };
+
+        const checkConnection = () => {
+            if (!navigator.onLine) { setOffline(); return; }
+            const img = new Image();
+            const timer = setTimeout(() => { img.src = ''; setOffline(); }, 4000);
+            img.onload = () => { clearTimeout(timer); setOnline(); };
+            img.onerror = () => { clearTimeout(timer); setOnline(); }; // error CORS = hay red
+            img.src = `https://www.google.com/favicon.ico?_=${Date.now()}`;
+        };
+
+        window.addEventListener('online', checkConnection);
+        window.addEventListener('offline', setOffline);
+        checkConnection();
+        setInterval(checkConnection, 15000);
+    }
 
     disconnectedCallback() {
-        if (this.unsubscribePendiente) {
-            this.unsubscribePendiente();
-        }
-        if (this.unsubscribePagado) {
-            this.unsubscribePagado();
-        }
-        if (this.unsubscribePagadoListo) {
-            this.unsubscribePagadoListo();
-        }
-        
-        // Limpiar listeners de actividad
-        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-        events.forEach(event => {
-            document.removeEventListener(event, this.resetLogoutTimer, true);
-        });
-        
-        // Limpiar temporizador
-        if (this.logoutTimer) {
-            clearTimeout(this.logoutTimer);
+        if (this.unsubscribeFacturasCount) {
+            this.unsubscribeFacturasCount();
         }
     }
 }
-
 
 customElements.define('laundry-menu', LaundryMenu);
 
@@ -431,5 +432,3 @@ class FooterContent extends HTMLElement {
 }
 
 customElements.define('footer-content', FooterContent);
-
-

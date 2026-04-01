@@ -118,7 +118,7 @@
 
 
       <div class="panelAdmin_down">
-        <p>© Paris Laundry RD - 2025</p>
+        <p>© Developed by J.P.</p>
       </div>
 
     </div>
@@ -153,6 +153,16 @@
 
               <label for="librasmax">Libras Máximas:</label>
               <input type="number" id="librasmaxAdd"><br>
+
+              <!-- Toggle Hasta Libra Max -->
+              <div style="display:flex;align-items:center;gap:10px;margin:10px 0;padding:10px 12px;background:#f0f7ff;border:1px solid #b3d4f7;border-radius:10px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#1a5fa8;user-select:none;">
+                  <input type="checkbox" id="hastaLibraMaxAdd" style="width:18px;height:18px;cursor:pointer;accent-color:#1a5fa8;">
+                  Activar límite "Hasta libra max"
+                </label>
+                <span style="font-size:12px;color:#666;">(bloquea libras por encima del máximo en facturación)</span>
+              </div>
+              <!-- /Toggle Hasta Libra Max -->
 
               <label for="preciolibras">Precio por Libra:</label>
               <input type="number" id="preciolibrasAdd"><br>
@@ -247,6 +257,16 @@
 
             <label for="librasmax">Libras Máximas:</label>
             <input type="number" id="librasmaxHamper"><br>
+
+            <!-- Toggle Hasta Libra Max -->
+            <div style="display:flex;align-items:center;gap:10px;margin:10px 0;padding:10px 12px;background:#f0f7ff;border:1px solid #b3d4f7;border-radius:10px;">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#1a5fa8;user-select:none;">
+                <input type="checkbox" id="hastaLibraMaxHamper" style="width:18px;height:18px;cursor:pointer;accent-color:#1a5fa8;">
+                Activar límite "Hasta libra max"
+              </label>
+              <span style="font-size:12px;color:#666;">(bloquea libras por encima del máximo en facturación)</span>
+            </div>
+            <!-- /Toggle Hasta Libra Max -->
 
             <label for="preciolibras">Precio por Libra:</label>
             <input type="number" id="preciolibrasHamper"><br>
@@ -667,6 +687,7 @@
           <p>Libras Mínimas: <strong>${data.librasmin}</strong></p>
           <p>Libras Máximas: <strong>${data.librasmax}</strong></p>
           <p>Precio por Libra: <strong>RD$${data.preciolibras}</strong></p>
+          <p>Límite libra max: <strong style="color:${data.hastaLibraMax ? '#1a5fa8' : '#aaa'}">${data.hastaLibraMax ? '✅ Activado' : '⬜ Desactivado'}</strong></p>
           <button onclick="editHamper('${data.id}')">Editar</button>
         `;
             hamperList.appendChild(hamperDiv);
@@ -855,7 +876,7 @@
     };
 
     // Función para añadir un "hamper"
-    const addHamper = async (nombre, precio, librasmin, librasmax, preciolibras, icon, consumo) => {
+    const addHamper = async (nombre, precio, librasmin, librasmax, preciolibras, icon, consumo, hastaLibraMax) => {
       try {
         const docRef = await db.collection("servicio").add({
           nombre: nombre,
@@ -865,6 +886,7 @@
           preciolibras: preciolibras,
           icon: icon,
           consumo: consumo,
+          hastaLibraMax: hastaLibraMax || false,
           tipo: "hamper"
         });
 
@@ -1001,11 +1023,12 @@
       const preciolibras = serviceType === "hamper" ? parseFloat(document.getElementById("preciolibrasAdd").value) : null;
       const icon = serviceType === "hamper" ? document.getElementById("iconAdd").value : document.getElementById("iconOtroServicioAdd").value;
       const consumo = consumosSeleccionados;
+      const hastaLibraMax = serviceType === "hamper" ? document.getElementById("hastaLibraMaxAdd").checked : false;
 
       if (nombre && precio) {
         try {
           if (serviceType === "hamper") {
-            await addHamper(nombre, precio, librasmin, librasmax, preciolibras, icon, consumo);
+            await addHamper(nombre, precio, librasmin, librasmax, preciolibras, icon, consumo, hastaLibraMax);
           } else {
             await addOtherService(nombre, precio, icon, consumo);
           }
@@ -1033,6 +1056,7 @@
         document.getElementById("librasmaxHamper").value = data.librasmax;
         document.getElementById("preciolibrasHamper").value = data.preciolibras;
         document.getElementById("iconHamper").value = data.icon;
+        document.getElementById("hastaLibraMaxHamper").checked = data.hastaLibraMax || false;
         document.getElementById("iconPreviewHamper").innerHTML = data.icon
           ? `<img src="${data.icon}" class="image-preview" style="height: 64px;border-radius: 10px;">`
           : '<div class="no-image">Sin imagen</div>';
@@ -1122,6 +1146,7 @@
       const preciolibras = parseFloat(document.getElementById("preciolibrasHamper").value);
       const icon = document.getElementById("iconHamper").value;
       const consumo = consumosSeleccionados;
+      const hastaLibraMax = document.getElementById("hastaLibraMaxHamper").checked;
 
       try {
         // Obtener los datos originales del hamper antes de la actualización
@@ -1145,6 +1170,9 @@
         if (preciolibras !== originalData.preciolibras) {
           cambios.push(`Precio por Libra: de '${originalData.preciolibras}' a '${preciolibras}'`);
         }
+        if (hastaLibraMax !== (originalData.hastaLibraMax || false)) {
+          cambios.push(`Límite libra max: de '${originalData.hastaLibraMax ? 'Activado' : 'Desactivado'}' a '${hastaLibraMax ? 'Activado' : 'Desactivado'}'`);
+        }
 
         // Formatear el consumo de inventario
         const consumoFormateadoOriginal = formatConsumo(originalData.consumo || []);
@@ -1161,7 +1189,8 @@
           librasmax: librasmax,
           preciolibras: preciolibras,
           icon: icon,
-          consumo: consumo
+          consumo: consumo,
+          hastaLibraMax: hastaLibraMax
         });
 
         // Registrar en el historial

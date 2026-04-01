@@ -1,5 +1,4 @@
-
-    .auth-check {
+.auth-check {
       position: fixed;
       top: 0;
       left: 0;
@@ -46,7 +45,7 @@
     text-align: center;
     margin-block-start: 0px;
     margin-block-end: 0px;
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 100;
     letter-spacing: 5px;
     color: #5f5f5f;
@@ -153,14 +152,14 @@
 }
 
 #dateTime h1 {
-    font-size: 17px;
+    font-size: 16px;
     margin: 0px;
     color: #474747;
     font-weight: bold;
 }
 
 #dateTime p {
-    font-size: 23px;
+    font-size: 18px;
     margin: 0;
     color: #333;
     font-weight: bold;
@@ -522,3 +521,37 @@
 
 
 /* MENU FIN */
+
+/* ===== INDICADOR DE CONEXIÓN A INTERNET (en menú) ===== */
+.internet-indicador {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 0px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    border: 1px solid #ddd;
+    background: #f0f0f0;
+    color: #888;
+    transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    white-space: nowrap;
+}
+
+.internet-indicador[data-state="online"] {
+    background: #e6f9ec;
+    border-color: #5ac87a;
+    color: #1e7e34;
+}
+
+.internet-indicador[data-state="offline"] {
+    background: #fff0f0;
+    border-color: #f5a0a0;
+    color: #c0392b;
+}
+
+.internet-icono {
+    display: inline-flex;
+    align-items: center;
+}

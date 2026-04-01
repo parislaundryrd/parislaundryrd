@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -18,7 +17,7 @@
 
 <body>
 
-  <div class="MasterBox0" style="display: ;">
+  <div class="MasterBox0">
 
     <laundry-menu></laundry-menu>
 
@@ -285,85 +284,251 @@
 
     loadEmployees();
 
-  // Función para cargar facturas con paginación
-const loadInvoices = async (status, loadMore = false) => {
-  currentStatus = status;
+  // ===== NUEVA LÓGICA: Carga por días desde facturas-por-dia =====
 
-  if (!loadMore) {
-    // Si es una carga nueva, reiniciamos
-    invoices = [];
-    invoicesBody.innerHTML = "";
-    lastInvoiceDoc = null;
-    loadMoreContainer.style.display = "none";
-    noMoreInvoices.style.display = "none";
-  }
+  let diasCargados = []; // Docs de días ya cargados (para status sin paginación)
+  let ultimoDiaCargado = null; // Para paginación de "pagado entregado"
+  let todasLasFacturas = []; // Todas las facturas cargadas en memoria
 
-  try {
-    let query = db.collection("facturas")
-      .where("status", "==", status)
-      .orderBy("timestamp", "desc")
-      .limit(15);
+  // ── Paginación exclusiva para "pagado entregado" ──
+  // Se trabaja con paginación real en Firestore: 10 facturas por vez,
+  // ordenadas por fecha de documento DESC.
+  const FACTURAS_ENTREGADAS_POR_PAGINA = 10;
+  let entregadasUltimoDia = null;        // último doc de día cargado para entregadas
+  let entregadasFacturasCargadas = [];   // facturas entregadas en memoria
 
-    if (loadMore && lastInvoiceDoc) {
-      query = query.startAfter(lastInvoiceDoc);
-    }
-
-    const snapshot = await query.get();
-
-    if (snapshot.empty) {
-      if (loadMore) {
-        // No hay más facturas para cargar
-        noMoreInvoices.style.display = "inline-flex";
-        loadMoreInvoicesBtn.style.display = "none";
-      } else {
-        // No hay facturas en absoluto
-        document.getElementById("noInvoicesMessage").classList.remove("hidden");
+  // Función auxiliar: convierte timestamp de Firestore/plano a Timestamp real
+  const normalizarTimestamp = (factura) => {
+    if (factura.timestamp && !(factura.timestamp instanceof firebase.firestore.Timestamp)) {
+      if (factura.timestamp._seconds) {
+        factura.timestamp = new firebase.firestore.Timestamp(
+          factura.timestamp._seconds,
+          factura.timestamp._nanoseconds || 0
+        );
       }
-      return;
     }
+    return factura;
+  };
 
-    // Ocultar mensaje de no hay facturas si estamos cargando más
-    document.getElementById("noInvoicesMessage").classList.add("hidden");
-
-    // Guardamos el último documento para la paginación
-    lastInvoiceDoc = snapshot.docs[snapshot.docs.length - 1];
-
-    // Procesamos los nuevos documentos
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      if (data.timestamp instanceof firebase.firestore.Timestamp) {
-        // Verificar que la factura no exista ya en el array
-        if (!invoices.some(invoice => invoice.id === doc.id)) {
-          invoices.push({ id: doc.id, ...data });
+  // Función auxiliar: deduplicar facturas por id (queda la más reciente)
+  const deduplicarFacturas = (lista, nuevas) => {
+    nuevas.forEach(factura => {
+      const idxExistente = lista.findIndex(f => f.id === factura.id);
+      if (idxExistente === -1) {
+        lista.push(factura);
+      } else {
+        const existente = lista[idxExistente];
+        const tsExistente = existente.lastPaymentDate
+          ? (existente.lastPaymentDate.toDate ? existente.lastPaymentDate.toDate() : new Date(existente.lastPaymentDate._seconds * 1000))
+          : null;
+        const tsNueva = factura.lastPaymentDate
+          ? (factura.lastPaymentDate.toDate ? factura.lastPaymentDate.toDate() : new Date(factura.lastPaymentDate._seconds * 1000))
+          : null;
+        if (tsNueva && (!tsExistente || tsNueva > tsExistente)) {
+          lista[idxExistente] = factura;
         }
       }
     });
+    return lista;
+  };
 
-    // CORRECCIÓN: Mostrar u ocultar el botón de cargar más para TODOS los estados
-    if (snapshot.docs.length === 15) {
-      loadMoreContainer.style.display = "block";
-      loadMoreInvoicesBtn.style.display = "inline-flex";
+  // ── Carga de facturas ENTREGADAS (con paginación real en Firebase) ──
+  const loadEntregadas = async (loadMore = false) => {
+    if (!loadMore) {
+      entregadasFacturasCargadas = [];
+      entregadasUltimoDia = null;
+      invoicesBody.innerHTML = "";
+      loadMoreContainer.style.display = "none";
       noMoreInvoices.style.display = "none";
-    } else if (loadMore) {
-      // Si estamos cargando más y no llegamos al límite, ocultar el botón
-      loadMoreInvoicesBtn.style.display = "none";
-      noMoreInvoices.style.display = "inline-flex";
+      document.getElementById("noInvoicesMessage").classList.add("hidden");
     }
 
-    // Renderizar las facturas
+    try {
+      // Leer documentos de días de más reciente a más antiguo
+      let query = db.collection("facturas-por-dia").orderBy("fecha", "desc");
+      if (loadMore && entregadasUltimoDia) {
+        query = query.startAfter(entregadasUltimoDia);
+      }
+
+      // Cargamos días hasta acumular 10 facturas entregadas (o agotar docs)
+      let facturasNuevas = [];
+      let ultimoDocProcesado = null;
+      let sinMasDocs = false;
+
+      // Obtenemos todos los docs restantes del cursor
+      const snapshot = await query.get();
+      if (snapshot.empty) {
+        loadMoreInvoicesBtn.style.display = "none";
+        if (loadMore) noMoreInvoices.style.display = "inline-flex";
+        loadMoreContainer.style.display = loadMore ? "block" : "none";
+        renderInvoices();
+        return;
+      }
+
+      for (const doc of snapshot.docs) {
+        ultimoDocProcesado = doc;
+        const data = doc.data();
+        if (data.facturas && data.facturas.length > 0) {
+          data.facturas.forEach(factura => {
+            normalizarTimestamp(factura);
+            if (factura.status === "pagado entregado" && !factura._diaOriginal) {
+              // Verificar que no esté ya cargada
+              if (!entregadasFacturasCargadas.some(f => f.id === factura.id) &&
+                  !facturasNuevas.some(f => f.id === factura.id)) {
+                facturasNuevas.push(factura);
+              }
+            }
+          });
+        }
+        if (facturasNuevas.length >= FACTURAS_ENTREGADAS_POR_PAGINA) break;
+      }
+
+      // Si recorrimos todos los docs y no llegamos al límite → no hay más
+      const llegamosAlFin = ultimoDocProcesado === snapshot.docs[snapshot.docs.length - 1] &&
+                            facturasNuevas.length < FACTURAS_ENTREGADAS_POR_PAGINA;
+
+      entregadasUltimoDia = ultimoDocProcesado;
+      entregadasFacturasCargadas = entregadasFacturasCargadas.concat(facturasNuevas);
+
+      // Ordenar de más reciente a más antiguo
+      entregadasFacturasCargadas.sort((a, b) => {
+        const tA = a.timestamp.toDate ? a.timestamp.toDate() : new Date(a.timestamp._seconds * 1000);
+        const tB = b.timestamp.toDate ? b.timestamp.toDate() : new Date(b.timestamp._seconds * 1000);
+        return tB - tA;
+      });
+
+      invoices = entregadasFacturasCargadas;
+
+      // Mostrar u ocultar botón de cargar más
+      if (llegamosAlFin) {
+        loadMoreInvoicesBtn.style.display = "none";
+        if (loadMore) noMoreInvoices.style.display = "inline-flex";
+        loadMoreContainer.style.display = loadMore ? "block" : "none";
+      } else {
+        loadMoreContainer.style.display = "block";
+        loadMoreInvoicesBtn.style.display = "inline-flex";
+        noMoreInvoices.style.display = "none";
+      }
+
+      renderInvoices();
+      updateTitleAndBackground("pagado entregado");
+
+    } catch (error) {
+      console.error("Error al cargar facturas entregadas:", error);
+      alert("Error al cargar facturas. Intente nuevamente.");
+    }
+  };
+
+  // ── Carga de facturas NO entregadas (sin paginación — se muestran todas) ──
+  const loadInvoicesSinPaginacion = async (status) => {
+    todasLasFacturas = [];
+    invoicesBody.innerHTML = "";
+    loadMoreContainer.style.display = "none"; // Nunca mostrar "Cargar más" en estos tabs
+    noMoreInvoices.style.display = "none";
+    document.getElementById("noInvoicesMessage").classList.add("hidden");
+
+    try {
+      // Cargar TODOS los documentos de días (sin límite)
+      const snapshot = await db.collection("facturas-por-dia")
+        .orderBy("fecha", "desc")
+        .get();
+
+      const nuevas = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.facturas && data.facturas.length > 0) {
+          data.facturas.forEach(factura => {
+            normalizarTimestamp(factura);
+            if (!factura._diaOriginal) nuevas.push(factura);
+          });
+        }
+      });
+
+      deduplicarFacturas(todasLasFacturas, nuevas);
+      filtrarYRenderizar(status);
+      updateTitleAndBackground(status);
+
+    } catch (error) {
+      console.error("Error al cargar facturas:", error);
+      alert("Error al cargar facturas. Intente nuevamente.");
+    }
+  };
+
+  // ── Función principal de carga: delega según el status ──
+  const loadInvoices = async (status, loadMore = false) => {
+    currentStatus = status;
+    if (status === "pagado entregado") {
+      await loadEntregadas(loadMore);
+    } else {
+      await loadInvoicesSinPaginacion(status);
+    }
+  };
+
+  const filtrarYRenderizar = (status) => {
+    invoices = todasLasFacturas.filter(f => f.status === status);
     renderInvoices();
-    updateTitleAndBackground(status);
-  } catch (error) {
-    console.error("Error al cargar facturas:", error);
-    alert("Error al cargar facturas. Intente nuevamente.");
-  }
-};
+  };
+
+  // ===== CONTADORES EN TIEMPO REAL =====
+  // Escuchar en tiempo real los últimos 60 días para contar por estado
+  let unsubscribeContadores = null;
+
+  const iniciarContadoresRealTime = () => {
+    if (unsubscribeContadores) unsubscribeContadores();
+
+    unsubscribeContadores = db.collection('facturas-por-dia')
+      .onSnapshot((snapshot) => {
+        let pendiente = 0, pagado = 0, listo = 0;
+
+        // Calcular fecha de hoy en RD para no contar docs futuros
+        const rdNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santo_Domingo' }));
+        const hoy = `${rdNow.getFullYear()}-${String(rdNow.getMonth()+1).padStart(2,'0')}-${String(rdNow.getDate()).padStart(2,'0')}`;
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const docFecha = data.fechaString || doc.id;
+          if (docFecha > hoy) return; // saltar docs futuros
+
+          (data.facturas || []).forEach(f => {
+            if (f._diaOriginal) return; // copia del 2do pago de abono — no contar
+            if (f.status === 'pago pendiente') pendiente++;
+            else if (f.status === 'pagado') pagado++;
+            else if (f.status === 'pagado listo') listo++;
+          });
+        });
+
+        const elPendienteDup = document.getElementById("facturasCountPendienteDup");
+        const elPagadoDup = document.getElementById("facturasCountPagadoDup");
+        const elListoDup = document.getElementById("facturasCountPagadoListoDup");
+
+        if (elPendienteDup) { elPendienteDup.textContent = pendiente; elPendienteDup.style.display = pendiente > 0 ? "inline" : "none"; }
+        if (elPagadoDup) { elPagadoDup.textContent = pagado; elPagadoDup.style.display = pagado > 0 ? "inline" : "none"; }
+        if (elListoDup) { elListoDup.textContent = listo; elListoDup.style.display = listo > 0 ? "inline" : "none"; }
+      }, (error) => {
+        console.error("Error en contadores en tiempo real:", error);
+      });
+  };
+
+  // Iniciar contadores solo cuando Auth confirme la sesión
+  // (evita que Firestore rechace la query por falta de autenticación)
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      iniciarContadoresRealTime();
+    }
+  });
+  // ===== FIN CONTADORES EN TIEMPO REAL =====
 
 
     // Función para renderizar las facturas en la tabla
     const renderInvoices = () => {
       // Siempre limpiar el cuerpo de la tabla antes de renderizar
       invoicesBody.innerHTML = "";
+
+      if (invoices.length === 0) {
+        document.getElementById("noInvoicesMessage").classList.remove("hidden");
+        return;
+      }
+      document.getElementById("noInvoicesMessage").classList.add("hidden");
 
       invoices.forEach((invoice) => {
         const row = document.createElement("tr");
@@ -729,43 +894,42 @@ if (data.paymentMethod) {
 
         change = amountReceived - total;
       } else {
-        // Para Transferencia o Tarjeta de Crédito, el monto recibido es igual al total
         amountReceived = parseFloat(currentInvoiceData.total);
-        change = 0; // No hay cambio en estos métodos
+        change = 0;
       }
 
-      const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
-      if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
+      // Actualizar en facturas-por-dia
+      // IMPORTANTE: NO sobreescribir timestamp (es la fecha de creación y se usa
+      // para localizar el documento del día en Firestore). Guardar la fecha de pago
+      // en paymentDate y lastPaymentDate para no romper la búsqueda del documento.
+      // lastPaymentDate es usado por caja.html para filtrar la factura dentro del
+      // rango de caja correcto (el momento en que se marcó como pagada).
+      const ahoraPago = firebase.firestore.Timestamp.now();
+      await actualizarFacturaEnDia(currentInvoiceId, currentInvoiceData.timestamp, {
+        status: "pagado",
+        paymentMethod: selectedPaymentMethod,
+        amountReceived: amountReceived,
+        changeAmount: change,
+        paymentDate: ahoraPago,
+        lastPaymentDate: ahoraPago
+      });
 
-        await doc.ref.update({
-          status: "pagado",
-          paymentMethod: selectedPaymentMethod,
-          amountReceived: amountReceived,  // Siempre se envía el monto recibido
-          changeAmount: change,            // Cambio será 0 para no efectivo
-          timestamp: firebase.firestore.FieldValue.serverTimestamp() // Actualizar la fecha al momento del pago
-        });
+      await db.collection("historialFacturasGeneradas").add({
+        empleado: selectedEmployee,
+        id: currentInvoiceId,
+        nombreCliente: currentInvoiceData.clientName,
+        numeroTelefono: currentInvoiceData.clientPhone,
+        monto: currentInvoiceData.total,
+        fecha: new Date(),
+        cambioStatus: "Pago Pendiente a Pagado",
+        amountReceived: amountReceived,
+        changeAmount: change,
+        paymentMethod: selectedPaymentMethod
+      });
 
-        await db.collection("historialFacturasGeneradas").add({
-          empleado: selectedEmployee,
-          id: currentInvoiceId,
-          nombreCliente: currentInvoiceData.clientName,
-          numeroTelefono: currentInvoiceData.clientPhone,
-          monto: currentInvoiceData.total,
-          fecha: new Date(),
-          cambioStatus: "Pago Pendiente a Pagado",
-          amountReceived: amountReceived,  // Se guarda en historial
-          changeAmount: change,            // Se guarda en historial
-          paymentMethod: selectedPaymentMethod // Se guarda método de pago
-        });
-
-        loadInvoices("pago pendiente");
-        invoiceModal.style.display = "none";
-        alert("Factura marcada como pagada exitosamente");
-      } else {
-        console.error("No existe el documento con el campo 'id':", currentInvoiceId);
-        alert("No se pudo encontrar la factura para actualizar.");
-      }
+      loadInvoices("pago pendiente");
+      invoiceModal.style.display = "none";
+      alert("Factura marcada como pagada exitosamente");
     } catch (error) {
       console.error("Error al actualizar el estado:", error);
       alert("No se pudo marcar la factura como pagada. Intenta nuevamente.");
@@ -783,31 +947,23 @@ if (data.paymentMethod) {
         }
 
         try {
-          const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
+          await actualizarFacturaEnDia(currentInvoiceId, currentInvoiceData.timestamp, {
+            status: "pagado listo"
+          });
 
-            await doc.ref.update({
-              status: "pagado listo"
-            });
+          await db.collection("historialFacturasGeneradas").add({
+            empleado: selectedEmployee,
+            id: currentInvoiceId,
+            nombreCliente: currentInvoiceData.clientName,
+            numeroTelefono: currentInvoiceData.clientPhone,
+            monto: currentInvoiceData.total,
+            fecha: new Date(),
+            cambioStatus: "Pagado a Pagado Listo"
+          });
 
-            await db.collection("historialFacturasGeneradas").add({
-              empleado: selectedEmployee,
-              id: currentInvoiceId,
-              nombreCliente: currentInvoiceData.clientName,
-              numeroTelefono: currentInvoiceData.clientPhone,
-              monto: currentInvoiceData.total,
-              fecha: new Date(),
-              cambioStatus: "Pagado a Pagado Listo"
-            });
-
-            loadInvoices("pagado");
-            invoiceModal.style.display = "none";
-            alert("Factura marcada como lista exitosamente");
-          } else {
-            console.error("No existe el documento con el campo 'id':", currentInvoiceId);
-            alert("No se pudo encontrar la factura para actualizar.");
-          }
+          loadInvoices("pagado");
+          invoiceModal.style.display = "none";
+          alert("Factura marcada como lista exitosamente");
         } catch (error) {
           console.error("Error al actualizar el estado:", error);
           alert("No se pudo marcar la factura como lista. Intenta nuevamente.");
@@ -817,7 +973,6 @@ if (data.paymentMethod) {
 
     markAsDeliveredButton.onclick = async () => {
       if (currentInvoiceId) {
-        // Check if it's an abono invoice in "pagado listo" status
         if (currentInvoiceData.abonoFact === "yes" && currentInvoiceData.status === "pagado listo") {
           alert("No se puede entregar una ropa sin antes pagar el ABONO RESTANTE");
           return;
@@ -831,31 +986,23 @@ if (data.paymentMethod) {
         }
 
         try {
-          const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
+          await actualizarFacturaEnDia(currentInvoiceId, currentInvoiceData.timestamp, {
+            status: "pagado entregado"
+          });
 
-            await doc.ref.update({
-              status: "pagado entregado"
-            });
+          await db.collection("historialFacturasGeneradas").add({
+            empleado: selectedEmployee,
+            id: currentInvoiceId,
+            nombreCliente: currentInvoiceData.clientName,
+            numeroTelefono: currentInvoiceData.clientPhone,
+            monto: currentInvoiceData.total,
+            fecha: new Date(),
+            cambioStatus: "Pagado Listo a Pagado Entregado"
+          });
 
-            await db.collection("historialFacturasGeneradas").add({
-              empleado: selectedEmployee,
-              id: currentInvoiceId,
-              nombreCliente: currentInvoiceData.clientName,
-              numeroTelefono: currentInvoiceData.clientPhone,
-              monto: currentInvoiceData.total,
-              fecha: new Date(),
-              cambioStatus: "Pagado Listo a Pagado Entregado"
-            });
-
-            loadInvoices("pagado listo");
-            invoiceModal.style.display = "none";
-            alert("Factura marcada como entregada exitosamente");
-          } else {
-            console.error("No existe el documento con el campo 'id':", currentInvoiceId);
-            alert("No se pudo encontrar la factura para actualizar.");
-          }
+          loadInvoices("pagado listo");
+          invoiceModal.style.display = "none";
+          alert("Factura marcada como entregada exitosamente");
         } catch (error) {
           console.error("Error al actualizar el estado:", error);
           alert("No se pudo marcar la factura como entregada. Intenta nuevamente.");
@@ -864,27 +1011,18 @@ if (data.paymentMethod) {
     };
 
     document.getElementById("pendingInvoicesButton").onclick = () => {
-      currentStatus = "pago pendiente"; // Forzar el estado primero
-      updateTitleAndBackground(currentStatus); // Actualizar UI inmediatamente
       loadInvoices("pago pendiente");
     };
 
-    // Hacer lo mismo para los otros botones
     document.getElementById("paidInvoicesButton").onclick = () => {
-      currentStatus = "pagado";
-      updateTitleAndBackground(currentStatus);
       loadInvoices("pagado");
     };
 
     document.getElementById("readyInvoicesButton").onclick = () => {
-      currentStatus = "pagado listo";
-      updateTitleAndBackground(currentStatus);
       loadInvoices("pagado listo");
     };
 
     document.getElementById("deliveredInvoicesButton").onclick = () => {
-      currentStatus = "pagado entregado";
-      updateTitleAndBackground(currentStatus);
       loadInvoices("pagado entregado");
     };
 
@@ -1133,48 +1271,112 @@ if (data.paymentMethod) {
           return;
         }
       } else {
-        // Para Transferencia o Tarjeta de Crédito, el monto del abono es exactamente el pendiente
         montoAbono = currentPendingAmount;
-        cambioAbono = 0; // No hay cambio
+        cambioAbono = 0;
       }
 
-      const querySnapshot = await db.collection("facturas").where("id", "==", currentInvoiceId).get();
-      if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
-        const invoiceData = doc.data();
+      const ahoraTs = firebase.firestore.Timestamp.now();
 
-        const updateData = {
-          amountReceivedAbono2do: montoAbono,
-          amountReceivedAbono2doMethod: selectedPaymentMethod,
-          changeAmountAbonoFire: cambioAbono,
-          status: "pagado",
-          abonoFact: "no",
-          lastPaymentDate: firebase.firestore.FieldValue.serverTimestamp(),
-          amountReceived: invoiceData.amountReceived ? invoiceData.amountReceived : 0 + montoAbono // Sumamos al monto recibido total
+      const updateFields = {
+        amountReceivedAbono2do: montoAbono,
+        amountReceivedAbono2doMethod: selectedPaymentMethod,
+        changeAmountAbonoFire: cambioAbono,
+        status: "pagado",
+        abonoFact: "no",
+        lastPaymentDate: ahoraTs,
+        amountReceived: (currentInvoiceData.amountReceived || 0) + montoAbono
+      };
+
+      // ── Actualizar la factura en su día original ──
+      await actualizarFacturaEnDia(currentInvoiceId, currentInvoiceData.timestamp, updateFields);
+
+      // ── Detectar si el 2do pago es en un día distinto al de creación ──
+      // Si es así, insertar también la factura actualizada en el documento del día de hoy
+      // para que caja.html la encuentre al consultar por fechaString del día actual.
+      const tsOriginal = currentInvoiceData.timestamp && currentInvoiceData.timestamp.toDate
+        ? currentInvoiceData.timestamp.toDate()
+        : (currentInvoiceData.timestamp && currentInvoiceData.timestamp._seconds
+            ? new Date(currentInvoiceData.timestamp._seconds * 1000)
+            : null);
+
+      const tsHoy = ahoraTs.toDate();
+
+      const getRDDateStr = (d) => d.toLocaleDateString('en-CA', { timeZone: 'America/Santo_Domingo' });
+      const diaOriginal = tsOriginal ? getRDDateStr(tsOriginal) : null;
+      const diaHoy = getRDDateStr(tsHoy);
+
+      if (diaOriginal && diaOriginal !== diaHoy) {
+        // El 2do pago cayó en un día distinto → insertar en el documento del día de hoy
+        // La factura lleva el campo _diaOriginal para que facturas-generadas.html
+        // pueda deduplicar y caja.html sepa que es el 2do pago de un abono anterior.
+        const facturaActualizada = {
+          ...currentInvoiceData,
+          ...updateFields,
+          _diaOriginal: diaOriginal  // marca para deduplicación
         };
 
-        await doc.ref.update(updateData);
+        // Sanitizar (eliminar undefined/NaN que Firestore rechaza)
+        const sanitizeObj = (obj) => {
+          if (Array.isArray(obj)) return obj.map(sanitizeObj);
+          if (obj !== null && typeof obj === 'object' && !(obj instanceof firebase.firestore.Timestamp)) {
+            const clean = {};
+            for (const [k, v] of Object.entries(obj)) {
+              if (v === undefined || (typeof v === 'number' && isNaN(v))) continue;
+              clean[k] = sanitizeObj(v);
+            }
+            return clean;
+          }
+          return obj;
+        };
+        const facturaLimpia = sanitizeObj(facturaActualizada);
 
-        await db.collection("historialFacturasGeneradas").add({
-          empleado: selectedEmployee,
-          id: currentInvoiceId,
-          nombreCliente: invoiceData.clientName,
-          numeroTelefono: invoiceData.clientPhone,
-          monto: montoAbono,
-          fecha: new Date(),
-          cambioStatus: "Abono Pagado",
-          paymentMethod: selectedPaymentMethod,
-          amountReceivedAbono2do: montoAbono,
-          changeAmountAbonoFire: cambioAbono
+        await db.runTransaction(async (transaction) => {
+          const diaRef = db.collection("facturas-por-dia").doc(diaHoy);
+          const diaDoc = await transaction.get(diaRef);
+
+          if (diaDoc.exists) {
+            const facturasActuales = diaDoc.data().facturas || [];
+            // Verificar que no esté ya duplicada (por si se llama dos veces)
+            const yaExiste = facturasActuales.some(f => f.id === facturaLimpia.id && f._diaOriginal === diaOriginal);
+            if (!yaExiste) {
+              facturasActuales.push(facturaLimpia);
+              transaction.update(diaRef, {
+                facturas: facturasActuales,
+                ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            }
+          } else {
+            // Crear el documento del día si no existe todavía
+            const fechaInicioDia = new Date(diaHoy + 'T00:00:00-04:00');
+            transaction.set(diaRef, {
+              fecha: firebase.firestore.Timestamp.fromDate(fechaInicioDia),
+              fechaString: diaHoy,
+              facturas: [facturaLimpia],
+              ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }
         });
-
-        const updatedDoc = await doc.ref.get();
-        currentInvoiceData = updatedDoc.data();
-        showInvoiceDetails(currentInvoiceData);
-        alert(`Abono registrado exitosamente!\nMonto: RD$${montoAbono.toFixed(2)}\n${cambioAbono > 0 ? `Cambio: RD$${cambioAbono.toFixed(2)}` : ''}`);
-
-        loadInvoices(currentStatus);
       }
+
+      await db.collection("historialFacturasGeneradas").add({
+        empleado: selectedEmployee,
+        id: currentInvoiceId,
+        nombreCliente: currentInvoiceData.clientName,
+        numeroTelefono: currentInvoiceData.clientPhone,
+        monto: montoAbono,
+        fecha: new Date(),
+        cambioStatus: "Abono Pagado",
+        paymentMethod: selectedPaymentMethod,
+        amountReceivedAbono2do: montoAbono,
+        changeAmountAbonoFire: cambioAbono
+      });
+
+      // Actualizar datos locales
+      Object.assign(currentInvoiceData, updateFields);
+      showInvoiceDetails(currentInvoiceData);
+      alert(`Abono registrado exitosamente!\nMonto: RD$${montoAbono.toFixed(2)}\n${cambioAbono > 0 ? `Cambio: RD$${cambioAbono.toFixed(2)}` : ''}`);
+
+      loadInvoices(currentStatus);
     } catch (error) {
       console.error("Error al procesar abono:", error);
       alert("Error al procesar el abono. Intente nuevamente.");
@@ -1221,17 +1423,13 @@ searchInput.addEventListener("input", () => {
     invoicesBody.innerHTML = "";
 
     if (searchTerm === "") {
-        // Si la búsqueda está vacía, mostrar todas las facturas nuevamente
-        renderInvoices();
-        // Mostrar el botón de cargar más si corresponde
-        if (currentStatus === "pagado entregado" && invoices.length >= 15) {
-            loadMoreContainer.style.display = "block";
-        }
+        filtrarYRenderizar(currentStatus);
         return;
     }
 
-    const filteredInvoices = invoices.filter(invoice => {
-        // Convertir todo a string para la búsqueda
+    // Buscar en todas las facturas del estado actual
+    const pool = todasLasFacturas.filter(f => f.status === currentStatus);
+    const filteredInvoices = pool.filter(invoice => {
         const id = invoice.id.toLowerCase();
         const name = invoice.clientName.toLowerCase();
         const phone = invoice.clientPhone.toLowerCase();
@@ -1294,7 +1492,127 @@ searchInput.addEventListener("input", () => {
     }
 });
 
-    // Limpiar listener al salir
+    // ===== UTILIDAD: Actualizar una factura dentro de facturas-por-dia =====
+    /**
+     * Actualiza campos de una factura específica dentro del array del documento diario.
+     * Si la factura tiene _diaOriginal (copia del 2do pago de abono en día diferente),
+     * actualiza en AMBOS documentos: el día original y el día de la copia.
+     */
+    async function actualizarFacturaEnDia(facturaId, facturaTimestamp, camposActualizar) {
+
+      // Obtener el diaKey del timestamp original de la factura
+      const getDiaKeyDeTimestamp = (ts) => {
+        let fecha = null;
+        if (ts && ts.toDate) fecha = ts.toDate();
+        else if (ts && ts._seconds) fecha = new Date(ts._seconds * 1000);
+        else if (ts && ts.seconds) fecha = new Date(ts.seconds * 1000);
+        if (!fecha) return null;
+        const rdDate = new Date(fecha.toLocaleString('en-US', { timeZone: 'America/Santo_Domingo' }));
+        const yyyy = rdDate.getFullYear();
+        const mm = String(rdDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(rdDate.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      };
+
+      // Función interna: actualizar la factura dentro de un documento de día específico.
+      // Retorna true si encontró y actualizó la factura, false si no estaba en ese doc.
+      const actualizarEnDoc = async (diaKey) => {
+        let encontrada = false;
+        await db.runTransaction(async (transaction) => {
+          const diaRef = db.collection("facturas-por-dia").doc(diaKey);
+          const diaDoc = await transaction.get(diaRef);
+          if (!diaDoc.exists) return;
+
+          const data = diaDoc.data();
+          const facturasActualizadas = (data.facturas || []).map(f => {
+            if (f.id === facturaId) {
+              encontrada = true;
+              return { ...f, ...camposActualizar };
+            }
+            return f;
+          });
+          if (encontrada) {
+            transaction.update(diaRef, { facturas: facturasActualizadas });
+          }
+        });
+        return encontrada;
+      };
+
+      // 1. Determinar el diaKey del día original por timestamp
+      let diaKeyOriginal = getDiaKeyDeTimestamp(facturaTimestamp);
+
+      // 2. Verificar que el timestamp calculado realmente contenga la factura.
+      //    Si no (timestamp fue sobreescrito al pagar), buscar en todos los documentos.
+      let verificado = false;
+      if (diaKeyOriginal) {
+        try {
+          const docVerif = await db.collection("facturas-por-dia").doc(diaKeyOriginal).get();
+          if (docVerif.exists && (docVerif.data().facturas || []).some(f => f.id === facturaId && !f._diaOriginal)) {
+            verificado = true;
+          }
+        } catch(e) { /* continuar con búsqueda fallback */ }
+      }
+
+      if (!verificado) {
+        // Buscar en todos los documentos de días
+        const snapshot = await db.collection("facturas-por-dia").orderBy("fecha", "desc").get();
+        for (const doc of snapshot.docs) {
+          const data = doc.data();
+          if (data.facturas && data.facturas.some(f => f.id === facturaId && !f._diaOriginal)) {
+            diaKeyOriginal = doc.id;
+            verificado = true;
+            break;
+          }
+        }
+      }
+
+      if (!diaKeyOriginal || !verificado) {
+        throw new Error(`No se encontró el día para la factura ${facturaId}`);
+      }
+
+      // 3. Actualizar en el documento del día original
+      await actualizarEnDoc(diaKeyOriginal);
+
+      // 3. Si la factura tiene _diaOriginal en memoria local, significa que hay una copia
+      //    en el documento del día del 2do pago — actualizar también ahí.
+      const facturaEnMemoria = todasLasFacturas.find(f => f.id === facturaId);
+      if (facturaEnMemoria && facturaEnMemoria._diaOriginal) {
+        // La copia vive en el documento cuyo diaKey es el lastPaymentDate
+        const tsLastPayment = facturaEnMemoria.lastPaymentDate;
+        const diaKeyCopia = getDiaKeyDeTimestamp(tsLastPayment);
+        if (diaKeyCopia && diaKeyCopia !== diaKeyOriginal) {
+          await actualizarEnDoc(diaKeyCopia);
+        }
+      } else {
+        // También buscar si existe algún documento de día diferente que tenga
+        // una copia de esta factura con _diaOriginal (por si no está en memoria)
+        const rdHoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Santo_Domingo' });
+        if (rdHoy !== diaKeyOriginal) {
+          // Revisar el doc de hoy por si tiene una copia
+          try {
+            const docHoy = await db.collection("facturas-por-dia").doc(rdHoy).get();
+            if (docHoy.exists) {
+              const tieneCopia = (docHoy.data().facturas || []).some(
+                f => f.id === facturaId && f._diaOriginal
+              );
+              if (tieneCopia) {
+                await actualizarEnDoc(rdHoy);
+              }
+            }
+          } catch (e) {
+            // Si falla la búsqueda en el doc de hoy, continuar sin error
+            console.warn("No se pudo verificar copia en doc de hoy:", e);
+          }
+        }
+      }
+
+      // 4. Actualizar también en memoria local
+      const idx = todasLasFacturas.findIndex(f => f.id === facturaId);
+      if (idx !== -1) {
+        Object.assign(todasLasFacturas[idx], camposActualizar);
+      }
+    }
+
     window.addEventListener("beforeunload", () => {
       if (unsubscribe) {
         unsubscribe();
