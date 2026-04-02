@@ -19,7 +19,7 @@ class LaundryMenu extends HTMLElement {
                         <img src="./img/Paris Laundry 1.png" alt="Logo">
                         <div>
                         <h1>Paris Laundry</h1>
-                        <h2 class="admin-only">CHARLES</h2>
+                        <h2 class="admin-only">ALMA ROSA</h2>
                         </div>
                     </div>
                     <div class="linediv"></div>
