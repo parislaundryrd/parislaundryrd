@@ -454,10 +454,44 @@
     }
   };
 
+  // ── Carga de facturas PENDIENTES desde la colección facturas-pendiente ──
+  const loadFacturasPendientes = async () => {
+    todasLasFacturas = [];
+    invoicesBody.innerHTML = "";
+    loadMoreContainer.style.display = "none";
+    noMoreInvoices.style.display = "none";
+    document.getElementById("noInvoicesMessage").classList.add("hidden");
+
+    try {
+      const snapshot = await db.collection("facturas-pendiente")
+        .where("statusPendiente", "==", "pendiente")
+        .orderBy("timestamp", "desc")
+        .get();
+
+      const nuevas = [];
+      snapshot.forEach(doc => {
+        const factura = doc.data();
+        normalizarTimestamp(factura);
+        nuevas.push(factura);
+      });
+
+      deduplicarFacturas(todasLasFacturas, nuevas);
+      invoices = todasLasFacturas;
+      renderInvoices();
+      updateTitleAndBackground("pago pendiente");
+
+    } catch (error) {
+      console.error("Error al cargar facturas pendientes:", error);
+      alert("Error al cargar facturas pendientes. Intente nuevamente.");
+    }
+  };
+
   // ── Función principal de carga: delega según el status ──
   const loadInvoices = async (status, loadMore = false) => {
     currentStatus = status;
-    if (status === "pagado entregado") {
+    if (status === "pago pendiente") {
+      await loadFacturasPendientes();
+    } else if (status === "pagado entregado") {
       await loadEntregadas(loadMore);
     } else {
       await loadInvoicesSinPaginacion(status);
@@ -470,38 +504,49 @@
   };
 
   // ===== CONTADORES EN TIEMPO REAL =====
-  // Escuchar en tiempo real los últimos 60 días para contar por estado
+  // Pendientes: escuchar facturas-pendiente
+  // Pagado/Listo: escuchar facturas-por-dia
   let unsubscribeContadores = null;
+  let unsubscribeContadoresPendiente = null;
 
   const iniciarContadoresRealTime = () => {
     if (unsubscribeContadores) unsubscribeContadores();
+    if (unsubscribeContadoresPendiente) unsubscribeContadoresPendiente();
 
+    // Contador de pendientes desde facturas-pendiente
+    unsubscribeContadoresPendiente = db.collection('facturas-pendiente')
+      .where('statusPendiente', '==', 'pendiente')
+      .onSnapshot((snapshot) => {
+        const pendiente = snapshot.size;
+        const elPendienteDup = document.getElementById("facturasCountPendienteDup");
+        if (elPendienteDup) { elPendienteDup.textContent = pendiente; elPendienteDup.style.display = pendiente > 0 ? "inline" : "none"; }
+      }, (error) => {
+        console.error("Error en contadores pendientes:", error);
+      });
+
+    // Contador de pagado y listo desde facturas-por-dia
     unsubscribeContadores = db.collection('facturas-por-dia')
       .onSnapshot((snapshot) => {
-        let pendiente = 0, pagado = 0, listo = 0;
+        let pagado = 0, listo = 0;
 
-        // Calcular fecha de hoy en RD para no contar docs futuros
         const rdNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santo_Domingo' }));
         const hoy = `${rdNow.getFullYear()}-${String(rdNow.getMonth()+1).padStart(2,'0')}-${String(rdNow.getDate()).padStart(2,'0')}`;
 
         snapshot.forEach(doc => {
           const data = doc.data();
           const docFecha = data.fechaString || doc.id;
-          if (docFecha > hoy) return; // saltar docs futuros
+          if (docFecha > hoy) return;
 
           (data.facturas || []).forEach(f => {
-            if (f._diaOriginal) return; // copia del 2do pago de abono — no contar
-            if (f.status === 'pago pendiente') pendiente++;
+            if (f._diaOriginal) return;
             else if (f.status === 'pagado') pagado++;
             else if (f.status === 'pagado listo') listo++;
           });
         });
 
-        const elPendienteDup = document.getElementById("facturasCountPendienteDup");
         const elPagadoDup = document.getElementById("facturasCountPagadoDup");
         const elListoDup = document.getElementById("facturasCountPagadoListoDup");
 
-        if (elPendienteDup) { elPendienteDup.textContent = pendiente; elPendienteDup.style.display = pendiente > 0 ? "inline" : "none"; }
         if (elPagadoDup) { elPagadoDup.textContent = pagado; elPagadoDup.style.display = pagado > 0 ? "inline" : "none"; }
         if (elListoDup) { elListoDup.textContent = listo; elListoDup.style.display = listo > 0 ? "inline" : "none"; }
       }, (error) => {
@@ -898,21 +943,71 @@ if (data.paymentMethod) {
         change = 0;
       }
 
-      // Actualizar en facturas-por-dia
-      // IMPORTANTE: NO sobreescribir timestamp (es la fecha de creación y se usa
-      // para localizar el documento del día en Firestore). Guardar la fecha de pago
-      // en paymentDate y lastPaymentDate para no romper la búsqueda del documento.
-      // lastPaymentDate es usado por caja.html para filtrar la factura dentro del
-      // rango de caja correcto (el momento en que se marcó como pagada).
       const ahoraPago = firebase.firestore.Timestamp.now();
-      await actualizarFacturaEnDia(currentInvoiceId, currentInvoiceData.timestamp, {
+
+      // Día actual en hora RD (momento en que se marca como pagada)
+      const rdNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santo_Domingo' }));
+      const diaHoy = `${rdNow.getFullYear()}-${String(rdNow.getMonth()+1).padStart(2,'0')}-${String(rdNow.getDate()).padStart(2,'0')}`;
+
+      // Construir la factura actualizada con status pagado y datos de pago
+      const facturaActualizada = {
+        ...currentInvoiceData,
         status: "pagado",
         paymentMethod: selectedPaymentMethod,
         amountReceived: amountReceived,
         changeAmount: change,
         paymentDate: ahoraPago,
-        lastPaymentDate: ahoraPago
+        lastPaymentDate: ahoraPago,
+        diaKeyPago: diaHoy
+      };
+      // Eliminar campos internos de facturas-pendiente que no van en facturas-por-dia
+      delete facturaActualizada.statusPendiente;
+      delete facturaActualizada.diaKeyCreacion;
+
+      // Sanitizar — Firestore rechaza undefined/NaN
+      const sanitize = (obj) => {
+        if (Array.isArray(obj)) return obj.map(sanitize);
+        if (obj && typeof obj === 'object' && !(obj instanceof firebase.firestore.Timestamp)) {
+          const clean = {};
+          for (const [k, v] of Object.entries(obj)) {
+            if (v === undefined || (typeof v === 'number' && isNaN(v))) continue;
+            clean[k] = sanitize(v);
+          }
+          return clean;
+        }
+        return obj;
+      };
+      const facturaClean = sanitize(facturaActualizada);
+
+      // ===== INSERTAR EN facturas-por-dia DEL DÍA ACTUAL =====
+      await db.runTransaction(async (transaction) => {
+        const diaRef = db.collection("facturas-por-dia").doc(diaHoy);
+        const diaDoc = await transaction.get(diaRef);
+
+        if (diaDoc.exists) {
+          const facturasActuales = diaDoc.data().facturas || [];
+          // Evitar duplicados por si se llama dos veces
+          if (!facturasActuales.some(f => f.id === currentInvoiceId)) {
+            facturasActuales.push(facturaClean);
+            transaction.update(diaRef, {
+              facturas: facturasActuales,
+              ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }
+        } else {
+          const fechaInicioDia = new Date(diaHoy + 'T00:00:00-04:00');
+          transaction.set(diaRef, {
+            fecha: firebase.firestore.Timestamp.fromDate(fechaInicioDia),
+            fechaString: diaHoy,
+            facturas: [facturaClean],
+            ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
       });
+
+      // ===== ELIMINAR DE facturas-pendiente =====
+      await db.collection("facturas-pendiente").doc(currentInvoiceId).delete();
+      // ===== FIN =====
 
       await db.collection("historialFacturasGeneradas").add({
         empleado: selectedEmployee,
@@ -1616,6 +1711,9 @@ searchInput.addEventListener("input", () => {
     window.addEventListener("beforeunload", () => {
       if (unsubscribe) {
         unsubscribe();
+      }
+      if (unsubscribeContadoresPendiente) {
+        unsubscribeContadoresPendiente();
       }
     });
 

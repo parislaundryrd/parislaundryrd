@@ -1483,14 +1483,13 @@ const verificarEstadoCaja = async () => {
       };
 
       try {
-        // ===== NUEVA LÓGICA: Guardar en facturas-por-dia =====
-        // Fecha en hora RD (America/Santo_Domingo) de forma confiable
+        // Fecha en hora RD (America/Santo_Domingo)
         const now = new Date();
         const rdDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Santo_Domingo' }));
         const yyyy = rdDate.getFullYear();
         const mm = String(rdDate.getMonth() + 1).padStart(2, '0');
         const dd = String(rdDate.getDate()).padStart(2, '0');
-        const diaKey = `${yyyy}-${mm}-${dd}`; // YYYY-MM-DD en hora RD
+        const diaKey = `${yyyy}-${mm}-${dd}`;
 
         const invoiceId = invoiceData.id;
 
@@ -1509,39 +1508,49 @@ const verificarEstadoCaja = async () => {
         };
         const invoiceDataClean = sanitizeObj(invoiceData);
 
-        await db.runTransaction(async (transaction) => {
-          const diaRef = db.collection("facturas-por-dia").doc(diaKey);
-          const diaDoc = await transaction.get(diaRef);
+        // ===== BIFURCACIÓN SEGÚN STATUS =====
+        if (invoiceDataClean.status === "pago pendiente") {
+          // PAGO PENDIENTE: solo guarda en facturas-pendiente, NUNCA en facturas-por-dia
+          await db.collection("facturas-pendiente").doc(invoiceDataClean.id).set({
+            ...invoiceDataClean,
+            diaKeyCreacion: diaKey,
+            statusPendiente: "pendiente"
+          });
+        } else {
+          // PAGADO / ABONO: guardar en facturas-por-dia normalmente
+          await db.runTransaction(async (transaction) => {
+            const diaRef = db.collection("facturas-por-dia").doc(diaKey);
+            const diaDoc = await transaction.get(diaRef);
 
-          const estadisticasPrevias = diaDoc.exists ? diaDoc.data().estadisticas : null;
-          const nuevasEstadisticas = calcularEstadisticasDiarias(invoiceDataClean, estadisticasPrevias);
+            const estadisticasPrevias = diaDoc.exists ? diaDoc.data().estadisticas : null;
+            const nuevasEstadisticas = calcularEstadisticasDiarias(invoiceDataClean, estadisticasPrevias);
 
-          if (diaDoc.exists) {
-            // Leer array actual y agregar nueva factura manualmente
-            // (arrayUnion no funciona con objetos complejos que contengan Timestamps)
-            const facturasActuales = diaDoc.data().facturas || [];
-            facturasActuales.push(invoiceDataClean);
-            transaction.update(diaRef, {
-              facturas: facturasActuales,
-              estadisticas: nuevasEstadisticas,
-              ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
-            });
-          } else {
-            const fechaInicioDia = new Date(diaKey + 'T00:00:00-04:00');
-            transaction.set(diaRef, {
-              fecha: firebase.firestore.Timestamp.fromDate(fechaInicioDia),
-              fechaString: diaKey,
-              facturas: [invoiceDataClean],
-              estadisticas: nuevasEstadisticas,
-              ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
-            });
-          }
-        });
+            if (diaDoc.exists) {
+              const facturasActuales = diaDoc.data().facturas || [];
+              facturasActuales.push(invoiceDataClean);
+              transaction.update(diaRef, {
+                facturas: facturasActuales,
+                estadisticas: nuevasEstadisticas,
+                ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            } else {
+              const fechaInicioDia = new Date(diaKey + 'T00:00:00-04:00');
+              transaction.set(diaRef, {
+                fecha: firebase.firestore.Timestamp.fromDate(fechaInicioDia),
+                fechaString: diaKey,
+                facturas: [invoiceDataClean],
+                estadisticas: nuevasEstadisticas,
+                ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            }
+          });
 
-        // Actualizar estadísticas mensuales en segundo plano (sin bloquear)
-        actualizarEstadisticasMensuales(diaKey).catch(err =>
-          console.warn("Error actualizando estadísticas mensuales:", err)
-        );
+          // Actualizar estadísticas mensuales en segundo plano
+          actualizarEstadisticasMensuales(diaKey).catch(err =>
+            console.warn("Error actualizando estadísticas mensuales:", err)
+          );
+        }
+        // ===== FIN BIFURCACIÓN =====
 
         document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
 
@@ -1690,18 +1699,20 @@ const verificarEstadoCaja = async () => {
 
     const getLastInvoiceId = async () => {
       let lastId = "ar00000";
-      const snapshot = await db.collection("facturas-por-dia")
+
+      // Buscar el último ID en facturas-por-dia (últimos 10 días)
+      const snapshotDias = await db.collection("facturas-por-dia")
         .orderBy("fecha", "desc")
         .limit(10)
         .get();
 
-      if (!snapshot.empty) {
-        for (const doc of snapshot.docs) {
+      if (!snapshotDias.empty) {
+        for (const doc of snapshotDias.docs) {
           const data = doc.data();
           if (data.facturas && data.facturas.length > 0) {
             const ids = data.facturas
               .map(f => f.id)
-              .filter(id => id && (id.startsWith('ar') || id.startsWith('ch')));
+              .filter(id => id && id.startsWith('ar'));
             for (const id of ids) {
               if (parseInt(id.substring(2)) > parseInt(lastId.substring(2))) {
                 lastId = id;
@@ -1710,6 +1721,20 @@ const verificarEstadoCaja = async () => {
           }
         }
       }
+
+      // También revisar facturas-pendiente para no generar IDs duplicados
+      const snapshotPendientes = await db.collection("facturas-pendiente").get();
+      if (!snapshotPendientes.empty) {
+        snapshotPendientes.forEach(doc => {
+          const id = doc.id;
+          if (id && id.startsWith('ar')) {
+            if (parseInt(id.substring(2)) > parseInt(lastId.substring(2))) {
+              lastId = id;
+            }
+          }
+        });
+      }
+
       return lastId;
     };
 
