@@ -250,6 +250,7 @@
               <option value="factura_efectivo">Facturas — Efectivo</option>
               <option value="factura_transferencia">Facturas — Transferencia</option>
               <option value="factura_tarjeta">Facturas — Tarjeta de Crédito</option>
+              <option value="factura_pendiente">Facturas — Pago Pendiente</option>
             </select>
           </div>
 
@@ -978,6 +979,29 @@
         });
       } catch (e) { console.error('Error facturas:', e); }
 
+      // ── 4. Facturas pendientes (colección facturas-pendiente)
+      try {
+        const snapPend = await db.collection('facturas-pendiente').get();
+        snapPend.forEach(doc => {
+          const f = doc.data();
+          const date = toDate(f.timestamp);
+          if (!date) return;
+          // Filtrar por rango de fechas igual que las demás
+          if (date < startDate || date > endDate) return;
+          const monto = parseFloat(f.total) || 0;
+          txList.push({
+            id: f.id, type: 'income', amount: monto, date,
+            details: `Factura | ${f.clientName} | ${f.clientPhone} | ${f.NombreEmpleado}`,
+            clientName: f.clientName, clientPhone: f.clientPhone, clientAddress: f.clientAddress,
+            NombreEmpleado: f.NombreEmpleado, deliveryOption: f.deliveryOption,
+            paymentMethod: f.paymentMethod || '', invoiceStatus: f.status || 'pago pendiente',
+            _source: 'factura_pendiente', _docId: doc.id
+          });
+          // Las pendientes NO suman a totalIncome (aún no cobradas)
+          facturasData.push(f);
+        });
+      } catch (e) { console.error('Error facturas-pendiente:', e); }
+
       // Dedup por id (por si hay duplicados legado+nuevo)
       const seen = new Set();
       const txDedup = txList.filter(t => { if (seen.has(t.id)) return false; seen.add(t.id); return true; });
@@ -1021,6 +1045,8 @@
           if (item._source !== 'factura') return;
           const m = (item.paymentMethod || '').toLowerCase();
           if (!m.includes('tarjeta')) return;
+        } else if (typeFilter === 'factura_pendiente') {
+          if (item._source !== 'factura_pendiente' && (item._source !== 'factura' || (item.invoiceStatus || '').toLowerCase() !== 'pago pendiente')) return;
         } else if (typeFilter !== 'all' && item.type !== typeFilter) return;
 
         if (term && !`${item.id || ''} ${item.details || ''} ${item.amount}`.toLowerCase().includes(term)) return;
@@ -1035,16 +1061,16 @@
         const amtColor = item.type === 'income' ? 'var(--teal)' : 'var(--rose)';
         const amtSign = item.type === 'income' ? '+' : '−';
         const srcIcon = {
-          factura: '🧾', transaccion: '💳', transaccion_legada: '💳',
+          factura: '🧾', factura_pendiente: '⏳', transaccion: '💳', transaccion_legada: '💳',
           pago_empleado: '👤', pago_empleado_legado: '👤'
         }[item._source] || '•';
 
         // Sub-label de método de pago para facturas (debajo del pill de tipo)
         let paySubLabel = '';
-        if (item._source === 'factura') {
+        if (item._source === 'factura' || item._source === 'factura_pendiente') {
           const m = (item.paymentMethod || '').toLowerCase();
           const s = (item.invoiceStatus || '').toLowerCase();
-          if (s === 'pago pendiente') {
+          if (s === 'pago pendiente' || item._source === 'factura_pendiente') {
             paySubLabel = '<div style="display: inline-block;font-size: 0.8rem;padding: 1px 6px;border-radius: 20px;background: #fef4db;color: #dd7435;font-weight: 600;vertical-align: middle;">⏳ Pendiente</div>';
           } else if (m === 'efectivo') {
             paySubLabel = '<div style="display: inline-block;font-size: 0.8rem;padding: 1px 6px;border-radius: 20px;background: #e7fedb;color: #0a8562;font-weight: 600;vertical-align: middle;">💵 Efectivo</div>';
@@ -1068,7 +1094,7 @@
         cb.addEventListener('change', () => { tr.style.background = cb.checked ? '' : 'rgba(255,255,255,0.02)'; recalcTxSummary(); });
         tr.addEventListener('click', e => {
           if (e.target === cb) return;
-          if (item._source === 'factura') openEditInvoiceModal(item);
+          if (item._source === 'factura' || item._source === 'factura_pendiente') openEditInvoiceModal(item);
           else if (item._source === 'pago_empleado') openEditPagoEmpleadoModal(item);
           else if (item._source === 'pago_empleado_legado') openEditPagoEmpleadoModal(item);
           else openEditTransactionModal(item);
@@ -1694,6 +1720,8 @@
     // ═══════════════════════════════════════════════════════════════
     const openEditInvoiceModal = (inv) => {
       document.getElementById('editInvoiceId').value = inv.id;
+      document.getElementById('editInvoiceId').dataset.source = inv._source || 'factura';
+      document.getElementById('editInvoiceId').dataset.docId = inv._docId || '';
       document.getElementById('editClientName').value = inv.clientName || '';
       document.getElementById('editClientPhone').value = inv.clientPhone || '';
       document.getElementById('editClientAddress').value = inv.clientAddress || '';
@@ -1711,32 +1739,50 @@
     document.getElementById('cancelEditInvoice').addEventListener('click', () => closeModal('editInvoiceModal'));
 
     document.getElementById('saveInvoiceButton').addEventListener('click', async () => {
-      const id = document.getElementById('editInvoiceId').value;
+      const el = document.getElementById('editInvoiceId');
+      const id = el.value;
+      const source = el.dataset.source || 'factura';
+      const docId = el.dataset.docId || id;
+      const campos = {
+        clientName: document.getElementById('editClientName').value,
+        clientPhone: document.getElementById('editClientPhone').value,
+        clientAddress: document.getElementById('editClientAddress').value,
+        NombreEmpleado: document.getElementById('editEmployeeName').value,
+        deliveryOption: [{ name: document.getElementById('editDeliveryName').value, price: document.getElementById('editDeliveryPrice').value }]
+      };
       try {
-        await actualizarFacturaEnDia(id, {
-          clientName: document.getElementById('editClientName').value,
-          clientPhone: document.getElementById('editClientPhone').value,
-          clientAddress: document.getElementById('editClientAddress').value,
-          NombreEmpleado: document.getElementById('editEmployeeName').value,
-          deliveryOption: [{ name: document.getElementById('editDeliveryName').value, price: document.getElementById('editDeliveryPrice').value }]
-        });
+        if (source === 'factura_pendiente') {
+          await db.collection('facturas-pendiente').doc(docId).update(campos);
+        } else {
+          await actualizarFacturaEnDia(id, campos);
+        }
         alert('Factura actualizada.'); closeModal('editInvoiceModal'); loadAll();
       } catch (e) { console.error(e); alert('Error: ' + e.message); }
     });
     document.getElementById('deleteInvoiceButton').addEventListener('click', async () => {
       if (!confirm('¿Eliminar esta factura? Se archivará en la base de datos por seguridad.')) return;
-      const id = document.getElementById('editInvoiceId').value;
+      const el = document.getElementById('editInvoiceId');
+      const id = el.value;
+      const source = el.dataset.source || 'factura';
+      const docId = el.dataset.docId || id;
       try {
-        // 1. Obtener datos completos antes de eliminar
-        const resultado = await buscarFacturaCompleta(id);
-        const datosFactura = resultado ? resultado.factura : { id, _nota: 'datos no recuperados' };
-
-        // 2. Archivar en facturas_eliminadas/facturas
-        await archivarEnEliminadas('facturas', datosFactura);
-
-        // 3. Eliminar de facturas-por-dia
-        await eliminarFacturaDeDia(id);
-
+        if (source === 'factura_pendiente') {
+          // 1. Obtener datos antes de eliminar
+          const snap = await db.collection('facturas-pendiente').doc(docId).get();
+          const datosFactura = snap.exists ? snap.data() : { id, _nota: 'datos no recuperados' };
+          // 2. Archivar
+          await archivarEnEliminadas('facturas', datosFactura);
+          // 3. Eliminar de facturas-pendiente
+          await db.collection('facturas-pendiente').doc(docId).delete();
+        } else {
+          // 1. Obtener datos completos antes de eliminar
+          const resultado = await buscarFacturaCompleta(id);
+          const datosFactura = resultado ? resultado.factura : { id, _nota: 'datos no recuperados' };
+          // 2. Archivar en facturas_eliminadas/facturas
+          await archivarEnEliminadas('facturas', datosFactura);
+          // 3. Eliminar de facturas-por-dia
+          await eliminarFacturaDeDia(id);
+        }
         alert('Factura eliminada.'); closeModal('editInvoiceModal'); loadAll();
       } catch (e) { console.error(e); alert('Error: ' + e.message); }
     });
