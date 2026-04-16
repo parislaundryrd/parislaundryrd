@@ -19,7 +19,7 @@ class LaundryMenu extends HTMLElement {
                         <img src="./img/Paris Laundry 1.png" alt="Logo">
                         <div>
                         <h1>Paris Laundry</h1>
-                        <h2 class="admin-only">ALMA ROSA</h2>
+                        <h2>ALMA ROSA</h2>
                         </div>
                     </div>
                     <div class="linediv"></div>
@@ -31,7 +31,7 @@ class LaundryMenu extends HTMLElement {
                     <div class="btn_count_box">
                         <button><a href="facturas-generadas.html">Facturas Generadas</a></button>
                         <div class="facturas-count-box">
-                            <div class="facturas-count" id="facturasCountPendiente">0</div>
+                            <div class="facturas-count facturas-count--pendiente" id="facturasCountPendiente" title="Pagos Pendientes"><span id="facturasCountPendienteNum">0</span></div>
                             <div class="facturas-count" id="facturasCountPagado">0</div>
                             <div class="facturas-count" id="facturasCountPagadoListo">0</div>
                         </div>
@@ -231,33 +231,34 @@ class LaundryMenu extends HTMLElement {
     }
 
     loadFacturasCount() {
-        // Escuchar en tiempo real TODA la colección facturas-por-dia
-        // sin filtrar por fecha — así funciona aunque el campo fechaString
-        // no exista en documentos antiguos o no haya índice creado.
+        // Contador de pagos pendientes desde la colección dedicada "facturas-pendiente"
+        this.unsubscribePendiente = db.collection('facturas-pendiente')
+            .onSnapshot((snapshot) => {
+                this.updateDisplay('facturasCountPendiente', snapshot.size);
+            }, (error) => {
+                console.error("Error al obtener contadores de pendientes:", error);
+            });
+
+        // Contadores de pagado / pagado listo desde "facturas-por-dia"
         this.unsubscribeFacturasCount = db.collection('facturas-por-dia')
             .onSnapshot((snapshot) => {
-                let pendiente = 0, pagado = 0, pagadoListo = 0;
+                let pagado = 0, pagadoListo = 0;
 
-                // Calcular fecha de hoy en RD para excluir docs futuros (seguridad)
                 const rdNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santo_Domingo' }));
                 const hoy = `${rdNow.getFullYear()}-${String(rdNow.getMonth()+1).padStart(2,'0')}-${String(rdNow.getDate()).padStart(2,'0')}`;
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    // Respetar solo docs de hoy hacia atrás usando el ID del doc (YYYY-MM-DD)
-                    // o el campo fechaString si existe; si no existe ninguno, incluir igual.
                     const docFecha = data.fechaString || doc.id;
-                    if (docFecha > hoy) return; // saltar docs futuros
+                    if (docFecha > hoy) return;
 
                     (data.facturas || []).forEach(f => {
-                        if (f._diaOriginal) return; // copia del 2do pago de abono — no contar
-                        if (f.status === 'pago pendiente') pendiente++;
-                        else if (f.status === 'pagado') pagado++;
+                        if (f._diaOriginal) return;
+                        if (f.status === 'pagado') pagado++;
                         else if (f.status === 'pagado listo') pagadoListo++;
                     });
                 });
 
-                this.updateDisplay('facturasCountPendiente', pendiente);
                 this.updateDisplay('facturasCountPagado', pagado);
                 this.updateDisplay('facturasCountPagadoListo', pagadoListo);
             }, (error) => {
@@ -266,16 +267,19 @@ class LaundryMenu extends HTMLElement {
     }
 
     updateDisplay(elementId, count) {
-        // CORRECCIÓN: usar this.querySelector() — los elementos viven dentro
-        // del Web Component y document.getElementById() no los encuentra siempre.
         const element = this.querySelector('#' + elementId);
         if (element) {
-            element.textContent = count;
-            element.style.display = count > 0 ? 'block' : 'none';
+            // Para el contador de pendientes, actualizar el span interno
+            if (elementId === 'facturasCountPendiente') {
+                const numSpan = this.querySelector('#facturasCountPendienteNum');
+                if (numSpan) numSpan.textContent = count;
+                element.style.display = count > 0 ? 'inline-flex' : 'none';
+            } else {
+                element.textContent = count;
+                element.style.display = count > 0 ? 'block' : 'none';
+            }
         }
 
-        // Los elementos Dup están en facturas-generadas.html (otra página),
-        // se actualizan desde su propio onSnapshot independiente.
         const dupElement = document.getElementById(elementId + 'Dup');
         if (dupElement) {
             dupElement.textContent = count;
@@ -404,9 +408,8 @@ class LaundryMenu extends HTMLElement {
     }
 
     disconnectedCallback() {
-        if (this.unsubscribeFacturasCount) {
-            this.unsubscribeFacturasCount();
-        }
+        if (this.unsubscribePendiente) this.unsubscribePendiente();
+        if (this.unsubscribeFacturasCount) this.unsubscribeFacturasCount();
     }
 }
 

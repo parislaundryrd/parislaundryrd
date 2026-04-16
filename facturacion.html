@@ -1035,6 +1035,11 @@ ${asumirPor !== "desactivado" ? `
             }
             updateProductTotal(inputField, totalDisplay, data.precio);
           });
+
+          // Evitar que el scroll cambie el valor del input
+          inputField.addEventListener("wheel", (e) => {
+            e.preventDefault();
+          }, { passive: false });
         });
       });
     };
