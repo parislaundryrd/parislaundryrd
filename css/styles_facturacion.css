@@ -1417,3 +1417,96 @@ input[type="text"] {
   }
 
 }
+
+/* Campos de identificación fiscal del cliente */
+.cliente-identificadores {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+}
+
+.cliente-identificador {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.cliente-identificador > label {
+  display: block;
+  font-family: sans-serif;
+  padding: 0 0 0 2px;
+}
+
+.cliente-identificador-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 42px;
+  margin-top: 7px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #f2d5ef;
+  box-sizing: border-box;
+}
+
+.cliente-identificador-control input,
+.cliente-identificador-control input[type="text"] {
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0 12px 0 14px;
+  border: 0 !important;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: #333;
+  font: inherit;
+  font-size: 18px;
+  box-sizing: border-box;
+}
+
+.cliente-identificador-control input::placeholder {
+  color: #777;
+  opacity: 1;
+}
+
+.cliente-identificador-control:focus-within {
+  box-shadow: 0 0 0 1px #d99bd3 inset;
+}
+
+.cliente-identificador-icon {
+  display: flex;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  background: #fdabf7;
+}
+
+.cliente-identificador-icon svg {
+  display: block;
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: #0083e2;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 700px) {
+  .cliente-identificadores {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .cliente-identificador-control {
+    margin-bottom: 7px;
+  }
+}

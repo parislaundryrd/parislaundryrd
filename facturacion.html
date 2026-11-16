@@ -139,11 +139,31 @@
                 </div>
               </div>
             </div>
-            <div>
-              <label for="direccionCliente">Dirección del Cliente:</label>
-              <div class="input-numeroContacto">
-                <input type="text" id="clientAddress" placeholder="Dirección" required maxlength="100">
-                <div class="cantidad-img"><img src="./img/icon/direccion_1.png"></div>
+            <div class="nombre_div_telefono cliente-identificadores">
+              <div class="cliente-identificador">
+                <label for="clientRNC">Registro Nacional de Contribuyente (RCN):</label>
+                <div class="cliente-identificador-control">
+                  <span class="cliente-identificador-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img" focusable="false">
+                      <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                      <circle cx="8" cy="10" r="2"></circle>
+                      <path d="M5.5 16c.7-2 4.3-2 5 0M13 9h5M13 13h5M13 17h3"></path>
+                    </svg>
+                  </span>
+                  <input type="text" id="clientRNC" placeholder="Registro Nacional de Contribuyente (RCN)" maxlength="20">
+                </div>
+              </div>
+              <div class="cliente-identificador">
+                <label for="clientNCF">Número de Comprobante Fiscal (NCF):</label>
+                <div class="cliente-identificador-control">
+                  <span class="cliente-identificador-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img" focusable="false">
+                      <path d="M6 3h8l4 4v14H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"></path>
+                      <path d="M14 3v5h5M8 12h8M8 16h8M8 8h2"></path>
+                    </svg>
+                  </span>
+                  <input type="text" id="clientNCF" placeholder="Número de Comprobante Fiscal (NCF)" maxlength="20">
+                </div>
               </div>
             </div>
 
@@ -787,7 +807,8 @@
     const updateInvoicePreview = () => {
       const clientName = document.getElementById("clientName").value || "Sin nombre";
       const clientPhone = document.getElementById("clientPhone").value || "Sin teléfono";
-      const clientAddress = document.getElementById("clientAddress").value || "Sin dirección";
+      const clientRNC = document.getElementById("clientRNC").value || "No especificado";
+      const clientNCF = document.getElementById("clientNCF").value || "No especificado";
 
       const selectedDelivery = deliverySelection.querySelector("button.active");
       const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
@@ -850,7 +871,7 @@
       <strong>Teléfono:</strong> ${clientPhone} </div>
 
     <div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;">
-      <strong>Dirección:</strong> ${clientAddress} </div>
+      <strong>RCN:</strong> ${clientRNC}<br><strong>NCF:</strong> ${clientNCF} </div>
 
     ${hampers.length > 0 || otrosServicios.length > 0 ? `
       <br><strong>Servicios:</strong>
@@ -1444,7 +1465,8 @@ const verificarEstadoCaja = async () => {
         id: generateNewInvoiceId(_lastId),
         clientName: document.getElementById("clientName").value.trim() || "",
         clientPhone: document.getElementById("clientPhone").value.replace(/-/g, '') || "",
-        clientAddress: document.getElementById("clientAddress").value.trim() || "",
+        clientRNC: document.getElementById("clientRNC").value.trim() || "",
+        clientNCF: document.getElementById("clientNCF").value.trim() || "",
         NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text || "",
         selectedServices: hampers.map(hamper => {
           const weight = parseInt(hamper.weightInput.value);
@@ -1825,7 +1847,8 @@ const verificarEstadoCaja = async () => {
 
     document.getElementById("clientName").addEventListener("input", updateInvoicePreview);
     document.getElementById("clientPhone").addEventListener("input", updateInvoicePreview);
-    document.getElementById("clientAddress").addEventListener("input", updateInvoicePreview);
+    document.getElementById("clientRNC").addEventListener("input", updateInvoicePreview);
+    document.getElementById("clientNCF").addEventListener("input", updateInvoicePreview);
 
     loadServices();
     loadDeliveryOptions();
