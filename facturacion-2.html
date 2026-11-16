@@ -1,0 +1,2523 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Facturación - Laundry</title>
+  <link rel="icon" href="./img/Paris Laundry 1.png" type="image/png">
+  <link rel="stylesheet" href="./css/styles_facturacion.css">
+  <link rel="stylesheet" href="./css/styles_menu.css">
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
+  <script src="./js/app.js"></script>
+  <script src="./js/menu.js" defer></script>
+</head>
+
+
+<body>
+
+
+  <div class="MasterBox0" style="display: none;">
+
+    <laundry-menu></laundry-menu>
+
+    <div class="MasterBox">
+
+
+      <!-- Panel Preview de Factura -->
+      <div class="container_previewfactura">
+        <div id="invoiceResult">
+          <div class="previewfactura_tittle">
+            <h2>Factura Generada</h2>
+          </div>
+
+          <div class="previewfactura_body">
+            <p id="invoiceDetails">
+              <strong>Cliente:</strong> <br>
+              <strong>Teléfono:</strong> <br>
+              <strong>Dirección:</strong> <br>
+
+              <strong><br>Delivery:</strong>
+              <br><span style="display: flex; justify-content: space-between;"><span>Sin
+                  delivery:</span><span>RD$0</span></span><br>
+
+              <span
+                style="display: flex; justify-content: space-between;"><strong>Total:</strong><strong>RD$0.00</strong></span>
+            </p>
+          </div>
+
+          <div class="previewfactura_down">
+
+            <div class="previewfactura_down_space">
+              <div class="seleccionempeados">
+                <label for="categoria">Empleado que Atiende:</label>
+                <select id="empleado" required>
+                  <option value="" disabled selected>Selecciona</option>
+                </select>
+              </div>
+
+              <button id="processInvoice">Procesar Factura</button>
+              <ul id="invoiceList" class="invoice-list hidden"></ul>
+            </div>
+
+            <div class="panelfacturacion_down_RWD">
+              <footer-content></footer-content>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Estado de Caja + Conexión -->
+        <div style="display:inline-flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap;">
+
+          <div id="estadoCajaIndicador" style="
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0f0f0;
+            color: #888;
+            border: 1px solid #ddd;
+            transition: all 0.4s ease;
+          ">
+            <span id="estadoCajaIcono">⏳</span>
+            <span id="estadoCajaTexto">Verificando caja...</span>
+          </div>
+
+        </div>
+        <!-- Estado de Caja FIN -->
+
+        <!-- Panel Preview de Factura FIN -->
+
+        <!-- Panel Logo -->
+        <!-- <div class="cube-logo">
+          <div class="Logo-Paris-Laundry"></div>
+        </div> -->
+
+      </div>
+
+      <!-- Panel Logo FIN -->
+
+      <!-- Panel Facturacion -->
+      <div class="container_formfactura">
+        <div class="panelfacturacion_tittle">
+          <h2>Panel de Facturación</h2>
+          <a href="javascript:void(0)" onclick="confirmarLimpiarFactura()" id="limpiarFactura1"><img
+              src="./img/icon/refrescar1.png">Limpiar Factura</a>
+          <a href="javascript:void(0)" onclick="window.open(window.location.href, '_blank');" id="añadirFactura1"><img
+              src="./img/icon/mas2.png">Añadir Factura</a>
+
+          <a href="javascript:void(0)" onclick="confirmarLimpiarFactura()" id="limpiarFactura2"><img
+              src="./img/icon/refrescar1.png">Factura</a>
+          <a href="javascript:void(0)" onclick="window.open(window.location.href, '_blank');" id="añadirFactura2"><img
+              src="./img/icon/mas2.png">Factura</a>
+        </div>
+
+        <div class="panelfacturacion_body">
+          <form id="billingForm">
+
+            <div class="nombre_div_telefono">
+              <div>
+                <label for="nombreCliente">Nombre del Cliente:</label>
+                <div class="input-numeroContacto">
+                  <input type="text" id="clientName" placeholder="Nombre y Apellido" required maxlength="40">
+                  <div class="cantidad-img"><img src="./img/icon/nombre_1.png"></div>
+                </div>
+              </div>
+              <div>
+                <label for="numeroCliente">Teléfono del Cliente:</label>
+                <div class="input-numeroContacto">
+                  <input type="tel" id="clientPhone" placeholder="Teléfono" required maxlength="12"
+                    oninput="formatPhoneNumber(this)">
+
+                  <div class="cantidad-img"><img src="./img/icon/phone_1.png"></div>
+                </div>
+              </div>
+            </div>
+            <div class="nombre_div_telefono">
+              <div>
+                <label for="clientRNC">Registro Nacional de Contribuyente (RNC):</label>
+                <div class="input-numeroContacto">
+                  <input type="text" id="clientRNC" placeholder="RNC" maxlength="20">
+                </div>
+              </div>
+              <div>
+                <label for="clientNCF">Número de Comprobante Fiscal (NCF):</label>
+                <div class="input-numeroContacto">
+                  <input type="text" id="clientNCF" placeholder="NCF" maxlength="30">
+                </div>
+              </div>
+            </div>
+
+            <div class="hamper-master">
+              <h2>Añadir Hamper:</h2>
+              <div id="serviceSelection" class="button-list"></div>
+              <div id="hamperContainer"></div>
+            </div>
+
+            <div class="hamper-master">
+              <h2>Añadir Otros Servicios:</h2>
+              <div id="otrosServiciosContainer" class="button-list"></div>
+              <div id="otrosServiciosDisplay"></div>
+            </div>
+
+            <h2>Añadir Productos Adicionales:</h2>
+            <div class="product-list">
+              <div class="product-header">
+                <div>Producto</div>
+                <div id="detalles-hidden">Detalles</div>
+                <div>Precio (RD$)</div>
+              </div>
+              <div id="productSelection"></div>
+            </div>
+
+            <h2>Opciones de Delivery:</h2>
+            <div id="deliverySelection" class="button-list"></div>
+          </form>
+        </div>
+
+        <div class="panelfacturacion_down">
+          <footer-content></footer-content>
+        </div>
+      </div>
+
+      <!-- Panel Facturacion FIN -->
+    </div>
+
+    <!-- Modal Preview Factura -->
+    <div id="confirmationModal" class="modal hidden">
+      <div class="modal-content">
+
+        <!-- Modal_preview_factura_tittle -->
+        <div class="modal_preview_factura_tittle">
+          <span class="close-button">&times;</span>
+          <h2 style="text-align: center;">Confirmación de Factura</h2>
+        </div>
+        <!-- Modal_preview_factura_tittle FIN -->
+
+        <!-- Modal_preview_factura_body -->
+        <div class="modal_preview_factura_body">
+          <div id="modalInvoiceDetails"></div>
+        </div>
+        <!-- Modal_preview_factura_body FIN -->
+
+        <!-- Modal_preview_factura_Down -->
+        <div class="modal_preview_factura_down">
+          <h2 style="text-align: center;margin-block-start: 5px;margin-block-end: 5px;">Método de Pago:</h2>
+
+          <div class="button-metodo-pago">
+            <button id="cashPayment" class="payment-button" value="Efectivo">Efectivo <span>💵</span></button>
+            <button id="transferPayment" class="payment-button" value="Transferencia">Transferencia
+              <span>📲</span></button>
+            <button id="cardPayment" class="payment-button" value="Tarjeta de Crédito">Tarjeta de <span>Crédito
+                💳</span></button>
+          </div>
+
+
+          <div class="cashPaymentOptions_master">
+
+            <div class="cube-montos">
+              <div class="cube-form-flex">
+                <div>
+                  <label>Total a Pagar:</label>
+                </div>
+                <div>
+                  <span id="totalToPay" style="color: #189dff;font-weight: bold;">RD$0.00</span>
+                </div>
+              </div>
+
+              <div id="cashPaymentOptions" class="hidden">
+
+                <div class="cube-form-flex">
+                  <div>
+                    <label>Monto Recibido:</label>
+                  </div>
+                  <div>
+                    <div class="input-container">
+                      <span class="prefix">RD$</span>
+                      <input type="text" id="amountReceived" placeholder="0" maxlength="6"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="cube-form-flex">
+                  <div>
+                    <label>Cambio:</label>
+                  </div>
+                  <div>
+                    <span id="changeAmount" style="font-weight: bold;color: #f96dd3;">RD$0.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- Añade JUSTO DESPUÉS: -->
+            <div id="abonobox_master">
+              <div style="display: inline-flex;height: 35px;">
+                <label style="cursor: pointer;display: inline-flex;align-items: center;gap: 5px;">
+                  <input type="checkbox" id="pagarConAbonoCheckbox" style="height: 20px;width: 20px;cursor: pointer;">
+                  Pagar con Abono:
+                </label>
+              </div>
+
+              <div id="transferCardPaymentOptions">
+
+                <div class="cube-form-flex" style="font-size: 25px;">
+                  <div>
+                    <label></label>
+                  </div>
+                  <div>
+                    <div class="input-container">
+                      <span class="prefix">RD$</span>
+                      <input type="text" id="partialAmount" placeholder="0" maxlength="6"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);">
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+
+            </div>
+
+            <!-- Ventas acumuladas del empleado -->
+            <div id="ventasEmpleadoInfo" style="
+            margin: 0 5rem;
+              margin-top: 10px;
+              padding: 8px 14px;
+              border-radius: 10px;
+              background: #edf7ff;
+              border: 1px solid #b3d9f5;
+              font-size: 13px;
+              color: #1a6fa8;
+              text-align: center;
+              display: none;
+            ">
+              <span id="ventasEmpleadoTexto">🧾 Cargando ventas del empleado...</span>
+            </div>
+            <!-- Ventas acumuladas FIN -->
+
+
+            <div class="Cube_button_pagado">
+              <!-- <button id="printInvoice">Imprimir Factura</button> -->
+              <button id="pendingPayment"><img src="./img/icon/atencion1.png">Pago Pendiente</button>
+              <button id="partialPayment"><img src="./img/icon/abono1.png">Abono</button>
+              <button id="paid" class="disabled"><img src="./img/icon/check1.png">Pago Recibido</button>
+            </div>
+
+          </div>
+          <!-- Modal_preview_factura_Down FIN -->
+
+        </div>
+      </div>
+    </div>
+    <!-- Modal Preview Factura FIN -->
+
+
+
+    <!-- Modal para Factura Procesada -->
+    <div id="processedInvoiceModal" class="modal hidden">
+
+      <div class="modal-content">
+
+        <!-- Modal_factura_processed_tittle -->
+        <div class="factura_processed_tittle">
+          <span class="close-button" onclick="closeProcessedInvoiceModal()">&times;</span>
+          <h2>Factura Exitosa</h2>
+        </div>
+        <!-- Modal_factura_processed_tittle FIN -->
+
+        <!-- Modal_factura_processed_body -->
+        <div id="processedInvoiceDetails"></div>
+        <!-- Modal_factura_processed_body FIN -->
+
+        <!-- Modal_factura_processed_down -->
+        <div class="factura_processed_down">
+          <div class="container_factura_processed_down">
+            <div class="container_flex_factura_processed_down">
+              <p>¡Factura procesada y guardada con éxito!</p>
+
+              <div style="display: inline-flex;width: 100%;flex-direction: row;justify-content: space-between;">
+                <button id="printInvoiceButton"><img src="./img/icon/imprimir1.png">Imprimir</button>
+                <span id="invoiceIdDisplay"></span>
+                <button id="readyButton" onclick="closeProcessedInvoiceModal()"><img
+                    src="./img/icon/check2.png">Listo</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <!-- Modal_factura_processed_down FIN -->
+
+      </div>
+    </div>
+    <!-- Modal para Factura Procesada FIN -->
+
+
+  </div>
+  </div>
+
+
+  <script>
+
+
+    const serviceSelection = document.getElementById("serviceSelection");
+    const deliverySelection = document.getElementById("deliverySelection");
+    const productSelection = document.getElementById("productSelection");
+    const hamperContainer = document.getElementById("hamperContainer");
+    const otrosServiciosContainer = document.getElementById("otrosServiciosContainer");
+    const otrosServiciosDisplay = document.getElementById("otrosServiciosDisplay");
+
+    let hampers = [];
+    let otrosServicios = [];
+
+
+    function confirmarLimpiarFactura() {
+      if (confirm("¿Seguro que deseas limpiar esta factura?")) {
+        location.reload(); // Refresca la página
+      }
+    }
+
+    // Cargar servicios, productos y empleados
+    const loadServices = () => {
+      db.collection("servicio").get().then((snapshot) => {
+        serviceSelection.innerHTML = "";
+        otrosServiciosContainer.innerHTML = "";
+        // CORRECCIÓN BUG #1: No se borran hamperContainer ni otrosServiciosDisplay
+        // para no perder lo que el usuario ya ingresó en otra pestaña o por re-renders.
+
+        const hampersArray = [];
+        const otrosServiciosArray = [];
+
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+
+          if (data.tipo === "hamper") {
+            hampersArray.push({ id: doc.id, ...data });
+          }
+
+          if (data.tipo === "otroservicio") {
+            otrosServiciosArray.push({ id: doc.id, ...data });
+          }
+        });
+
+        // Ordenar hampers por OrdenNumHamper
+        hampersArray.sort((a, b) => a.OrdenNumHamper - b.OrdenNumHamper);
+
+        // Ordenar otros servicios por OrdenNumServicio
+        otrosServiciosArray.sort((a, b) => a.OrdenNumServicio - b.OrdenNumServicio);
+
+        // Mostrar hampers ordenados
+        hampersArray.forEach((data) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.innerHTML = `
+        <div><img src="${data.icon}" alt="${data.nombre}"></div>
+        <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>
+      `;
+          button.dataset.value = data.precio;
+          button.dataset.name = data.nombre;
+          button.dataset.librasmin = data.librasmin;
+          button.dataset.librasmax = data.librasmax;
+          button.dataset.preciolibras = data.preciolibras;
+          button.dataset.hastaLibraMax = data.hastaLibraMax ? "true" : "false";
+          button.addEventListener("click", () => {
+            addHamper(data);
+          });
+          serviceSelection.appendChild(button);
+        });
+
+        // Mostrar otros servicios ordenados
+        otrosServiciosArray.forEach((data) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.innerHTML = `
+        <div><img src="${data.icon}" alt="${data.nombre}"></div>
+        <div>${data.nombre}<br> <strong>RD$${data.precio}</strong></div>
+      `;
+          button.dataset.value = data.precio;
+          button.dataset.name = data.nombre;
+          button.dataset.icon = data.icon;
+          button.addEventListener("click", () => {
+            addOtherService(data, button);
+          });
+          otrosServiciosContainer.appendChild(button);
+        });
+      });
+    };
+
+    const addOtherService = (data, button) => {
+      const existingService = otrosServiciosDisplay.querySelector(`div[data-name="${data.nombre}"]`);
+
+      if (existingService) {
+        otrosServiciosDisplay.removeChild(existingService);
+        button.classList.remove("active");
+        otrosServicios = otrosServicios.filter(service => service.name !== data.nombre);
+      } else {
+        const serviceDiv = document.createElement("div");
+        serviceDiv.classList.add("otro-servicio");
+        serviceDiv.dataset.name = data.nombre;
+        serviceDiv.innerHTML = `
+  <h3>${data.nombre} RD$${data.precio}</h3>
+  <img src="${data.icon}" alt="${data.nombre}" style="border-radius: 14px;">
+  <h5>Cantidad</h5>
+  <div id="itemWeight">
+      <button id="btnmenosmas" type="button" class="decreaseItem">-</button>
+      <input type="number" class="itemInput" value="1" min="1" max="100" placeholder="0">
+      <button id="btnmenosmas" type="button" class="increaseItem">+</button>
+  </div>
+  <p class="itemTotalDisplay">Total: RD$${data.precio}</p>
+  <button type="button" class="removeOtherService">X</button>
+`;
+
+        otrosServiciosDisplay.appendChild(serviceDiv);
+        button.classList.add("active");
+
+        otrosServicios.push({
+          name: data.nombre,
+          price: parseFloat(data.precio),
+          input: serviceDiv.querySelector(".itemInput"),
+          consumo: data.consumo || [] // Almacenar el array "consumo"
+        });
+
+        // Aumentar la cantidad
+        serviceDiv.querySelector(".increaseItem").addEventListener("click", () => {
+          const inputField = serviceDiv.querySelector(".itemInput");
+          inputField.value = Math.min(100, parseInt(inputField.value) + 1);
+          updateItemPrice(serviceDiv, data.precio);
+        });
+
+        // Disminuir la cantidad
+        serviceDiv.querySelector(".decreaseItem").addEventListener("click", () => {
+          const inputField = serviceDiv.querySelector(".itemInput");
+          inputField.value = Math.max(1, parseInt(inputField.value) - 1);
+          updateItemPrice(serviceDiv, data.precio);
+        });
+
+        // Evento para el campo de entrada
+        serviceDiv.querySelector(".itemInput").addEventListener("input", () => {
+          const inputField = serviceDiv.querySelector(".itemInput");
+          // No establecer un valor por defecto si el campo está vacío
+          if (inputField.value === "") {
+            // No hacer nada, dejar el campo vacío
+          } else {
+            // Asegurarse de que el valor sea un número válido
+            const value = parseInt(inputField.value);
+            if (isNaN(value) || value < 1) {
+              inputField.value = 1; // Establecer a 1 si el valor es inválido
+            }
+          }
+          updateItemPrice(serviceDiv, data.precio);
+        });
+
+
+        const removeButton = serviceDiv.querySelector(".removeOtherService");
+        removeButton.addEventListener("click", () => {
+          otrosServiciosDisplay.removeChild(serviceDiv);
+          button.classList.remove("active");
+          otrosServicios = otrosServicios.filter(service => service.name !== data.nombre);
+          updateInvoicePreview();
+        });
+      }
+
+      updateInvoicePreview();
+    };
+
+    const updateItemPrice = (itemDiv, price) => {
+      const count = parseInt(itemDiv.querySelector(".itemInput").value) || 0;
+      const totalItem = count * price;
+      itemDiv.querySelector(".itemTotalDisplay").textContent = `Total: RD$${totalItem}`;
+      updateInvoicePreview();
+    };
+
+    // ── Alerta visual cuando se alcanza el límite de libra max ──
+    function mostrarAlertaLibraMax(hamperDiv, maxLibras) {
+      let alerta = hamperDiv.querySelector('.alerta-libra-max');
+      if (!alerta) {
+        alerta = document.createElement('p');
+        alerta.className = 'alerta-libra-max';
+        alerta.style.cssText = 'color:#c0392b;font-size:12px;font-weight:600;margin:2px 0 0;background:#fff0f0;border:1px solid #f5a0a0;border-radius:6px;padding:3px 8px;';
+        alerta.textContent = `⚠️ Límite máximo: ${maxLibras} lbs`;
+        hamperDiv.querySelector('#hamperWeight').after(alerta);
+      }
+      alerta.textContent = `⚠️ Límite máximo: ${maxLibras} lbs`;
+      clearTimeout(alerta._timer);
+      alerta._timer = setTimeout(() => { if (alerta.parentNode) alerta.remove(); }, 3000);
+    }
+
+    const addHamper = (data) => {
+      // Verifica si ya hay 30 hampers
+      if (hampers.length >= 30) {
+        alert("No puedes agregar más de 30 hampers por factura.");
+        return;
+      }
+
+      const hamperDiv = document.createElement("div");
+      hamperDiv.classList.add("hamper");
+      const maxLibrasInput = (data.hastaLibraMax && data.librasmax) ? parseInt(data.librasmax) : 100;
+      hamperDiv.innerHTML = `
+    <h3>${data.nombre}</h3>
+    <img src="${data.icon}" alt="${data.nombre}">
+    <h5>Cantidad de Libras${data.hastaLibraMax ? ` <span style="font-size:11px;color:#c0392b;background:#fff0f0;border:1px solid #f5a0a0;border-radius:5px;padding:1px 6px;">Máx: ${data.librasmax} lbs</span>` : ''}</h5>
+    <div id="hamperWeight">
+      <button id="btnmenosmas" type="button" class="decreaseWeight">-</button>
+      <input type="number" class="weightInput" value="1" min="1" max="${maxLibrasInput}" placeholder="0">
+      <button id="btnmenosmas" type="button" class="increaseWeight">+</button>
+    </div>
+    <p class="priceDisplay">Precio: RD$0</p>
+    <button id="cerrarhamper" type="button" class="removeHamper">X</button>
+  `;
+
+      hamperContainer.appendChild(hamperDiv);
+      const newHamper = {
+        data: data,
+        weightInput: hamperDiv.querySelector(".weightInput"),
+        priceDisplay: hamperDiv.querySelector(".priceDisplay"),
+        consumo: data.consumo || []
+      };
+      hampers.push(newHamper);
+
+      // Event listeners para los botones de incremento/decremento
+      hamperDiv.querySelector(".increaseWeight").addEventListener("click", () => {
+        const maxLibras = (data.hastaLibraMax && data.librasmax) ? parseInt(data.librasmax) : 100;
+        newHamper.weightInput.value = Math.min(maxLibras, parseInt(newHamper.weightInput.value) + 1);
+        if (data.hastaLibraMax && parseInt(newHamper.weightInput.value) >= maxLibras) {
+          mostrarAlertaLibraMax(hamperDiv, maxLibras);
+        }
+        calculatePrice(hamperDiv);
+        updateInvoicePreview();
+      });
+
+      hamperDiv.querySelector(".decreaseWeight").addEventListener("click", () => {
+        newHamper.weightInput.value = Math.max(1, parseInt(newHamper.weightInput.value) - 1);
+        calculatePrice(hamperDiv);
+        updateInvoicePreview();
+      });
+
+      hamperDiv.querySelector(".removeHamper").addEventListener("click", () => {
+        hamperContainer.removeChild(hamperDiv);
+        hampers = hampers.filter(h => h !== newHamper);
+        updateInvoicePreview();
+      });
+
+      // Función de redondeo
+      const handleRounding = () => {
+        const maxLibras = (data.hastaLibraMax && data.librasmax) ? parseInt(data.librasmax) : 100;
+        let value = parseFloat(newHamper.weightInput.value);
+        if (!isNaN(value)) {
+          if (value >= 1) {
+            if (value % 1 >= 0.5) {
+              newHamper.weightInput.value = Math.ceil(value);
+            } else {
+              newHamper.weightInput.value = Math.floor(value);
+            }
+          } else {
+            newHamper.weightInput.value = 1;
+          }
+          // Aplicar límite si hastaLibraMax está activo
+          if (data.hastaLibraMax && parseInt(newHamper.weightInput.value) > maxLibras) {
+            newHamper.weightInput.value = maxLibras;
+            mostrarAlertaLibraMax(hamperDiv, maxLibras);
+          }
+        } else {
+          newHamper.weightInput.value = 1;
+        }
+        calculatePrice(hamperDiv);
+        updateInvoicePreview();
+      };
+
+      // Event listeners para el input
+      newHamper.weightInput.addEventListener("blur", handleRounding);
+      newHamper.weightInput.addEventListener("input", () => {
+        if (data.hastaLibraMax && data.librasmax) {
+          const maxLibras = parseInt(data.librasmax);
+          const val = parseInt(newHamper.weightInput.value);
+          if (!isNaN(val) && val > maxLibras) {
+            newHamper.weightInput.value = maxLibras;
+            mostrarAlertaLibraMax(hamperDiv, maxLibras);
+          }
+        }
+        calculatePrice(hamperDiv);
+        updateInvoicePreview();
+      });
+      newHamper.weightInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.keyCode === 13) {
+          e.preventDefault(); // Prevenir comportamiento por defecto
+          handleRounding();
+          newHamper.weightInput.blur();
+        }
+      });
+
+      calculatePrice(hamperDiv);
+      updateInvoicePreview();
+    };
+
+    const calculatePrice = (hamperDiv) => {
+      const weight = parseInt(hamperDiv.querySelector(".weightInput").value) || 0;
+      const data = hampers.find(h => h.weightInput === hamperDiv.querySelector(".weightInput")).data;
+
+      const librasMin = parseInt(data.librasmin) || 0;
+      const librasMax = parseInt(data.librasmax) || 0;
+      const precioBase = parseFloat(data.precio) || 0;
+      const precioPorLibraAdicional = parseFloat(data.preciolibras) || 0;
+
+      let totalPrice = 0;
+
+      if (weight < librasMin) {
+        totalPrice = weight * precioPorLibraAdicional;
+      } else if (weight >= librasMin && weight <= librasMax) {
+        totalPrice = precioBase;
+      } else {
+        const additionalWeight = weight - librasMax;
+        totalPrice = precioBase + (additionalWeight * precioPorLibraAdicional);
+      }
+
+      hamperDiv.querySelector(".priceDisplay").textContent = `Precio: RD$${totalPrice.toFixed(2)}`;
+    };
+
+
+
+    let itbisPercentage; // Sin valor por defecto
+    let asumirPor; // Variable para almacenar quién asume el ITBIS
+
+    const loadITBISPercentage = () => {
+      console.log("Cargando porcentaje de ITBIS...");
+      db.collection("impuestos").limit(1).get()
+        .then((snapshot) => {
+          if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            itbisPercentage = doc.data().cantidadPorciento / 100; // Asegúrate de que cantidadPorciento esté en porcentaje
+            asumirPor = doc.data().asumirPor; // Cargar el valor de asumirPor
+            console.log("Porcentaje de ITBIS cargado:", itbisPercentage);
+            console.log("Asumir por:", asumirPor);
+            updateInvoicePreview(); // Llama a la función aquí
+          } else {
+            console.log("No se encontraron documentos en la colección de impuestos");
+          }
+        })
+        .catch((error) => {
+          console.error("Error al obtener el porcentaje de ITBIS: ", error);
+        });
+    };
+
+    // Llama a la función al cargar la página
+    loadITBISPercentage();
+
+
+    function formatPhoneNumber(input) {
+      // Eliminar todos los caracteres que no sean dígitos
+      let value = input.value.replace(/\D/g, '');
+
+      // Formatear el número con guiones
+      if (value.length > 0) {
+        value = value.replace(/(\d{3})(\d)/, '$1-$2');
+      }
+      if (value.length > 7) {
+        value = value.replace(/-(\d{3})(\d)/, '-$1-$2');
+      }
+
+      input.value = value;
+    }
+
+    function validarNumeroTelefono(phoneRaw) {
+      // phoneRaw: solo digitos (sin guiones), entre 7 y 15 digitos
+      if (phoneRaw.length < 7 || phoneRaw.length > 15) return false;
+
+      // Verificar que no sean todos el mismo digito (ej: 0000000, 1111111111)
+      if (/^(\d)\1+$/.test(phoneRaw)) return false;
+
+      // Verificar bloques repetitivos largos: 6+ digitos iguales consecutivos (ej: 5017777777)
+      if (/(\d)\1{5,}/.test(phoneRaw)) return false;
+
+      // Verificar secuencias ascendentes o descendentes de 6+ digitos (ej: 501123456)
+      let ascCount = 1, desCount = 1;
+      for (let i = 1; i < phoneRaw.length; i++) {
+        const diff = parseInt(phoneRaw[i]) - parseInt(phoneRaw[i - 1]);
+        ascCount = diff === 1 ? ascCount + 1 : 1;
+        desCount = diff === -1 ? desCount + 1 : 1;
+        if (ascCount >= 6 || desCount >= 6) return false;
+      }
+
+      return true;
+    }
+
+    // ===== ESTADO DE CAJA EN TIEMPO REAL =====
+    (function iniciarEscuchaCaja() {
+      db.collection("caja").limit(1).onSnapshot((snapshot) => {
+        const indicador = document.getElementById("estadoCajaIndicador");
+        const icono = document.getElementById("estadoCajaIcono");
+        const texto = document.getElementById("estadoCajaTexto");
+
+        if (!indicador) return;
+
+        let cajaAbierta = false;
+
+        if (!snapshot.empty) {
+          const cajaDoc = snapshot.docs[0].data();
+          const inicioCajaHora = cajaDoc.inicioCajaHora ? cajaDoc.inicioCajaHora.toDate() : null;
+          const cierreCajaHora = cajaDoc.cierreCajaHora ? cajaDoc.cierreCajaHora.toDate() : null;
+
+          if (inicioCajaHora && (!cierreCajaHora || inicioCajaHora > cierreCajaHora)) {
+            cajaAbierta = true;
+          }
+        }
+
+        if (cajaAbierta) {
+          indicador.style.background = '#e6f9ec';
+          indicador.style.borderColor = '#5ac87a';
+          indicador.style.color = '#1e7e34';
+          icono.textContent = '🟢';
+          texto.textContent = 'Caja Abierta';
+        } else {
+          indicador.style.background = '#fff0f0';
+          indicador.style.borderColor = '#f5a0a0';
+          indicador.style.color = '#c0392b';
+          icono.textContent = '🔴';
+          texto.textContent = 'Caja Cerrada';
+        }
+      }, (error) => {
+        console.error("Error escuchando estado de caja:", error);
+      });
+    })();
+    // ===== FIN ESTADO DE CAJA =====
+
+
+
+
+    const updateInvoicePreview = () => {
+      const clientName = document.getElementById("clientName").value || "Sin nombre";
+      const clientPhone = document.getElementById("clientPhone").value || "Sin teléfono";
+      const clientRNC = document.getElementById("clientRNC").value.trim();
+      const clientNCF = document.getElementById("clientNCF").value.trim();
+
+      const selectedDelivery = deliverySelection.querySelector("button.active");
+      const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+
+      let subtotal = 0; // Inicializar subtotal
+
+      // Calcular el total de los hampers
+      hampers.forEach(hamper => {
+        const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
+        subtotal += price; // Sumar al subtotal
+      });
+
+      // Calcular el total de otros servicios
+      otrosServicios.forEach(item => {
+        const count = parseInt(item.input.value) || 0;
+        subtotal += count * item.price; // Sumar al subtotal
+      });
+
+      // Calcular el total de productos adicionales
+      selectedProducts.forEach(product => {
+        const quantity = parseInt(product.value) || 0;
+        const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+        subtotal += quantity * productPrice; // Sumar al subtotal
+      });
+
+      // Obtener el precio del delivery
+      const deliveryPrice = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
+      subtotal += deliveryPrice; // Incluir delivery en el subtotal
+
+      // Calcular el ITBIS
+      const itbis = (asumirPor !== "desactivado") ? subtotal * itbisPercentage : 0; // Calcular ITBIS solo si no está desactivado
+
+      // Calcular el total a pagar
+      let total;
+      if (asumirPor === "empresa") {
+        total = subtotal; // El total es solo el subtotal
+      } else {
+        total = subtotal + itbis; // Sumar el ITBIS al total si no es "empresa"
+      }
+
+      // Calcular el total de productos
+      const productsDetails = selectedProducts.map(product => {
+        const quantity = parseInt(product.value) || 0;
+        const productName = product.closest('.product-item').dataset.nombre || '';
+        const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+        const productTotal = quantity * productPrice;
+
+        if (quantity > 0) {
+          return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${productName} - Cant. ${quantity} X RD$${productPrice}</span><span>RD$${productTotal.toFixed(2)}</span></div>`;
+        }
+        return null;
+      }).filter(Boolean).join("");
+
+      // Actualizar el contenido de invoiceDetails
+      document.getElementById("invoiceDetails").innerHTML = `
+    <div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;">
+      <strong>Cliente:</strong> ${clientName} </div>
+
+    <div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;">
+      <strong>Teléfono:</strong> ${clientPhone} </div>
+
+    ${clientRNC ? `<div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;"><strong>RNC:</strong> ${clientRNC}</div>` : ""}
+    ${clientNCF ? `<div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;"><strong>NCF:</strong> ${clientNCF}</div>` : ""}
+
+    ${hampers.length > 0 || otrosServicios.length > 0 ? `
+      <br><strong>Servicios:</strong>
+      ${hampers.length > 0 ? hampers.map(hamper => {
+        const weight = parseInt(hamper.weightInput.value);
+        const data = hamper.data;
+        const librasMin = parseInt(data.librasmin);
+        const librasMax = parseInt(data.librasmax);
+        const precioPorLibra = parseFloat(data.preciolibras);
+        const displayWeight = (weight >= librasMin && weight <= librasMax) ? "1 hamper" : `${weight}lbs X RD$${precioPorLibra}`;
+        return `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${data.nombre} (${displayWeight})</span><span>RD$${hamper.priceDisplay.textContent.replace('Precio: RD$', '')}</span></div>`;
+      }).join("") : ""}
+      ${otrosServicios.length > 0 ? otrosServicios.map(service => `<div style="display: flex; justify-content: space-between; gap: 24px;"><span>${service.name}: ${service.input.value}</span><span>RD$${(parseFloat(service.price) * parseInt(service.input.value)).toFixed(2)}</span></div>`).join("") : ""}
+    ` : ""}
+
+    ${productsDetails.length > 0 ? `
+        <strong><br>Productos:<br></strong>
+        ${productsDetails}
+    ` : ""}
+
+    <strong><br>Delivery:<br></strong>
+    <div style="display: flex; justify-content: space-between;"><span>${selectedDelivery ? selectedDelivery.dataset.name : "Sin delivery"}:</span><span>RD$${selectedDelivery ? selectedDelivery.dataset.value : "0"}</span></div><br>
+
+${asumirPor !== "desactivado" ? `
+  <br><div style="display: flex; justify-content: space-between;">
+    <strong>Subtotal:</strong>
+    <strong>RD$${subtotal.toFixed(2)}</strong>
+  </div>
+  <br><div style="display: flex; justify-content: space-between;">
+    <strong>${asumirPor === "empresa" ? "ITBIS Incluidos" : "ITBIS"} (${(itbisPercentage * 100).toFixed(2)}%):</strong>
+    <strong>RD$${itbis.toFixed(2)}</strong>
+  </div>
+` : ""}
+    
+    <div style="display: flex; justify-content: space-between;">
+      <strong>Total a Pagar:</strong>
+      <strong>RD$${total.toFixed(2)}</strong>
+    </div>
+  `;
+
+      document.getElementById("invoiceResult").classList.remove("hidden");
+    };
+
+
+
+
+    const loadDeliveryOptions = () => {
+      db.collection("delivery").orderBy("orden").onSnapshot((snapshot) => {
+        deliverySelection.innerHTML = "";
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const button = document.createElement("button");
+          button.type = "button";
+          button.id = "DeliveryButton";
+          button.innerHTML = `${data.nombre} <img src="./img/icon/${data.icon}" alt="${data.nombre}">`;
+          button.dataset.name = data.nombre;
+
+          // Crear un input para el precio
+          const priceInput = document.createElement("input");
+          priceInput.type = "number";
+          priceInput.placeholder = "0"; // Placeholder que dice "0"
+          priceInput.min = "0"; // Valor mínimo
+          priceInput.max = "9999"; // Establecer el máximo a 9999
+
+          // Si es "Sin delivery", establecer el valor en 0 y hacerlo no editable
+          if (data.nombre === "Sin delivery") {
+            priceInput.value = "0"; // Valor inicial
+            priceInput.readOnly = true; // Hacerlo no editable
+          } else {
+            priceInput.value = ""; // Sin valor inicial
+            priceInput.addEventListener("input", () => {
+              // Validar que el valor no exceda 9999
+              if (priceInput.value > 9999) {
+                priceInput.value = 9999; // Limitar a 9999
+              }
+              button.dataset.value = priceInput.value || "0"; // Si está vacío, se establece en "0"
+              updateInvoicePreview(); // Actualiza la vista previa de la factura
+            });
+          }
+
+          button.appendChild(priceInput);
+
+          button.addEventListener("click", (e) => {
+            handleActiveState(e, deliverySelection);
+
+            // Al hacer clic, se establece el valor del botón en el dataset
+            const inputValue = priceInput.value || "0"; // Si el input está vacío, se establece en "0"
+            button.dataset.value = inputValue; // Actualiza el valor del botón
+
+            updateInvoicePreview(); // Actualiza la vista previa de la factura
+          });
+
+          deliverySelection.appendChild(button);
+        });
+      });
+    };
+
+    const handleActiveState = (event, container) => {
+      const buttons = container.querySelectorAll("button");
+      buttons.forEach(button => button.classList.remove("active"));
+      event.currentTarget.classList.add("active");
+    };
+
+    const loadProducts = () => {
+      // CORRECCIÓN BUG #1: Usar get() en vez de onSnapshot() para evitar que actualizaciones
+      // de Firestore (por otras pestañas) borren las cantidades ya ingresadas.
+      db.collection("productos").orderBy("ordenNum").get().then((snapshot) => {
+        productSelection.innerHTML = "";
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const productItem = document.createElement("div");
+          productItem.classList.add("product-item");
+          productItem.dataset.docId = doc.id;
+          productItem.dataset.nombre = data.nombre;
+          productItem.dataset.puntoPorVenta = data.puntoPorVenta ? "true" : "false";
+          productItem.innerHTML = `
+        <div class="productNombre">${data.nombre}${data.puntoPorVenta ? '<br><span style="font-size:11px;font-weight:600;color:#4caf50;background:#eafaf1;border:1px solid #a9dfbf;border-radius:5px;padding:1px 7px;display:inline-block;margin-top:3px;">⭐ Punto por venta</span>' : ''}</div>
+        <div id="detalles-hidden" style="align-items: flex-start;">${data.detalles}</div>
+        <div>
+          <div class="productPrice">$${data.precio}</div>
+          <div class="productQuantity" style="font-size: 14px;font-weight: bold; color: ${data.cantidad < 20 ? 'red' : '#3fbfe7'};">Disponible: ${data.cantidad}</div>
+          <div style="display: flex;flex-direction: row;">
+              <button id="btnmenosmas" type="button" class="decreaseProduct">-</button>
+              <input id="InputCantidades" type="number" class="productInput" value="" min="0" max="${data.cantidad}" placeholder="0">
+              <button id="btnmenosmas" type="button" class="increaseProduct">+</button>
+          </div>
+          <div class="productTotal">Total: $0.00</div>
+        </div>
+      `;
+          productSelection.appendChild(productItem);
+
+          // ── ESCUCHA EN TIEMPO REAL del stock (solo actualiza el display, no toca el input) ──
+          db.collection("productos").doc(doc.id).onSnapshot((liveDoc) => {
+            if (!liveDoc.exists) return;
+            const liveData = liveDoc.data();
+            const stockDisplay = productItem.querySelector('.productQuantity');
+            const inputEl = productItem.querySelector('.productInput');
+            if (stockDisplay) {
+              stockDisplay.textContent = `Disponible: ${liveData.cantidad}`;
+              stockDisplay.style.color = liveData.cantidad < 20 ? 'red' : '#3fbfe7';
+            }
+            if (inputEl) {
+              inputEl.max = liveData.cantidad;
+              // Si la cantidad ya ingresada supera el nuevo stock, ajustar
+              const current = parseInt(inputEl.value) || 0;
+              if (current > liveData.cantidad) {
+                inputEl.value = liveData.cantidad;
+                updateProductTotal(inputEl, productItem.querySelector('.productTotal'), data.precio);
+              }
+            }
+          });
+          // ── FIN escucha en tiempo real ──
+
+          const increaseButton = productItem.querySelector(".increaseProduct");
+          const decreaseButton = productItem.querySelector(".decreaseProduct");
+          const inputField = productItem.querySelector(".productInput");
+          const totalDisplay = productItem.querySelector(".productTotal");
+
+          // Evento para aumentar la cantidad
+          increaseButton.addEventListener("click", () => {
+            const currentValue = parseInt(inputField.value) || 0;
+            if (currentValue < data.cantidad) {
+              inputField.value = currentValue + 1;
+              updateProductTotal(inputField, totalDisplay, data.precio);
+            }
+          });
+
+          // Evento para disminuir la cantidad
+          decreaseButton.addEventListener("click", () => {
+            const currentValue = parseInt(inputField.value) || 0;
+            if (currentValue > 0) {
+              inputField.value = currentValue - 1;
+              updateProductTotal(inputField, totalDisplay, data.precio);
+            }
+          });
+
+          // Evento para cambios manuales en el input
+          inputField.addEventListener("input", () => {
+            const currentValue = parseInt(inputField.value) || 0;
+            if (currentValue > data.cantidad) {
+              inputField.value = data.cantidad; // Limitar al máximo disponible
+            }
+            updateProductTotal(inputField, totalDisplay, data.precio);
+          });
+
+          // Evitar que el scroll cambie el valor del input
+          inputField.addEventListener("wheel", (e) => {
+            e.preventDefault();
+          }, { passive: false });
+        });
+      });
+    };
+
+    const updateProductTotal = (inputField, totalDisplay, price) => {
+      const quantity = parseInt(inputField.value) || 0;
+      const total = quantity * price;
+      totalDisplay.textContent = `Total: $${total.toFixed(2)}`;
+
+      const productItem = inputField.closest('.product-item');
+      if (quantity > 0) {
+        productItem.style.backgroundColor = "#f1d6ef";
+        productItem.style.border = "1px solid #e9bbe6";
+      } else {
+        productItem.style.backgroundColor = "#f9f9f9";
+        productItem.style.border = "1px solid #ddd";
+      }
+
+      updateInvoicePreview();
+    };
+
+
+    const loadEmployees = () => {
+      const empleadoSelect = document.getElementById("empleado");
+      db.collection("empleados").onSnapshot((snapshot) => {
+        empleadoSelect.innerHTML = "";
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "Selecciona";
+        empleadoSelect.appendChild(defaultOption);
+
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const option = document.createElement("option");
+          option.value = doc.id;
+          option.textContent = data.nombre;
+          empleadoSelect.appendChild(option);
+        });
+      });
+    };
+
+    loadEmployees();
+
+
+   document.getElementById("processInvoice").addEventListener("click", async () => {
+  // Verificar estado de la caja primero
+  const cajaAbierta = await verificarEstadoCaja();
+  if (!cajaAbierta) {
+    alert("Caja cerrada, por favor abrirla para facturar.");
+    return;
+  }
+
+  // El resto del código existente...
+  const clientName = document.getElementById("clientName").value.trim();
+  const clientPhone = document.getElementById("clientPhone").value.replace(/-/g, '');
+  const empleadoSelect = document.getElementById("empleado");
+
+  // Validación del número de teléfono
+  if (clientPhone.length < 7) {
+    alert("El número de teléfono debe tener al menos 7 dígitos.");
+    return;
+  }
+
+  // Validar que el número de teléfono sea lógico
+  if (!validarNumeroTelefono(clientPhone)) {
+    alert("⚠️ El número de teléfono no es válido. Por favor verifica que sea un número dominicano correcto (809, 829 o 849) y que no contenga secuencias repetitivas o inválidas.");
+    return;
+  }
+
+  if (!empleadoSelect.value) {
+    alert("Por favor, selecciona un empleado.");
+    return;
+  }
+
+  if (!clientName || !clientPhone) {
+    alert("Por favor, completa el nombre del cliente.");
+    return;
+  }
+
+  // Validación del nombre del cliente
+  if (!clientName.includes(" ") || clientName.split(" ")[1].length < 1) {
+    alert("Debes colocar el apellido del cliente");
+    return;
+  }
+
+  const invoiceDetails = document.getElementById("invoiceDetails").innerHTML;
+  document.getElementById("modalInvoiceDetails").innerHTML = invoiceDetails;
+
+  const total = calculateTotal();
+  document.getElementById("totalToPay").textContent = `RD$${total.toFixed(2)}`;
+
+  // Cargar ventas acumuladas del empleado seleccionado
+  const empleadoNombre = empleadoSelect.options[empleadoSelect.selectedIndex]?.text || "";
+  const ventasInfoDiv = document.getElementById("ventasEmpleadoInfo");
+  const ventasTexto = document.getElementById("ventasEmpleadoTexto");
+  if (ventasInfoDiv && ventasTexto && empleadoNombre) {
+    ventasInfoDiv.style.display = "block";
+    ventasTexto.textContent = "🧾 Cargando ventas del empleado...";
+    db.collection("ventaproductos").doc(empleadoNombre).get()
+      .then((doc) => {
+        if (doc.exists) {
+          const monto = doc.data().monto || 0;
+          ventasTexto.innerHTML = `🧾 <strong>${empleadoNombre}</strong> lleva acumulado en ventas de productos: <strong>${parseFloat(monto).toLocaleString('es-DO', { minimumFractionDigits: 0 })}</strong>`;
+        } else {
+          ventasTexto.innerHTML = `🧾 <strong>${empleadoNombre}</strong> no tiene ventas de productos registradas aún.`;
+        }
+      })
+      .catch((err) => {
+        ventasTexto.textContent = "⚠️ No se pudo cargar la información de ventas.";
+        console.error("Error cargando ventaproductos:", err);
+      });
+  }
+
+  document.getElementById("confirmationModal").classList.remove("hidden");
+});
+
+    document.querySelector(".close-button").addEventListener("click", () => {
+      document.getElementById("confirmationModal").classList.add("hidden");
+    });
+
+
+    // desahbilitar los botones de pagos
+    const paymentButtons = document.querySelectorAll(".payment-button");
+    const pendingPaymentButton = document.getElementById("pendingPayment");
+    const paidButton = document.getElementById("paid");
+
+    // Función para habilitar los botones de estado
+    const enablePaymentButtons = () => {
+      paidButton.classList.remove("disabled");
+    };
+
+    // Agregar evento a los botones de método de pago
+    paymentButtons.forEach(button => {
+      button.addEventListener("click", (e) => {
+        // Remover la clase active de todos los botones
+        paymentButtons.forEach(btn => btn.classList.remove("active"));
+
+        // Añadir la clase active al botón clicado
+        e.target.classList.add("active");
+
+        // Mostrar cashPaymentOptions solo para efectivo
+        document.getElementById("cashPaymentOptions").classList.toggle("hidden", e.target.value !== "Efectivo");
+
+        // Validar los botones de pago
+        validatePaymentButtons();
+      });
+    });
+    paymentButtons.forEach(button => {
+      button.addEventListener("click", (event) => {
+        // Obtener elementos de las opciones de pago
+        const cashPaymentOptions = document.getElementById("cashPaymentOptions");
+        const transferCardPaymentOptions = document.getElementById("transferCardPaymentOptions");
+
+        // Mostrar/ocultar opciones según método de pago seleccionado
+        if (event.target.value === "Efectivo") {
+          cashPaymentOptions.classList.remove("hidden");
+          // Mantener visible transferCardPaymentOptions para abonos en efectivo
+          transferCardPaymentOptions.classList.remove("hidden");
+        } else if (event.target.value === "Transferencia" || event.target.value === "Tarjeta de Crédito") {
+          cashPaymentOptions.classList.add("hidden");
+          transferCardPaymentOptions.classList.remove("hidden");
+        } else {
+          cashPaymentOptions.classList.add("hidden");
+          transferCardPaymentOptions.classList.remove("hidden");
+        }
+
+        // Remover la clase active de todos los botones
+        paymentButtons.forEach(btn => btn.classList.remove("active"));
+
+        // Añadir la clase active al botón clicado
+        event.target.classList.add("active");
+
+        // Validar los botones de pago
+        validatePaymentButtons();
+      });
+    });
+
+    // Función para validar los botones de pago
+    function validatePaymentButtons() {
+      const paymentMethod = document.querySelector(".payment-button.active")?.value;
+      const total = calculateTotal();
+      const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+      const partialAmount = parseFloat(document.getElementById("partialAmount").value) || 0;
+      const paidButton = document.getElementById("paid");
+      const partialButton = document.getElementById("partialPayment");
+
+      // Validar botón "Pago Recibido"
+      if (paymentMethod === "Efectivo") {
+        paidButton.classList.toggle("disabled", amountReceived < total);
+      } else if (paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") {
+        // Para transferencia/tarjeta, habilitar siempre el botón
+        paidButton.classList.remove("disabled");
+      } else {
+        paidButton.classList.add("disabled");
+      }
+
+      // Validar botón "Abono" - debe tener un monto válido (mayor que 0 y menor que total)
+      partialButton.classList.toggle("disabled",
+        partialAmount <= 0 || partialAmount >= total
+      );
+    }
+
+    // Evento para los botones de método de pago
+    paymentButtons.forEach(button => {
+      button.addEventListener("click", (e) => {
+        // Remover la clase active de todos los botones
+        paymentButtons.forEach(btn => btn.classList.remove("active"));
+
+        // Añadir la clase active al botón clicado
+        e.target.classList.add("active");
+
+        // Mostrar cashPaymentOptions solo para efectivo
+        document.getElementById("cashPaymentOptions").classList.toggle("hidden", e.target.value !== "Efectivo");
+
+        // Validar los botones de pago inmediatamente
+        validatePaymentButtons();
+      });
+    });
+
+    // Evento para cambios en el monto recibido (solo efectivo)
+    document.getElementById("amountReceived").addEventListener("input", () => {
+      const total = calculateTotal();
+      const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+      document.getElementById("changeAmount").textContent = `RD$${(amountReceived - total).toFixed(2)}`;
+
+      // Solo validar si el método actual es efectivo
+      if (document.querySelector(".payment-button.active")?.value === "Efectivo") {
+        validatePaymentButtons();
+      }
+    });
+
+    // Evento para cambios en el monto de abono
+    document.getElementById("partialAmount").addEventListener("input", () => {
+      validatePaymentButtons();
+    });
+
+    document.querySelectorAll(".payment-button").forEach(button => {
+      button.addEventListener("click", (e) => {
+        document.querySelectorAll(".payment-button").forEach(btn => btn.classList.remove("active"));
+        e.target.classList.add("active");
+        // Mostrar cashPaymentOptions solo para efectivo
+        document.getElementById("cashPaymentOptions").classList.toggle("hidden", e.target.value !== "Efectivo");
+        // transferCardPaymentOptions siempre visible
+        validatePaymentButtons();
+      });
+    });
+
+    // Eventos de los botones de pago
+    document.getElementById("pendingPayment").addEventListener("click", () => {
+      if (confirm("¿Seguro que quieres asignar esta factura como pago pendiente?")) {
+        processInvoice("pago pendiente");
+      }
+    });
+
+    document.getElementById("partialPayment").addEventListener("click", async () => {
+      // Verificar si hay un método de pago seleccionado
+      const selectedPaymentMethod = document.querySelector(".payment-button.active");
+
+      if (!selectedPaymentMethod) {
+        alert("Por favor selecciona un método de pago");
+        return;
+      }
+
+      const paymentMethod = selectedPaymentMethod.value;
+      const partialAmount = parseFloat(document.getElementById("partialAmount").value) || 0;
+      const total = calculateTotal();
+
+      if (partialAmount <= 0 || partialAmount >= total) {
+        alert("Por favor ingrese un monto válido para el abono (mayor que 0 y menor que el total)");
+        return;
+      }
+
+      if (confirm(`¿Seguro que deseas registrar un abono de RD$${partialAmount}?`)) {
+        try {
+          await processInvoice("pagado", true, partialAmount);
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Error al procesar el abono");
+        }
+      }
+    });
+
+    document.getElementById("paid").addEventListener("click", async () => {
+      const paymentMethod = document.querySelector(".payment-button.active").value;
+      const total = calculateTotal();
+
+      if (paymentMethod === "Efectivo") {
+        const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+        if (amountReceived < total) {
+          alert("El monto recibido debe ser igual o mayor al total");
+          return;
+        }
+      }
+
+      try {
+        await processInvoice("pagado");
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Error al procesar el pago");
+      }
+    });
+
+    // Inicialización
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("paid").classList.add("disabled");
+      document.getElementById("partialPayment").classList.add("disabled");
+    });
+
+
+
+
+    // Función para verificar si la caja está abierta
+const verificarEstadoCaja = async () => {
+  try {
+    const cajaSnapshot = await db.collection("caja").get();
+    if (!cajaSnapshot.empty) {
+      const cajaDoc = cajaSnapshot.docs[0].data();
+      
+      // Verificar si hay una hora de inicio de caja y no hay cierre reciente
+      const inicioCajaHora = cajaDoc.inicioCajaHora ? cajaDoc.inicioCajaHora.toDate() : null;
+      const cierreCajaHora = cajaDoc.cierreCajaHora ? cajaDoc.cierreCajaHora.toDate() : null;
+      
+      // La caja está abierta si:
+      // 1. Hay hora de inicio Y
+      // 2. No hay hora de cierre O la hora de inicio es más reciente que la de cierre
+      if (inicioCajaHora && (!cierreCajaHora || inicioCajaHora > cierreCajaHora)) {
+        return true; // Caja abierta
+      }
+    }
+    return false; // Caja cerrada
+  } catch (error) {
+    console.error("Error al verificar estado de caja:", error);
+    return false; // En caso de error, asumir caja cerrada
+  }
+};
+
+
+
+
+    const processInvoice = async (status, isPartialPayment = false, partialAmount = 0) => {
+      // Si el estado es "pago pendiente", no se necesita un método de pago
+      let paymentMethod = status === "pago pendiente" ? "Pago Pendiente" : document.querySelector(".payment-button.active").value;
+
+      const deliveryOption = deliverySelection.querySelector("button.active");
+      const deliveryPrice = deliveryOption ? deliveryOption.dataset.value : "0";
+
+      // Obtener el subtotal
+      let subtotal = 0;
+
+      // Calcular el total de los hampers
+      hampers.forEach(hamper => {
+        const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
+        subtotal += price; // Sumar al subtotal
+      });
+
+      // Calcular el total de otros servicios
+      otrosServicios.forEach(item => {
+        const count = parseInt(item.input.value) || 0;
+        subtotal += count * item.price; // Sumar al subtotal
+      });
+
+      // Calcular el total de productos adicionales
+      const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+      selectedProducts.forEach(product => {
+        const quantity = parseInt(product.value) || 0;
+        const productPrice = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+        subtotal += quantity * productPrice; // Sumar al subtotal
+      });
+
+      // Obtener el precio del delivery
+      const selectedDelivery = deliverySelection.querySelector("button.active");
+      const deliveryPriceValue = selectedDelivery ? parseFloat(selectedDelivery.dataset.value) : 0;
+      subtotal += deliveryPriceValue; // Incluir delivery en el subtotal
+
+      // Calcular el ITBIS
+      const itbis = (asumirPor !== "desactivado") ? subtotal * itbisPercentage : 0; // Calcular ITBIS solo si no está desactivado
+
+      // Calcular el total a pagar
+      const total = (asumirPor === "empresa") ? subtotal : subtotal + itbis; // Ajustar el total según asumirPor
+
+      // Si el método de pago es Efectivo, obtener el monto recibido y calcular el cambio
+      let amountReceived = 0;
+      let changeAmount = 0;
+      let remainingBalance = 0;
+
+      if (isPartialPayment) {
+        amountReceived = partialAmount;
+        remainingBalance = total - partialAmount;
+      } else if (paymentMethod === "Efectivo") {
+        amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+        changeAmount = amountReceived - total;
+      } else if (paymentMethod === "Transferencia" || paymentMethod === "Tarjeta de Crédito") {
+        // Para transferencia/tarjeta sin abono, el monto recibido es el total
+        amountReceived = total;
+      }
+
+      // Generar el ID aquí; si hay error se captura en el try/catch de abajo
+      let _lastId;
+      try { _lastId = await getLastInvoiceId(); } catch(e) { _lastId = "ar00000"; }
+
+      const invoiceData = {
+        id: generateNewInvoiceId(_lastId),
+        clientName: document.getElementById("clientName").value.trim() || "",
+        clientPhone: document.getElementById("clientPhone").value.replace(/-/g, '') || "",
+        clientRNC: document.getElementById("clientRNC").value.trim() || "",
+        clientNCF: document.getElementById("clientNCF").value.trim() || "",
+        NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text || "",
+        selectedServices: hampers.map(hamper => {
+          const weight = parseInt(hamper.weightInput.value);
+          const librasMin = parseInt(hamper.data.librasmin);
+          const librasMax = parseInt(hamper.data.librasmax);
+
+          return {
+            name: hamper.data.nombre || "",
+            weight: weight || 0,
+            price: hamper.priceDisplay.textContent.replace('Precio: RD$', '') || "0",
+            priceXlbs: hamper.data.preciolibras || 0,
+            hamperComplete: (weight >= librasMin && weight <= librasMax) ? "yes" : "no"
+          };
+        }),
+
+        otrosServicios: otrosServicios.map(item => ({
+          name: item.name || "",
+          count: parseInt(item.input.value) || 0,
+          price: item.price || 0
+        })).filter(item => item.count > 0),
+        deliveryOption: deliveryOption ? [{
+          name: deliveryOption.dataset.name || "",
+          price: deliveryPrice || "0"
+        }] : [{ name: "Sin Delivery", price: "0" }],
+        selectedProducts: Array.from(productSelection.querySelectorAll(".productInput")).map(product => ({
+          name: product.closest('.product-item').dataset.nombre || "",
+          quantity: parseInt(product.value) || 0,
+          price: parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0
+        })).filter(product => product.quantity > 0),
+        total: total || 0,
+        paymentMethod: paymentMethod || "",
+        status: status || "",
+        amountReceived: amountReceived || 0,
+        changeAmount: changeAmount || 0,
+        remainingBalance: remainingBalance || 0,
+        abonoFact: isPartialPayment ? "yes" : "",
+        amountReceivedAbono1er: isPartialPayment ? partialAmount : 0,
+        amountReceivedAbono1erMethod: isPartialPayment ? paymentMethod : "",
+        timestamp: firebase.firestore.Timestamp.now(),
+        ITBISmonto: itbis || 0
+      };
+
+      try {
+        // Fecha en hora RD (America/Santo_Domingo)
+        const now = new Date();
+        const rdDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Santo_Domingo' }));
+        const yyyy = rdDate.getFullYear();
+        const mm = String(rdDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(rdDate.getDate()).padStart(2, '0');
+        const diaKey = `${yyyy}-${mm}-${dd}`;
+
+        const invoiceId = invoiceData.id;
+
+        // Eliminar cualquier valor undefined/NaN que Firestore rechaza
+        const sanitizeObj = (obj) => {
+          if (Array.isArray(obj)) return obj.map(sanitizeObj);
+          if (obj !== null && typeof obj === 'object' && !(obj instanceof firebase.firestore.Timestamp)) {
+            const clean = {};
+            for (const [k, v] of Object.entries(obj)) {
+              if (v === undefined || (typeof v === 'number' && isNaN(v))) continue;
+              clean[k] = sanitizeObj(v);
+            }
+            return clean;
+          }
+          return obj;
+        };
+        const invoiceDataClean = sanitizeObj(invoiceData);
+
+        // ===== BIFURCACIÓN SEGÚN STATUS =====
+        if (invoiceDataClean.status === "pago pendiente") {
+          // PAGO PENDIENTE: solo guarda en facturas-pendiente, NUNCA en facturas-por-dia
+          await db.collection("facturas-pendiente").doc(invoiceDataClean.id).set({
+            ...invoiceDataClean,
+            diaKeyCreacion: diaKey,
+            statusPendiente: "pendiente"
+          });
+        } else {
+          // PAGADO / ABONO: guardar en facturas-por-dia normalmente
+          await db.runTransaction(async (transaction) => {
+            const diaRef = db.collection("facturas-por-dia").doc(diaKey);
+            const diaDoc = await transaction.get(diaRef);
+
+            const estadisticasPrevias = diaDoc.exists ? diaDoc.data().estadisticas : null;
+            const nuevasEstadisticas = calcularEstadisticasDiarias(invoiceDataClean, estadisticasPrevias);
+
+            if (diaDoc.exists) {
+              const facturasActuales = diaDoc.data().facturas || [];
+              facturasActuales.push(invoiceDataClean);
+              transaction.update(diaRef, {
+                facturas: facturasActuales,
+                estadisticas: nuevasEstadisticas,
+                ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            } else {
+              const fechaInicioDia = new Date(diaKey + 'T00:00:00-04:00');
+              transaction.set(diaRef, {
+                fecha: firebase.firestore.Timestamp.fromDate(fechaInicioDia),
+                fechaString: diaKey,
+                facturas: [invoiceDataClean],
+                estadisticas: nuevasEstadisticas,
+                ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            }
+          });
+
+          // Actualizar estadísticas mensuales en segundo plano
+          actualizarEstadisticasMensuales(diaKey).catch(err =>
+            console.warn("Error actualizando estadísticas mensuales:", err)
+          );
+        }
+        // ===== FIN BIFURCACIÓN =====
+
+        document.getElementById("invoiceIdDisplay").textContent = `${invoiceId}`;
+
+        // ========== PUNTOS POR VENTA ==========
+        // Solo cuentan los productos que tienen puntoPorVenta activo en Firestore
+        let totalProductos = 0;
+        const productosInputs = Array.from(productSelection.querySelectorAll(".productInput"));
+
+        productosInputs.forEach(input => {
+          const cantidad = parseInt(input.value) || 0;
+          if (cantidad > 0) {
+            const item = input.closest('.product-item');
+            if (item && item.dataset.puntoPorVenta === "true") {
+              totalProductos += cantidad;
+            }
+          }
+        });
+
+        // Registrar en ventaproductos solo si hay productos válidos
+        if (totalProductos > 0) {
+          const nombreEmpleado = document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text;
+
+          await db.collection("ventaproductos").doc(nombreEmpleado).set({
+            empleado: nombreEmpleado,
+            monto: firebase.firestore.FieldValue.increment(totalProductos)
+          }, { merge: true });
+        }
+        // ========== FIN PUNTOS POR VENTA ==========
+
+        // Actualizar inventario basado en el array "consumo" de los hampers
+        for (const hamper of hampers) {
+          for (const item of hamper.consumo) {
+            if (!item.id) continue; // Saltar si el id es undefined/null
+            const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+            if (!productDoc.empty) {
+              const productRef = productDoc.docs[0].ref;
+              const productData = productDoc.docs[0].data();
+              const newQuantity = productData.cantidad - item.cantidad;
+              await productRef.update({ cantidad: newQuantity });
+            }
+          }
+        }
+
+        // Actualizar inventario basado en el array "consumo" de los "otroservicio"
+        for (const servicio of otrosServicios) {
+          const cantidadServicio = parseInt(servicio.input.value) || 0;
+          if (cantidadServicio > 0) {
+            for (const item of servicio.consumo) {
+              if (!item.id) continue; // Saltar si el id es undefined/null
+              const productDoc = await db.collection("productos").where("id", "==", item.id).get();
+              if (!productDoc.empty) {
+                const productRef = productDoc.docs[0].ref;
+                const productData = productDoc.docs[0].data();
+                const newQuantity = productData.cantidad - (item.cantidad * cantidadServicio);
+                await productRef.update({ cantidad: newQuantity });
+              }
+            }
+          }
+        }
+
+        // Actualizar inventario de productos seleccionados manualmente
+        for (const product of selectedProducts) {
+          const quantity = parseInt(product.value) || 0;
+          if (quantity > 0) {
+            const productItem = product.closest('.product-item');
+            // Usar el doc.id guardado en el dataset (método confiable)
+            const docId = productItem ? productItem.dataset.docId : null;
+            if (!docId) {
+              // Fallback: buscar por nombre limpio si por alguna razón no hay docId
+              const productName = (productItem ? productItem.dataset.nombre : '') || '';
+              if (!productName) continue;
+              const productDoc = await db.collection("productos").where("nombre", "==", productName).get();
+              if (!productDoc.empty) {
+                const productRef = productDoc.docs[0].ref;
+                const productData = productDoc.docs[0].data();
+                await productRef.update({ cantidad: productData.cantidad - quantity });
+              }
+              continue;
+            }
+            const productRef = db.collection("productos").doc(docId);
+            const productSnap = await productRef.get();
+            if (productSnap.exists) {
+              const newQuantity = productSnap.data().cantidad - quantity;
+              await productRef.update({ cantidad: newQuantity });
+            }
+          }
+        }
+
+        disablePaymentButtons();
+        document.getElementById("cashPaymentOptions").classList.add("hidden");
+
+        showProcessedInvoiceModal(
+          document.getElementById("modalInvoiceDetails").innerHTML,
+          paymentMethod,
+          amountReceived,
+          changeAmount,
+          status,
+          isPartialPayment,
+          partialAmount,
+          remainingBalance
+        );
+
+        clearSelections();
+        document.getElementById("billingForm").reset();
+        document.getElementById("amountReceived").value = "";
+        document.getElementById("partialAmount").value = "";
+        document.getElementById("changeAmount").textContent = "";
+        document.getElementById("empleado").selectedIndex = 0;
+        updateInvoicePreview();
+
+      } catch (error) {
+        console.error("Error al guardar la factura: ", error);
+        // Mostrar el mensaje real del error para facilitar diagnóstico
+        const msg = error && error.message ? error.message : String(error);
+        alert("Hubo un problema al procesar la factura.\n\nDetalle: " + msg);
+      }
+
+      document.getElementById("confirmationModal").classList.add("hidden");
+    };
+
+
+
+
+
+    // Eventos de entrada para validar botones
+    document.getElementById("amountReceived").addEventListener("input", () => {
+      const total = calculateTotal();
+      const amountReceived = parseFloat(document.getElementById("amountReceived").value) || 0;
+      document.getElementById("changeAmount").textContent = `RD$${(amountReceived - total).toFixed(2)}`;
+      validatePaymentButtons();
+    });
+
+    document.getElementById("partialAmount").addEventListener("input", () => {
+      validatePaymentButtons();
+    });
+
+
+
+
+    // Función para deshabilitar los botones de pago
+    const disablePaymentButtons = () => {
+
+      const paidButton = document.getElementById("paid");
+      paidButton.classList.add("disabled");
+    };
+
+    const getLastInvoiceId = async () => {
+      let lastId = "ar00000";
+
+      // Buscar el último ID en facturas-por-dia (últimos 10 días)
+      const snapshotDias = await db.collection("facturas-por-dia")
+        .orderBy("fecha", "desc")
+        .limit(10)
+        .get();
+
+      if (!snapshotDias.empty) {
+        for (const doc of snapshotDias.docs) {
+          const data = doc.data();
+          if (data.facturas && data.facturas.length > 0) {
+            const ids = data.facturas
+              .map(f => f.id)
+              .filter(id => id && id.startsWith('ar'));
+            for (const id of ids) {
+              if (parseInt(id.substring(2)) > parseInt(lastId.substring(2))) {
+                lastId = id;
+              }
+            }
+          }
+        }
+      }
+
+      // También revisar facturas-pendiente para no generar IDs duplicados
+      const snapshotPendientes = await db.collection("facturas-pendiente").get();
+      if (!snapshotPendientes.empty) {
+        snapshotPendientes.forEach(doc => {
+          const id = doc.id;
+          if (id && id.startsWith('ar')) {
+            if (parseInt(id.substring(2)) > parseInt(lastId.substring(2))) {
+              lastId = id;
+            }
+          }
+        });
+      }
+
+      return lastId;
+    };
+
+    const generateNewInvoiceId = (lastId) => {
+      const lastNumber = parseInt(lastId.substring(2));
+      const newNumber = lastNumber + 1;
+      return `ar${String(newNumber).padStart(5, '0')}`;
+    };
+
+
+
+
+
+    const calculateTotal = () => {
+      let total = 0;
+
+      // Calcular subtotal
+      hampers.forEach(hamper => {
+        const price = parseFloat(hamper.priceDisplay.textContent.replace('Precio: RD$', '')) || 0;
+        total += price;
+      });
+
+      otrosServicios.forEach(item => {
+        const count = parseInt(item.input.value) || 0;
+        total += count * item.price;
+      });
+
+      const selectedDelivery = deliverySelection.querySelector("button.active");
+      if (selectedDelivery) {
+        total += parseFloat(selectedDelivery.dataset.value) || 0;
+      }
+
+      const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
+      selectedProducts.forEach(product => {
+        const quantity = parseInt(product.value) || 0;
+        const price = parseFloat(product.closest('.product-item').querySelector('.productPrice').textContent.replace('$', '')) || 0;
+        total += quantity * price;
+      });
+
+      // Calcular el ITBIS solo si asumirPor no está en "desactivado" y está en "cliente"
+      let itbis = 0;
+      if (asumirPor !== "desactivado" && asumirPor !== "empresa") {
+        itbis = total * itbisPercentage; // Asegúrate de que itbisPercentage esté definido y tenga el valor correcto
+      }
+
+      total += itbis; // Sumar el ITBIS al total
+
+      return total;
+    };
+
+
+
+
+
+
+    const clearSelections = () => {
+      const deliveryButtons = deliverySelection.querySelectorAll("button");
+      deliveryButtons.forEach(button => button.classList.remove("active"));
+
+      const activeButtons = document.querySelectorAll(".button-list button.active");
+      activeButtons.forEach(button => button.classList.remove("active"));
+
+      const productInputs = productSelection.querySelectorAll(".productInput");
+      productInputs.forEach(input => {
+        input.value = 0;
+        const productItem = input.closest('.product-item');
+        productItem.style.backgroundColor = "#f9f9f9";
+      });
+
+      hamperContainer.innerHTML = "";
+      hampers = [];
+
+      otrosServiciosDisplay.innerHTML = "";
+      otrosServicios = [];
+
+      const otrosInputs = otrosServiciosDisplay.querySelectorAll(".itemInput");
+      otrosInputs.forEach(input => {
+        input.value = 0;
+      });
+
+      updateInvoicePreview();
+    };
+
+    document.getElementById("clientName").addEventListener("input", updateInvoicePreview);
+    document.getElementById("clientPhone").addEventListener("input", updateInvoicePreview);
+    document.getElementById("clientRNC").addEventListener("input", updateInvoicePreview);
+    document.getElementById("clientNCF").addEventListener("input", updateInvoicePreview);
+
+    loadServices();
+    loadDeliveryOptions();
+    loadProducts();
+
+
+    //Modal Factura procesada
+    const showProcessedInvoiceModal = (invoiceDetails, paymentMethod, amountReceived, changeAmount, status, isPartial = false, partialAmount = 0, remainingBalance = 0) => {
+      // Obtener la fecha y hora actual en formato AM/PM
+      const now = new Date();
+      const hours = now.getHours() % 12 || 12;
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+      const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
+
+      // Formatear fecha
+      const day = now.getDate().toString().padStart(2, "0");
+      const month = (now.getMonth() + 1).toString().padStart(2, "0");
+      const year = now.getFullYear();
+      const dateString = `${day}/${month}/${year}`;
+
+      let paymentDetails = `
+    <div style="display: flex; justify-content: space-between;">
+      <strong>Método de Pago:</strong>
+      <span>${paymentMethod}</span>
+    </div>
+  `;
+
+      if (isPartial) {
+        paymentDetails += `
+      <div style="display: flex; justify-content: space-between;">
+        <strong>Monto Abonado:</strong> 
+        <span>RD$${partialAmount.toFixed(2)}<span><br>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <strong>Saldo Pendiente:</strong>
+        <span>RD$${remainingBalance.toFixed(2)}</span>
+      </div>
+      <div style="text-align: center; margin-top: 10px; margin-bottom: 4px;font-weight: bold; color: orange;">
+        Pago Parcial (Abono)
+      </div>
+    `;
+      } else if (paymentMethod === "Efectivo") {
+        paymentDetails += `
+      <div style="display: flex; justify-content: space-between;">
+        <strong>Monto Recibido:</strong> 
+        <span>RD$${amountReceived.toFixed(2)}<span><br>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <strong>Cambio:</strong>
+        <span>RD$${changeAmount.toFixed(2)}</span>
+      </div>
+    `;
+      }
+
+      const statusDisplay = status === "pago pendiente" ? `
+    <div style="text-align: center; margin-top: 10px; margin-bottom: 4px;font-weight: bold; color: red;">
+      Pago Pendiente
+    </div>
+  ` : "";
+
+      const details = `
+    <div style="display: inline-flex;width: 100%;padding-left: 0; margin-left: 0;"">
+
+      <div style="display: inline-flex;justify-content: center;width: 100%;gap: 10px;padding-left: 0; margin-left: 0;"">
+        <div>
+           <img src="./img/logo1_impresion.png" style="height: 100px;margin: 5px 0px;">
+        </div>
+
+        <div style="display: inline-flex;flex-direction: column;justify-content: space-between;">
+          <h1 style="font-size: 24px;text-align: center;margin-block-start: 0px;margin-block-end: 0px;">Paris Laundry RD</h1>
+          <p style="margin-block-start: 0px;margin-block-end: 0px;font-size: 12px;width: 95%;margin: 0 auto;">Dirección: Santo Domingo Este, Sector Alma Rosa, Calle Club Activo 2030 #24, 2do nivel.</p>
+
+             <div style="text-align: end;padding-left: 0;margin-left: 0;display: inline-flex;flex-direction: column;">
+               <strong>Fecha y Hora:</strong>
+               <span>${dateString} ${timeString}</span>
+             </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="background: black; height: 1px; width: 100%; margin-bottom: 4px;"></div>
+    
+    ${invoiceDetails}<br>
+    
+    ${paymentDetails}
+    ${statusDisplay}
+  `;
+
+      document.getElementById("processedInvoiceDetails").innerHTML = details;
+      document.getElementById("processedInvoiceModal").classList.remove("hidden");
+    };
+
+
+
+
+    const closeProcessedInvoiceModal = () => {
+      // Cerrar el modal
+      document.getElementById("processedInvoiceModal").classList.add("hidden");
+      document.getElementById("partialPayment").classList.add("disabled");
+
+
+      // Reiniciar la opción de método de pago
+      const paymentButtons = document.querySelectorAll(".payment-button");
+      paymentButtons.forEach(button => button.classList.remove("active"));
+    };
+
+
+    // Modificar el evento de los botones de pago
+    document.getElementById("pendingPayment").addEventListener("click", async () => {
+      const paymentMethod = document.querySelector(".payment-button.active").value;
+      const amountReceived = paymentMethod === "Efectivo" ? parseFloat(document.getElementById("amountReceived").value) || 0 : 0;
+      const changeAmount = paymentMethod === "Efectivo" ? amountReceived - calculateTotal() : 0;
+
+      // Mostrar el modal con el estado "pago pendiente"
+      showProcessedInvoiceModal(document.getElementById("modalInvoiceDetails").innerHTML, paymentMethod, amountReceived, changeAmount, "pago pendiente");
+    });
+
+    document.getElementById("paid").addEventListener("click", () => {
+      const paymentMethod = document.querySelector(".payment-button.active").value;
+      const amountReceived = paymentMethod === "Efectivo" ? parseFloat(document.getElementById("amountReceived").value) || 0 : 0;
+      const changeAmount = paymentMethod === "Efectivo" ? amountReceived - calculateTotal() : 0;
+
+      // Solo mostrar el modal sin procesar la factura
+      showProcessedInvoiceModal(document.getElementById("modalInvoiceDetails").innerHTML, paymentMethod, amountReceived, changeAmount);
+    });
+    //Modal Factura procesada FIN
+
+
+
+
+
+
+
+
+
+
+
+
+    // Añadir la biblioteca QRious en el head del documento
+    (function loadQriousScript() {
+      if (!window.QRious) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
+        script.async = true;
+        document.head.appendChild(script);
+      }
+    })();
+
+    document.getElementById("printInvoiceButton").addEventListener("click", () => {
+      printInvoice();
+    });
+
+    const printInvoice = () => {
+      const invoiceDetails = document.getElementById("processedInvoiceDetails").innerHTML;
+      const invoiceId = document.getElementById("invoiceIdDisplay").textContent; // Obtener el ID de la factura
+
+      // Cargar primero la imagen para asegurarnos de que esté disponible antes de imprimir
+      const logoImg = new Image();
+      logoImg.onload = () => {
+        // Una vez que la imagen se cargue, procedemos con la impresión
+        proceedWithPrinting(invoiceDetails, invoiceId, logoImg);
+      };
+
+      logoImg.onerror = () => {
+        // Si hay un error al cargar la imagen, intentamos con una ruta alternativa
+        console.warn("Error al cargar el logo. Intentando ruta alternativa...");
+        logoImg.src = "../logo1.png"; // Intentar con una ruta relativa alternativa
+
+        // Si después de un tiempo prudente sigue sin cargar, imprimimos sin logo
+        setTimeout(() => {
+          if (!logoImg.complete || logoImg.naturalHeight === 0) {
+            console.error("No se pudo cargar el logo. Imprimiendo sin logo.");
+            proceedWithPrinting(invoiceDetails, invoiceId, null);
+          }
+        }, 1000);
+      };
+
+      // Intentar primero con la ruta directa
+      logoImg.src = "./img/logo1_impresion.png";
+    };
+
+    const proceedWithPrinting = (invoiceDetails, invoiceId, logoImg) => {
+      const printWindow = window.open('', '', 'height=600,width=800');
+
+      // Obtener la fecha y hora actual en formato AM/PM    
+      const now = new Date();
+      const hours = now.getHours() % 12 || 12;
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+      const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
+
+      // Reemplazar "Peso: X lbs" por "1 hamper" si está dentro del rango
+      const modifiedDetails = invoiceDetails.replace(/Peso: (\d+) lbs/g, (match, weight) => {
+        const weightNum = parseInt(weight);
+        const hamperData = hampers.find(hamper => parseInt(hamper.weightInput.value) === weightNum);
+        if (hamperData) {
+          const librasMin = parseInt(hamperData.data.librasmin);
+          const librasMax = parseInt(hamperData.data.librasmax);
+          return (weightNum >= librasMin && weightNum <= librasMax) ? "1 hamper" : match;
+        }
+        return match;
+      });
+
+      // Preparar el logo para la ventana de impresión
+      let logoHtml = '';
+
+      if (logoImg && logoImg.complete && logoImg.naturalHeight !== 0) {
+        // Si la imagen se cargó correctamente, la convertimos a base64 para asegurar que se imprima
+        try {
+          // Crear un canvas para convertir la imagen a base64
+          const canvas = document.createElement('canvas');
+          canvas.width = logoImg.width;
+          canvas.height = logoImg.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(logoImg, 0, 0);
+
+          // Convertir a base64
+          const dataUrl = canvas.toDataURL('image/png');
+
+          // Crear el HTML para la imagen
+          logoHtml = `<img src="${dataUrl}" alt="Logo de Paris Laundry RD" style="">`;
+        } catch (e) {
+          console.error("Error al convertir la imagen a base64", e);
+          // Usar la imagen directamente como fallback
+          logoHtml = `<img src="${logoImg.src}" alt="Logo de Paris Laundry RD" style="">`;
+        }
+      } else {
+        // Si no se pudo cargar la imagen, usar un texto como respaldo
+        logoHtml = `<div style="border: 1px solid #ccc; padding: 10px; text-align: center;">
+              <span style="font-size: 20px; font-weight: bold;">PARIS LAUNDRY RD</span>
+            </div>`;
+      }
+
+      // Crear URL para consultar estado de la ropa
+      const trackingUrl = `www.midominio.com/#id-${invoiceId}`;
+
+      // Generar código QR localmente con QRious
+      const qrCanvas = document.createElement('canvas');
+      qrCanvas.width = 100;
+      qrCanvas.height = 100;
+
+      // Esperar a que la biblioteca QRious esté cargada
+      const generateQR = () => {
+        if (window.QRious) {
+          const qr = new QRious({
+            element: qrCanvas,
+            value: 'https://' + trackingUrl,
+            size: 100
+          });
+          return qrCanvas.toDataURL('image/png');
+        } else {
+          // Si QRious no está cargado, esperamos 100ms y volvemos a intentar
+          return null;
+        }
+      };
+
+      // Intentar generar el QR o usar un texto alternativo
+      let qrDataUrl = generateQR();
+
+      // Si la biblioteca no está lista, esperar un poco y reintentar una vez
+      if (!qrDataUrl && typeof QRious === 'undefined') {
+        setTimeout(() => {
+          const retryQrDataUrl = generateQR();
+          if (retryQrDataUrl) {
+            // Si en el segundo intento se consigue generar el QR, actualizar la imagen
+            const qrImg = printWindow.document.querySelector('.qr-code img');
+            if (qrImg) {
+              qrImg.src = retryQrDataUrl;
+            }
+          }
+        }, 200); // Esperar 200ms antes de reintentar
+      }
+
+      printWindow.document.write(`
+<html>
+<head>
+  <title>Factura</title>
+  <style>
+      @media print {
+          @page {
+      margin: 3mm 3mm 3mm 3mm; /* o 0 para márgenes mínimos */
+      size: auto;
+    }
+          body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+          }
+          .logo-container {
+              display: block !important;
+              visibility: visible !important;
+              text-align: center;
+              margin: 10px 0;
+          }
+          img {
+              display: block !important;
+              visibility: visible !important;
+              max-width: 100px;
+              height: auto;
+              margin: 0 auto;
+          }
+          .qr-code {
+              display: block !important;
+              visibility: visible !important;
+              text-align: center;
+              margin: 0;
+          }
+          .tracking-info {
+              text-align: center;
+              margin: 5px 0;
+          }
+      }
+      
+      body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+      
+      }
+      h1 {
+          text-align: center;
+          font-size: 14px;
+          margin-block-start: 0px;
+          margin-block-end: 0px;
+      }
+
+      h2 {
+          margin-block-start: 0px;
+          margin-block-end: 5px;
+          margin-top: 10px;
+          text-align: center;
+          font-size: 1.1em;
+      }
+
+      img {
+          display: block !important;
+          visibility: visible !important;
+          max-width: 100px;
+          height: auto;
+          margin: 0 auto;
+      }
+  
+      .invoice-details {
+          margin: 0px 0px;
+      }
+      .invoice-details strong {
+          display: block;
+          margin: 0px 0;
+      }
+      
+      .logo-container {
+          text-align: center;
+          margin: 10px 0;
+      }
+      .tracking-info {
+          text-align: center;
+          margin: 2px 0;
+          font-size: 0.9em;
+      }
+      .tracking-url {
+          font-weight: bold;
+          font-size: 1em;
+      }
+      .qr-code {
+          text-align: center;
+          margin: 0;
+      }
+
+        body, html, .MasterBox, .container_previewfactura, #invoiceResult {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 97% !important;
+  }
+  </style>
+</head>
+<body>
+
+  <h2 style="margin-block-end: 7px;">Factura</h2>
+  <div style="background: black; height: 1px; width: 100%;"></div>
+
+  <!-- <div class="logo-container" style="display: inline-flex;align-items: center;">
+      <div style="width: 50px;">${logoHtml}</div>
+      <div>
+          <h1 style="font-size: 24px;">Paris Laundry RD3</h1>
+      </div>   
+  </div> -->
+
+  <div class="invoice-details">
+
+      ${modifiedDetails}
+
+      <div style="background: black; height: 1px; width: 100%; margin-top: 4px;"></div>
+
+      <div style="display: inline-flex;width: 100%;flex-direction: column;align-items: center; margin-top: 10px; margin-bottom: 0px;">
+          <span>ID de Factura:</span> <strong style="font-size: 37px;">${invoiceId}</strong>
+      </div>
+      
+      <!-- Información de seguimiento -->
+      <!-- <div class="tracking-info">
+          <p style="margin-block-start: 7px;margin-block-end: 2px;">Consulta el estado de tu ropa en el link:</p>
+          <p class="tracking-url" style="margin-block-start: 2px;margin-block-end: 2px;">${trackingUrl}</p>
+      </div> -->
+      
+      <!-- Código QR -->
+      <!-- <div class="qr-code">
+          ${qrDataUrl
+          ? `<img src="${qrDataUrl}" alt="Código QR para seguimiento" style="width:100px; height:100px;">`
+          : `<div style="width:100px; height:100px; margin:0 auto; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; text-align:center; font-size:10px;">
+                 Escanea el URL para seguimiento
+               </div>`
+        }
+      </div> -->
+
+      <div style="width: 100%;margin-bottom: 0px;text-align: justify;">
+          <p>Nota: No somos responsables por daños ocasionados por las máquinas o por la mala división de la ropa por parte del cliente.</p>
+      </div>
+
+      <h2>¡Gracias por elegirnos!</h2>
+
+      <div style="width: 100%;margin-bottom: 30px;text-align: center;"><p>.</p></div>
+
+  </div>
+</body>
+</html>
+`);
+
+      printWindow.document.close();
+      printWindow.focus();
+
+      // Si tenemos el QR generado, imprimimos inmediatamente
+      if (qrDataUrl) {
+        setTimeout(() => {
+          printWindow.print();
+          setTimeout(() => {
+            printWindow.close();
+          }, 300);
+        }, 200);
+      } else {
+        // Si el QR aún no está listo, damos un poco más de tiempo para que se cargue la biblioteca
+        setTimeout(() => {
+          printWindow.print();
+          setTimeout(() => {
+            printWindow.close();
+          }, 300);
+        }, 500);
+      }
+    };
+
+
+
+
+
+
+
+    // ===== [CONTROL DE ABONO SIMPLIFICADO] ===== //
+    document.addEventListener('DOMContentLoaded', function () {
+      const abonoCheckbox = document.getElementById('pagarConAbonoCheckbox');
+      const opcionesAbono = document.getElementById('transferCardPaymentOptions');
+
+      // 1. Ocultar al cargar
+      opcionesAbono.style.display = 'none';
+
+      // 2. Mostrar/ocultar al hacer click
+      abonoCheckbox.addEventListener('click', function () {
+        opcionesAbono.style.display = this.checked ? 'block' : 'none';
+      });
+
+      // 3. Ocultar siempre que se abra el modal (añade esto donde procesas la factura)
+      document.getElementById('processInvoice').addEventListener('click', function () {
+        abonoCheckbox.checked = false;
+        opcionesAbono.style.display = 'none';
+      });
+    });
+
+    // 1. Controlar visibilidad con el checkbox
+    document.getElementById('pagarConAbonoCheckbox').addEventListener('change', function () {
+      document.getElementById('cashPaymentOptions').hidden = this.checked;
+    });
+
+    // 2. Reiniciar al cerrar el modal
+    document.querySelector('.close-button').addEventListener('click', function () {
+      document.getElementById('pagarConAbonoCheckbox').checked = false;
+      document.getElementById('cashPaymentOptions').hidden = false;
+    });
+    // ===== FUNCIONES UTILITARIAS: NUEVA ESTRUCTURA DB =====
+
+    /**
+     * Calcula las estadísticas del día sumando la nueva factura a las previas.
+     */
+    function calcularEstadisticasDiarias(factura, prev) {
+      const e = prev ? JSON.parse(JSON.stringify(prev)) : {
+        totalFacturas: 0,
+        totalClientesAtendidos: 0,
+        ingresoTotal: 0,
+        pagos: {
+          efectivo: { cantidad: 0, montoTotal: 0, montoRecibido: 0, cambioTotal: 0 },
+          transferencia: { cantidad: 0, montoTotal: 0 },
+          tarjeta: { cantidad: 0, montoTotal: 0 },
+          pagoPendiente: { cantidad: 0, montoTotal: 0 }
+        },
+        abonos: { facturasConAbono: 0, montoTotalAbonado: 0, saldoPendienteAcumulado: 0 },
+        servicios: {
+          hampersVendidos: 0,
+          desgloseHampers: {},
+          otrosServiciosVendidos: 0,
+          productosVendidos: 0,
+          ingresoPorProductos: 0
+        },
+        empleados: {},
+        delivery: { conDelivery: 0, sinDelivery: 0, ingresoPorDelivery: 0 },
+        impuestos: { itbisCobrado: 0 }
+      };
+
+      e.totalFacturas++;
+      e.totalClientesAtendidos++;
+      e.ingresoTotal = (e.ingresoTotal || 0) + (factura.total || 0);
+
+      // Pagos por método
+      const metodo = (factura.paymentMethod || "").toLowerCase();
+      if (factura.status === "pago pendiente") {
+        e.pagos.pagoPendiente.cantidad++;
+        e.pagos.pagoPendiente.montoTotal += factura.total || 0;
+      } else if (metodo === "efectivo") {
+        e.pagos.efectivo.cantidad++;
+        e.pagos.efectivo.montoTotal += factura.total || 0;
+        e.pagos.efectivo.montoRecibido += factura.amountReceived || 0;
+        e.pagos.efectivo.cambioTotal += factura.changeAmount || 0;
+      } else if (metodo === "transferencia") {
+        e.pagos.transferencia.cantidad++;
+        e.pagos.transferencia.montoTotal += factura.total || 0;
+      } else if (metodo.includes("tarjeta")) {
+        e.pagos.tarjeta.cantidad++;
+        e.pagos.tarjeta.montoTotal += factura.total || 0;
+      }
+
+      // Abonos
+      if (factura.abonoFact === "yes") {
+        e.abonos.facturasConAbono++;
+        e.abonos.montoTotalAbonado += factura.amountReceivedAbono1er || 0;
+        e.abonos.saldoPendienteAcumulado += factura.remainingBalance || 0;
+      }
+
+      // ITBIS
+      e.impuestos.itbisCobrado += factura.ITBISmonto || 0;
+
+      // Hampers
+      if (factura.selectedServices && factura.selectedServices.length > 0) {
+        factura.selectedServices.forEach(s => {
+          e.servicios.hampersVendidos++;
+          const key = (s.name || "desconocido").replace(/\s+/g, '_').toLowerCase();
+          e.servicios.desgloseHampers[key] = (e.servicios.desgloseHampers[key] || 0) + 1;
+        });
+      }
+
+      // Otros servicios
+      if (factura.otrosServicios && factura.otrosServicios.length > 0) {
+        factura.otrosServicios.forEach(s => {
+          e.servicios.otrosServiciosVendidos += s.count || 1;
+        });
+      }
+
+      // Productos
+      if (factura.selectedProducts && factura.selectedProducts.length > 0) {
+        factura.selectedProducts.forEach(p => {
+          e.servicios.productosVendidos += p.quantity || 0;
+          e.servicios.ingresoPorProductos += (p.quantity || 0) * (p.price || 0);
+        });
+      }
+
+      // Empleados
+      const empNombre = factura.NombreEmpleado || "Desconocido";
+      if (!e.empleados[empNombre]) {
+        e.empleados[empNombre] = { facturasAtendidas: 0, totalVendido: 0 };
+      }
+      e.empleados[empNombre].facturasAtendidas++;
+      e.empleados[empNombre].totalVendido += factura.total || 0;
+
+      // Delivery
+      if (factura.deliveryOption && factura.deliveryOption.length > 0) {
+        const delivery = factura.deliveryOption[0];
+        const precioDelivery = parseFloat(delivery.price) || 0;
+        if (precioDelivery > 0) {
+          e.delivery.conDelivery++;
+          e.delivery.ingresoPorDelivery += precioDelivery;
+        } else {
+          e.delivery.sinDelivery++;
+        }
+      }
+
+      return e;
+    }
+
+    /**
+     * Actualiza el documento de estadísticas mensuales leyendo todos los días del mes.
+     */
+    async function actualizarEstadisticasMensuales(diaKey) {
+      const [anio, mes] = diaKey.split('-');
+      const mesKey = `${anio}-${mes}`;
+
+      // Leer todos los días del mes
+      const snapshot = await db.collection("facturas-por-dia")
+        .where("fechaString", ">=", `${mesKey}-01`)
+        .where("fechaString", "<=", `${mesKey}-31`)
+        .get();
+
+      let statsAcum = {
+        totalFacturas: 0,
+        ingresoTotal: 0,
+        pagos: {
+          efectivo: { cantidad: 0, montoTotal: 0 },
+          transferencia: { cantidad: 0, montoTotal: 0 },
+          tarjeta: { cantidad: 0, montoTotal: 0 }
+        },
+        hampersVendidos: 0,
+        productosVendidos: 0,
+        empleados: {},
+        ingresosPorDia: {}
+      };
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const est = data.estadisticas || {};
+        statsAcum.totalFacturas += est.totalFacturas || 0;
+        statsAcum.ingresoTotal += est.ingresoTotal || 0;
+        statsAcum.hampersVendidos += (est.servicios && est.servicios.hampersVendidos) || 0;
+        statsAcum.productosVendidos += (est.servicios && est.servicios.productosVendidos) || 0;
+
+        if (est.pagos) {
+          ['efectivo', 'transferencia', 'tarjeta'].forEach(m => {
+            if (est.pagos[m]) {
+              statsAcum.pagos[m].cantidad += est.pagos[m].cantidad || 0;
+              statsAcum.pagos[m].montoTotal += est.pagos[m].montoTotal || 0;
+            }
+          });
+        }
+
+        if (est.empleados) {
+          Object.entries(est.empleados).forEach(([nombre, datos]) => {
+            if (!statsAcum.empleados[nombre]) {
+              statsAcum.empleados[nombre] = { facturas: 0, total: 0 };
+            }
+            statsAcum.empleados[nombre].facturas += datos.facturasAtendidas || 0;
+            statsAcum.empleados[nombre].total += datos.totalVendido || 0;
+          });
+        }
+
+        statsAcum.ingresosPorDia[doc.id] = est.ingresoTotal || 0;
+      });
+
+      // Convertir empleados a top array
+      const topEmpleados = Object.entries(statsAcum.empleados)
+        .map(([nombre, d]) => ({ nombre, facturas: d.facturas, total: d.total }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 10);
+
+      await db.collection("estadisticas-mensuales").doc(mesKey).set({
+        mes: mesKey,
+        estadisticas: {
+          totalFacturas: statsAcum.totalFacturas,
+          ingresoTotal: statsAcum.ingresoTotal,
+          pagos: statsAcum.pagos,
+          hampersVendidos: statsAcum.hampersVendidos,
+          productosVendidos: statsAcum.productosVendidos,
+          topEmpleados,
+          ingresosPorDia: statsAcum.ingresosPorDia
+        }
+      });
+    }
+
+    // ===== FIN FUNCIONES UTILITARIAS =====
+
+  </script>
+
+</body>
+
+</html>
