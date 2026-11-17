@@ -676,7 +676,8 @@
       const deliveryName = data.deliveryOption[0].name;
       const deliveryPrice = "RD$" + data.deliveryOption[0].price;
 
-      const clientAddress = data.clientAddress || "Sin dirección";
+      const clientRNC = data.clientRNC || "No especificado";
+      const clientNCF = data.clientNCF || "No especificado";
 
       // Verificar si es un abono (sin importar el status)
       const isAbono = data.abonoFact === "yes";
@@ -763,7 +764,7 @@ if (data.paymentMethod) {
 
     <strong>Cliente:</strong> ${data.clientName}${isAbono ? '<span style="color: red;"> (Abono)</span>' : ''}<br>
     <strong>Teléfono:</strong> ${data.clientPhone}<br>
-    <strong>Dirección:</strong> ${clientAddress}</p>
+    <strong>RCN:</strong> ${clientRNC}<br>     <strong>NCF:</strong> ${clientNCF}</p>
 
     <strong>Servicios:</strong><br>${services || ""}
     ${otherServices || ""}<br>

@@ -11,6 +11,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js"></script>
   <script src="./js/menu - sin conexion.js" defer></script>
+
+<style>
+.comprobante-fiscal-toggle{display:flex;align-items:center;margin:12px 0 8px;}
+.comprobante-fiscal-switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;color:inherit;}
+.comprobante-fiscal-switch input{position:absolute;opacity:0;width:1px;height:1px;}
+.comprobante-fiscal-slider{width:42px;height:23px;border-radius:20px;background:#aeb4bd;position:relative;transition:background .2s;flex:none;}
+.comprobante-fiscal-slider:after{content:"";position:absolute;width:17px;height:17px;left:3px;top:3px;border-radius:50%;background:#fff;transition:transform .2s;}
+.comprobante-fiscal-switch input:checked + .comprobante-fiscal-slider{background:#259b62;}
+.comprobante-fiscal-switch input:checked + .comprobante-fiscal-slider:after{transform:translateX(19px);}
+#datosComprobanteFiscal.hidden{display:none!important;}
+</style>
 </head>
 
 
@@ -111,15 +122,31 @@
                 </div>
               </div>
             </div>
-            <div>
-              <label for="direccionCliente">Dirección del Cliente:</label>
-              <div class="input-numeroContacto">
-                <input type="text" id="clientAddress" placeholder="Dirección" required maxlength="100">
-                <div class="cantidad-img"><img src="./img/icon/direccion_1.png"></div>
+            <div class="comprobante-fiscal-toggle">
+              <label class="comprobante-fiscal-switch" for="comprobanteFiscal">
+                <input type="checkbox" id="comprobanteFiscal">
+                <span class="comprobante-fiscal-slider" aria-hidden="true"></span>
+                <span>Comprobante fiscal</span>
+              </label>
+            </div>
+            <div class="nombre_div_telefono cliente-identificadores hidden" id="datosComprobanteFiscal">
+              <div>
+                <label for="clientRNC">Registro Nacional de Contribuyente (RCN):</label>
+                <div class="input-numeroContacto">
+                  <input type="text" id="clientRNC" placeholder="Registro Nacional de Contribuyente (RCN)" maxlength="20">
+                  <div class="cantidad-img"><img src="./img/icon/nombre_1.png"></div>
+                </div>
+              </div>
+              <div>
+                <label for="clientNCF">Número de Comprobante Fiscal (NCF):</label>
+                <div class="input-numeroContacto">
+                  <input type="text" id="clientNCF" placeholder="Número de Comprobante Fiscal (NCF)" maxlength="20">
+                  <div class="cantidad-img"><img src="./img/icon/phone_1.png"></div>
+                </div>
               </div>
             </div>
 
-            <div class="hamper-master">
+<div class="hamper-master">
               <h2>Añadir Hamper:</h2>
               <div id="serviceSelection" class="button-list"></div>
               <div id="hamperContainer"></div>
@@ -653,7 +680,8 @@
     const updateInvoicePreview = () => {
       const clientName = document.getElementById("clientName").value || "Sin nombre";
       const clientPhone = document.getElementById("clientPhone").value || "Sin teléfono";
-      const clientAddress = document.getElementById("clientAddress").value || "Sin dirección";
+      const clientRNC = document.getElementById("clientRNC").value || "No especificado";
+      const clientNCF = document.getElementById("clientNCF").value || "No especificado";
 
       const selectedDelivery = deliverySelection.querySelector("button.active");
       const selectedProducts = Array.from(productSelection.querySelectorAll(".productInput"));
@@ -684,14 +712,17 @@
       subtotal += deliveryPrice; // Incluir delivery en el subtotal
 
       // Calcular el ITBIS
-      const itbis = (asumirPor !== "desactivado") ? subtotal * itbisPercentage : 0; // Calcular ITBIS solo si no está desactivado
+      const comprobanteActivo = document.getElementById("comprobanteFiscal").checked;
+      const itbis = comprobanteActivo ? (subtotal * 18 / 118) : ((asumirPor !== "desactivado") ? subtotal * itbisPercentage : 0); // Calcular ITBIS solo si no está desactivado
 
       // Calcular el total a pagar
       let total;
-      if (asumirPor === "empresa") {
-        total = subtotal; // El total es solo el subtotal
+      if (comprobanteActivo) {
+        total = subtotal; // ITBIS incluido en el precio final.
+      } else if (asumirPor === "empresa") {
+        total = subtotal;
       } else {
-        total = subtotal + itbis; // Sumar el ITBIS al total si no es "empresa"
+        total = subtotal + itbis;
       }
 
       // Calcular el total de productos
@@ -715,8 +746,7 @@
     <div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;">
       <strong>Teléfono:</strong> ${clientPhone} </div>
 
-    <div style="display: flex;justify-content: flex-start;gap: 5px;flex-direction: row;align-items: center;">
-      <strong>Dirección:</strong> ${clientAddress} </div>
+    ${document.getElementById("comprobanteFiscal").checked ? `<div style="display:flex;justify-content:flex-start;gap:12px;flex-wrap:wrap;"><strong>RNC:</strong> ${clientRNC}<strong>NCF:</strong> ${clientNCF}</div>` : ""}
 
     ${hampers.length > 0 || otrosServicios.length > 0 ? `
       <br><strong>Servicios:</strong>
@@ -740,13 +770,13 @@
     <strong><br>Delivery:<br></strong>
     <div style="display: flex; justify-content: space-between;"><span>${selectedDelivery ? selectedDelivery.dataset.name : "Sin delivery"}:</span><span>RD$${selectedDelivery ? selectedDelivery.dataset.value : "0"}</span></div><br>
 
-${asumirPor !== "desactivado" ? `
+${(asumirPor !== "desactivado" || comprobanteActivo) ? `
   <br><div style="display: flex; justify-content: space-between;">
     <strong>Subtotal:</strong>
     <strong>RD$${subtotal.toFixed(2)}</strong>
   </div>
   <br><div style="display: flex; justify-content: space-between;">
-    <strong>${asumirPor === "empresa" ? "ITBIS Incluidos" : "ITBIS"} (${(itbisPercentage * 100).toFixed(2)}%):</strong>
+    <strong>${comprobanteActivo ? "ITBIS incluido" : (asumirPor === "empresa" ? "ITBIS Incluidos" : "ITBIS")} (${(comprobanteActivo ? 18 : itbisPercentage * 100).toFixed(2)}%):</strong>
     <strong>RD$${itbis.toFixed(2)}</strong>
   </div>
 ` : ""}
@@ -1207,7 +1237,9 @@ ${asumirPor !== "desactivado" ? `
     id: generateNewInvoiceId(await getLastInvoiceId()),
     clientName: document.getElementById("clientName").value.trim(),
     clientPhone: document.getElementById("clientPhone").value.replace(/-/g, ''),
-    clientAddress: document.getElementById("clientAddress").value.trim(),
+    clientRNC: document.getElementById("comprobanteFiscal").checked ? document.getElementById("clientRNC").value.trim() : "",
+    clientNCF: document.getElementById("comprobanteFiscal").checked ? document.getElementById("clientNCF").value.trim() : "",
+    comprobanteFiscal: document.getElementById("comprobanteFiscal").checked,
     NombreEmpleado: document.getElementById("empleado").options[document.getElementById("empleado").selectedIndex].text,
     selectedServices: hampers.map(hamper => {
       const weight = parseInt(hamper.weightInput.value);
@@ -1406,6 +1438,9 @@ ${asumirPor !== "desactivado" ? `
       });
 
       // Calcular el ITBIS solo si asumirPor no está en "desactivado" y está en "cliente"
+      // En comprobante fiscal el importe ya incluye ITBIS: no se agrega nuevamente.
+      if (document.getElementById("comprobanteFiscal").checked) return total;
+
       let itbis = 0;
       if (asumirPor !== "desactivado" && asumirPor !== "empresa") {
         itbis = total * itbisPercentage; // Asegúrate de que itbisPercentage esté definido y tenga el valor correcto
@@ -1449,9 +1484,25 @@ ${asumirPor !== "desactivado" ? `
       updateInvoicePreview();
     };
 
+    const comprobanteFiscalToggle = document.getElementById("comprobanteFiscal");
+    const datosComprobanteFiscal = document.getElementById("datosComprobanteFiscal");
+    const actualizarComprobanteFiscal = () => {
+      const activo = comprobanteFiscalToggle.checked;
+      datosComprobanteFiscal.classList.toggle("hidden", !activo);
+      datosComprobanteFiscal.setAttribute("aria-hidden", String(!activo));
+      if (!activo) {
+        document.getElementById("clientRNC").value = "";
+        document.getElementById("clientNCF").value = "";
+      }
+      updateInvoicePreview();
+    };
+    comprobanteFiscalToggle.addEventListener("change", actualizarComprobanteFiscal);
+    actualizarComprobanteFiscal();
+
     document.getElementById("clientName").addEventListener("input", updateInvoicePreview);
     document.getElementById("clientPhone").addEventListener("input", updateInvoicePreview);
-    document.getElementById("clientAddress").addEventListener("input", updateInvoicePreview);
+    document.getElementById("clientRNC").addEventListener("input", updateInvoicePreview);
+    document.getElementById("clientNCF").addEventListener("input", updateInvoicePreview);
 
     loadServices();
     loadDeliveryOptions();
